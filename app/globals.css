@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --blue:        #588aad;
+  --blue-dark:   #3d6e92;
+  --blue-deeper: #2a5070;
+  --blue-light:  #7aadc8;
+  --blue-pale:   #e8f2f8;
+  --tan:         #716557;
+  --tan-light:   #9e8e83;
+  --tan-pale:    #f5f0ec;
+  --cream:       #fdfaf7;
+  --cream-dark:  #ede5db;
+}
+
+@layer base {
+  html { font-family: 'Poppins', sans-serif; }
+  body { background: var(--cream); color: var(--tan); }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #716557;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply bg-blue-DEFAULT text-white font-bold px-7 py-3 rounded-xl
+           transition-all hover:-translate-y-0.5
+           hover:bg-blue-dark hover:shadow-lg;
+  }
+  .btn-secondary {
+    @apply bg-tan-DEFAULT text-white font-bold px-7 py-3 rounded-xl
+           transition-all hover:-translate-y-0.5 hover:bg-tan-dark;
+  }
+  .btn-outline {
+    @apply border-2 border-blue-DEFAULT text-blue-DEFAULT font-bold px-7 py-3 rounded-xl
+           transition-all hover:bg-blue-pale;
+  }
+  .btn-ghost {
+    @apply border border-cream-dark text-tan-light font-medium px-5 py-2.5 rounded-lg
+           transition-all hover:border-blue-light hover:text-blue-DEFAULT bg-white;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-xl p-7 shadow-card border border-blue-pale;
+  }
+  .card-sm {
+    @apply bg-white rounded-xl p-5 shadow-card border border-blue-pale;
+  }
+
+  /* Form elements */
+  .form-input {
+    @apply w-full px-4 py-3 border border-cream-dark rounded-xl
+           font-sans text-sm text-tan-DEFAULT bg-white outline-none
+           transition focus:border-blue-DEFAULT focus:ring-2 focus:ring-blue-pale
+           placeholder:text-tan-light;
+  }
+  .form-label {
+    @apply block text-xs font-bold text-tan-DEFAULT uppercase tracking-wider mb-1.5;
+  }
+  .form-group {
+    @apply mb-4;
+  }
+
+  /* Badges */
+  .badge-blue  { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-pale text-blue-dark; }
+  .badge-green { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800; }
+  .badge-tan   { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-tan-pale text-tan-DEFAULT; }
+  .badge-live  { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800; }
+
+  /* Section headers */
+  .eyebrow {
+    @apply text-xs font-bold text-blue-DEFAULT uppercase tracking-widest mb-2;
+  }
+  .section-title {
+    @apply text-3xl font-bold text-tan-DEFAULT leading-tight;
+  }
+}
