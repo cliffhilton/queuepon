@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --blue:        #588aad;
+  --blue-dark:   #3d6e92;
+  --blue-deeper: #2a5070;
+  --blue-light:  #7aadc8;
+  --blue-pale:   #e8f2f8;
+  --tan:         #716557;
+  --tan-light:   #9e8e83;
+  --tan-pale:    #f5f0ec;
+  --cream:       #fdfaf7;
+  --cream-dark:  #ede5db;
+}
+
+@layer base {
+  html { font-family: 'Poppins', sans-serif; }
+  body { background: var(--cream); color: var(--tan); }
+
+  /* Headings default to tan on light backgrounds.
+     On dark sections, override with text-white on the parent. */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #716557;
+  }
+  /* When inside a dark/blue section, headings should be white */
+  .hero h1, .hero h2, .hero h3,
+  [class*="bg-blue"] h1, [class*="bg-blue"] h2, [class*="bg-blue"] h3,
+  [class*="bg-tan"] h1, [class*="bg-tan"] h2, [class*="bg-tan"] h3,
+  .text-white h1, .text-white h2 {
+    color: inherit;
+  }
+}
+
+@layer components {
+  /* ── Sections ── */
+  .section {
+    @apply py-20 md:py-24;
+  }
+  .section-sm {
+    @apply py-12 md:py-16;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-blue text-white font-bold px-7 py-3 rounded-xl
+           transition-all duration-200
+           hover:-translate-y-0.5 hover:bg-blue-dark hover:shadow-lg
+           focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-tan text-white font-bold px-7 py-3 rounded-xl
+           transition-all duration-200
+           hover:-translate-y-0.5 hover:bg-tan-dark
+           focus:outline-none;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2
+           border-2 border-blue text-blue font-bold px-7 py-3 rounded-xl
+           transition-all duration-200 hover:bg-blue-pale
+           focus:outline-none;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           border border-cream-dark text-tan-light font-medium px-5 py-2.5 rounded-lg
+           bg-white transition-all duration-200
+           hover:border-blue-light hover:text-blue
+           focus:outline-none;
+  }
+  .btn-white {
+    @apply inline-flex items-center justify-center gap-2
+           bg-white text-blue-deeper font-bold px-7 py-3 rounded-xl
+           transition-all duration-200 hover:bg-blue-xpale hover:-translate-y-0.5
+           focus:outline-none;
+  }
+
+  /* ── Cards ── */
+  .card {
+    @apply bg-white rounded-xl p-7 shadow-card border border-blue-pale;
+  }
+  .card-sm {
+    @apply bg-white rounded-xl p-5 shadow-card border border-blue-pale;
+  }
+
+  /* ── Forms ── */
+  .form-input {
+    @apply w-full px-4 py-3 border border-cream-dark rounded-xl
+           font-sans text-sm text-tan bg-white outline-none
+           transition-all duration-200
+           focus:border-blue focus:ring-2 focus:ring-blue/20
+           placeholder:text-tan-light;
+  }
+  .form-label {
+    @apply block text-xs font-bold text-tan uppercase tracking-wider mb-1.5;
+  }
+  .form-group {
+    @apply mb-4;
+  }
+
+  /* ── Badges ── */
+  .badge-blue  { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-pale text-blue-dark; }
+  .badge-green { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800; }
+  .badge-tan   { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-tan-pale text-tan; }
+  .badge-live  { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800; }
+  .badge-amber { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700; }
+
+  /* ── Section headers ── */
+  .eyebrow {
+    @apply text-xs font-bold text-blue uppercase tracking-widest mb-2;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-tan leading-tight;
+  }
+  .section-sub {
+    @apply text-base text-tan-light leading-relaxed mt-3;
+  }
+
+  /* ── Progress bars ── */
+  .progress-bar {
+    @apply h-1.5 bg-cream-dark rounded-full overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full bg-blue rounded-full transition-all duration-500;
+  }
+}
