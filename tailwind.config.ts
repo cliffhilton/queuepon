@@ -9,7 +9,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+<<<<<<< HEAD
         // Queuepon brand
+=======
+        // Queuepon brand — use as bg-blue, text-tan, etc.
+>>>>>>> e9bcba0 (Initial commit — full Queuepon build)
         blue: {
           DEFAULT: '#588aad',
           dark:    '#3d6e92',

@@ -117,3 +117,18 @@ $$ language plpgsql;
 create trigger on_customer_created
   after insert on customers
   for each row execute procedure increment_subscriber_count();
+<<<<<<< HEAD
+=======
+
+-- ── ADD AD FIELDS TO OFFERS (run this if you already ran the schema) ──────────
+alter table offers
+  add column if not exists ad_headline    text,
+  add column if not exists ad_subheadline text,
+  add column if not exists ad_template    text default 'full_bleed',
+  add column if not exists ad_color       text default '#588aad',
+  add column if not exists ad_image_url   text,
+  add column if not exists meta_campaign_id text,
+  add column if not exists meta_adset_id    text,
+  add column if not exists meta_ad_id       text,
+  add column if not exists meta_ad_status   text default 'pending';
+>>>>>>> e9bcba0 (Initial commit — full Queuepon build)

@@ -24,12 +24,20 @@ export function Nav() {
         <div className="hidden md:flex items-center gap-2">
           {links.map(l => (
             <Link key={l.href} href={l.href}
+<<<<<<< HEAD
               className="text-sm font-medium text-tan-light hover:text-blue-DEFAULT hover:bg-blue-xpale px-3 py-2 rounded-lg transition-all">
+=======
+              className="text-sm font-medium text-tan-light hover:text-blue hover:bg-blue-xpale px-3 py-2 rounded-lg transition-all">
+>>>>>>> e9bcba0 (Initial commit — full Queuepon build)
               {l.label}
             </Link>
           ))}
           <Link href="/login"
+<<<<<<< HEAD
             className="text-sm font-medium text-tan-light hover:text-blue-DEFAULT px-3 py-2 rounded-lg transition-all ml-1">
+=======
+            className="text-sm font-medium text-tan-light hover:text-blue px-3 py-2 rounded-lg transition-all ml-1">
+>>>>>>> e9bcba0 (Initial commit — full Queuepon build)
             Log In
           </Link>
           <Link href="/signup"
@@ -43,9 +51,15 @@ export function Nav() {
           className="md:hidden flex flex-col gap-1.5 p-2"
           onClick={() => setOpen(!open)}
           aria-label="Menu">
+<<<<<<< HEAD
           <span className={`block w-6 h-0.5 bg-tan-DEFAULT transition-all duration-300 ${open ? 'translate-y-2 rotate-45' : ''}`}/>
           <span className={`block w-6 h-0.5 bg-tan-DEFAULT transition-all duration-300 ${open ? 'opacity-0' : ''}`}/>
           <span className={`block w-6 h-0.5 bg-tan-DEFAULT transition-all duration-300 ${open ? '-translate-y-2 -rotate-45' : ''}`}/>
+=======
+          <span className={`block w-6 h-0.5 bg-tan transition-all duration-300 ${open ? 'translate-y-2 rotate-45' : ''}`}/>
+          <span className={`block w-6 h-0.5 bg-tan transition-all duration-300 ${open ? 'opacity-0' : ''}`}/>
+          <span className={`block w-6 h-0.5 bg-tan transition-all duration-300 ${open ? '-translate-y-2 -rotate-45' : ''}`}/>
+>>>>>>> e9bcba0 (Initial commit — full Queuepon build)
         </button>
       </nav>
 
@@ -55,7 +69,11 @@ export function Nav() {
           {links.map(l => (
             <Link key={l.href} href={l.href}
               onClick={() => setOpen(false)}
+<<<<<<< HEAD
               className="text-base font-semibold text-tan-DEFAULT hover:bg-blue-xpale hover:text-blue-DEFAULT px-4 py-3 rounded-xl transition-all">
+=======
+              className="text-base font-semibold text-tan hover:bg-blue-xpale hover:text-blue px-4 py-3 rounded-xl transition-all">
+>>>>>>> e9bcba0 (Initial commit — full Queuepon build)
               {l.label}
             </Link>
           ))}
