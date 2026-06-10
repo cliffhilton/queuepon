@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendRestaurantWelcome } from '@/lib/resend'
+import { sendRestaurantWelcome, sendPasswordSetupEmail } from '@/lib/resend'
 
 export async function POST(req: NextRequest) {
   const body      = await req.text()
@@ -22,12 +22,10 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient()
 
-  // ── Subscription created/activated ────────────────────────────────────────
   if (event.type === 'customer.subscription.created' ||
       event.type === 'invoice.payment_succeeded') {
 
-    const obj  = event.data.object as any
-    // For invoice events get subscription, for subscription events use directly
+    const obj   = event.data.object as any
     const subId = obj.subscription ?? obj.id
     if (!subId) return NextResponse.json({ received: true })
 
@@ -36,7 +34,7 @@ export async function POST(req: NextRequest) {
       const meta = subscription.metadata ?? {}
       if (!meta.restaurantName) return NextResponse.json({ received: true })
 
-      // Check if restaurant already exists for this subscription
+      // Check if restaurant already exists
       const { data: existing } = await supabase
         .from('restaurants')
         .select('id')
@@ -48,15 +46,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true })
       }
 
-      // Create Supabase auth user so restaurant can log in
+      // Create Supabase auth user
       let userId: string | null = null
-      const tempPassword = `Queuepon${Math.random().toString(36).slice(2, 10)}!`
-
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email:          meta.email,
-        password:       tempPassword,
-        email_confirm:  true,
-        user_metadata:  { restaurantName: meta.restaurantName, firstName: meta.firstName },
+        email:         meta.email,
+        email_confirm: true,
+        user_metadata: { restaurantName: meta.restaurantName, firstName: meta.firstName },
       })
 
       if (authError && !authError.message.includes('already registered')) {
@@ -64,6 +59,27 @@ export async function POST(req: NextRequest) {
       } else if (authData?.user) {
         userId = authData.user.id
         console.log(`✅ Auth user created: ${meta.email}`)
+
+        // Generate password reset link for them to set their password
+        try {
+          const { data: linkData } = await supabase.auth.admin.generateLink({
+            type:  'recovery',
+            email: meta.email,
+            options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/dashboard` },
+          })
+
+          if (linkData?.properties?.action_link) {
+            await sendPasswordSetupEmail({
+              to:             meta.email,
+              firstName:      meta.firstName,
+              restaurantName: meta.restaurantName,
+              setupUrl:       linkData.properties.action_link,
+            })
+            console.log(`✅ Password setup email sent to ${meta.email}`)
+          }
+        } catch (e) {
+          console.error('Password setup email error:', e)
+        }
       }
 
       // Save restaurant
@@ -80,8 +96,7 @@ export async function POST(req: NextRequest) {
           restaurant_type:       meta.restaurantType,
           plan:                  meta.plan,
           plan_price:            subscription.items.data[0]?.price?.unit_amount
-                                   ? subscription.items.data[0].price.unit_amount / 100
-                                   : 0,
+                                   ? subscription.items.data[0].price.unit_amount / 100 : 0,
           stripe_customer_id:    subscription.customer as string,
           stripe_subscription_id: subId,
           status:                'active',
@@ -122,7 +137,10 @@ export async function POST(req: NextRequest) {
           restaurantName: meta.restaurantName, plan: meta.plan, zipCode: meta.zipCode,
         })
         console.log(`✅ Welcome email sent to ${meta.email}`)
-      } catch (e) { console.error('Email error:', e) }
+      } catch (e) { console.error('Welcome email error:', e) }
+
+      // TODO: Meta API campaign creation
+      // await createMetaCampaign({ restaurant, meta })
 
     } catch (err) {
       console.error('Webhook processing error:', err)
@@ -130,14 +148,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Subscription cancelled ─────────────────────────────────────────────────
   if (event.type === 'customer.subscription.deleted') {
     const sub = event.data.object as Stripe.Subscription
     await supabase.from('restaurants').update({ status: 'cancelled' })
       .eq('stripe_subscription_id', sub.id)
   }
 
-  // ── Payment failed ─────────────────────────────────────────────────────────
   if (event.type === 'invoice.payment_failed') {
     const invoice = event.data.object as Stripe.Invoice
     await supabase.from('restaurants').update({ status: 'paused' })

@@ -9,10 +9,7 @@ export async function sendRestaurantWelcome({
 }: {
   to: string; firstName: string; restaurantName: string; plan: string; zipCode: string
 }) {
-  const planNames: Record<string, string> = {
-    grow: 'Grow', expand: 'Expand', thrive: 'Thrive'
-  }
-
+  const planNames: Record<string, string> = { grow:'Grow', expand:'Expand', thrive:'Thrive' }
   return resend.emails.send({
     from: `Queuepon <${FROM}>`,
     to,
@@ -20,41 +17,70 @@ export async function sendRestaurantWelcome({
     html: `
       <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
         <div style="margin-bottom:28px">
-          <span style="font-size:22px;font-weight:900;color:#716557;letter-spacing:-0.3px">queue<span style="color:#588aad">pon</span></span>
+          <span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span>
         </div>
-
-        <h1 style="font-size:26px;font-weight:700;color:#716557;margin:0 0 12px">
-          Welcome to Queuepon, ${firstName}! 🎉
-        </h1>
+        <h1 style="font-size:26px;font-weight:700;color:#716557;margin:0 0 12px">Welcome to Queuepon, ${firstName}! 🎉</h1>
         <p style="color:#9e8e83;line-height:1.7;margin:0 0 24px">
           <strong style="color:#716557">${restaurantName}</strong> is now live on the 
           <strong style="color:#588aad">${planNames[plan] ?? plan} Plan</strong>. 
           Your Meta ad is being set up for ZIP <strong>${zipCode}</strong> and goes live within 24 hours.
         </p>
-
         <div style="background:#e8f2f8;border-radius:12px;padding:20px 24px;margin-bottom:24px">
           <p style="margin:0 0 8px;font-weight:700;color:#2a5070">Access your dashboard</p>
           <p style="margin:0 0 16px;font-size:14px;color:#588aad">
             Log in at <a href="${APP_URL}/login" style="color:#588aad">${APP_URL}/login</a>
           </p>
           <p style="margin:0;font-size:13px;color:#716557">
-            Use your email address: <strong>${to}</strong><br/>
-            First time? <a href="${APP_URL}/login" style="color:#588aad;font-weight:600">Click here to set your password →</a>
+            Use your email: <strong>${to}</strong><br/>
+            Check your inbox for a separate email to set your password.
           </p>
         </div>
-
-        <div style="border-top:1px solid #ede5db;padding-top:20px;margin-top:8px">
+        <div style="border-top:1px solid #ede5db;padding-top:20px">
           <p style="font-size:13px;color:#9e8e83;margin:0 0 4px">What happens next:</p>
           <ul style="font-size:13px;color:#716557;line-height:2;padding-left:20px;margin:8px 0">
+            <li>Set your password using the link in your next email</li>
             <li>Your Meta ad goes live within 24 hours targeting ZIP ${zipCode}</li>
             <li>Share your offer landing page to start collecting customer emails</li>
-            <li>Watch subscribers and ad results in your dashboard</li>
           </ul>
         </div>
-
         <p style="font-size:13px;color:#9e8e83;margin-top:24px">
-          Questions? Reply to this email or call us:<br/>
+          Questions? Reply to this email or call:<br/>
           Cliff Hilton: (502) 881-4235 · Joel Gerdis: (502) 489-4673
+        </p>
+      </div>
+    `,
+  })
+}
+
+export async function sendPasswordSetupEmail({
+  to, firstName, restaurantName, setupUrl,
+}: {
+  to: string; firstName: string; restaurantName: string; setupUrl: string
+}) {
+  return resend.emails.send({
+    from: `Queuepon <${FROM}>`,
+    to,
+    subject: `Set your password to access your ${restaurantName} dashboard`,
+    html: `
+      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
+        <div style="margin-bottom:28px">
+          <span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span>
+        </div>
+        <h1 style="font-size:24px;font-weight:700;color:#716557;margin:0 0 12px">One more step, ${firstName} 👋</h1>
+        <p style="color:#9e8e83;line-height:1.7;margin:0 0 24px">
+          Your <strong style="color:#716557">${restaurantName}</strong> account is ready. 
+          Click below to set your password and access your dashboard.
+        </p>
+        <div style="text-align:center;margin:32px 0">
+          <a href="${setupUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
+            Set My Password →
+          </a>
+        </div>
+        <p style="font-size:13px;color:#9e8e83;line-height:1.7">
+          This link expires in 24 hours. If you didn't create a Queuepon account, ignore this email.
+        </p>
+        <p style="font-size:12px;color:#9e8e83;margin-top:24px">
+          Questions? Reply to this email or call Cliff at (502) 881-4235
         </p>
       </div>
     `,
@@ -77,7 +103,7 @@ export async function sendCustomerOfferEmail({
         <p style="line-height:1.7">You're in! Here's your exclusive offer:</p>
         <div style="background:#2a5070;border-radius:16px;padding:28px;text-align:center;margin:24px 0">
           <h2 style="color:#ffd080;margin:0 0 8px;font-size:22px">${offerTitle}</h2>
-          <p style="color:rgba(255,255,255,.85);margin:0;font-size:15px">${offerDescription}</p>
+          ${offerDescription ? `<p style="color:rgba(255,255,255,.85);margin:0;font-size:15px">${offerDescription}</p>` : ''}
         </div>
         <p style="line-height:1.7">Show this email at the counter when you visit. No printing needed.</p>
         <p style="font-size:12px;color:#9e8e83;margin-top:32px">
