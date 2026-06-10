@@ -13,6 +13,8 @@ interface FormData {
   firstName: string; lastName: string; restaurantName: string
   email: string; phone: string; zipCode: string
   address: string; restaurantType: string
+  website: string
+  logoFile: File | null; logoPreview: string
   offerTitle: string; offerDescription: string
   offerType: string; expiryDate: string
   adHeadline: string; adSubheadline: string
@@ -30,13 +32,11 @@ const PLANS = {
 const RESTAURANT_TYPES = ['Quick Service (Fast Food)','Fast Casual','Pizza','Casual Dining','Food Truck','Bakery / Café','Bar & Grill','Other']
 const STEPS = [{num:1,label:'Plan'},{num:2,label:'Restaurant'},{num:3,label:'Your Offer'},{num:4,label:'Ad Creative'},{num:5,label:'Payment'}]
 
-// ── Validation error component ─────────────────────────────────────────────
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null
   return <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1">⚠ {msg}</p>
 }
 
-// ── Step bar ───────────────────────────────────────────────────────────────
 function StepBar({ current }: { current: Step }) {
   return (
     <div className="flex items-center justify-center gap-0 mb-10">
@@ -111,38 +111,60 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
 
 // ── STEP 2 ─────────────────────────────────────────────────────────────────
 function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormData, v: any) => void; next: () => void; back: () => void }) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors]   = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [fetchingLogo, setFetchingLogo] = useState(false)
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!form.firstName.trim())     e.firstName     = 'First name is required'
-    if (!form.lastName.trim())      e.lastName      = 'Last name is required'
+    if (!form.firstName.trim())      e.firstName      = 'First name is required'
+    if (!form.lastName.trim())       e.lastName       = 'Last name is required'
     if (!form.restaurantName.trim()) e.restaurantName = 'Restaurant name is required'
-    if (!form.email.trim())         e.email         = 'Email is required'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email address'
-    if (!form.phone.trim())         e.phone         = 'Phone number is required'
-    if (!form.zipCode.trim())       e.zipCode       = 'ZIP code is required'
-    else if (!/^\d{5}$/.test(form.zipCode)) e.zipCode = 'Enter a valid 5-digit ZIP code'
-    if (!form.restaurantType)       e.restaurantType = 'Please select a restaurant type'
-    if (!form.address.trim())       e.address       = 'Street address is required'
+    if (!form.email.trim())          e.email          = 'Email is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email'
+    if (!form.phone.trim())          e.phone          = 'Phone number is required'
+    if (!form.zipCode.trim())        e.zipCode        = 'ZIP code is required'
+    else if (!/^\d{5}$/.test(form.zipCode)) e.zipCode = 'Enter a valid 5-digit ZIP'
+    if (!form.restaurantType)        e.restaurantType = 'Please select a restaurant type'
+    if (!form.address.trim())        e.address        = 'Street address is required'
     return e
   }
 
   const handleNext = () => {
     const e = validate()
     setErrors(e)
-    // Mark all fields touched so errors show
     setTouched({ firstName:true, lastName:true, restaurantName:true, email:true, phone:true, zipCode:true, restaurantType:true, address:true })
     if (Object.keys(e).length === 0) next()
     else window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const blur = (field: string) => setTouched(t => ({ ...t, [field]: true }))
-  const err = (field: string) => touched[field] ? errors[field] : undefined
+  const err  = (field: string) => touched[field] ? errors[field] : undefined
+  const ic   = (field: string) => `form-input ${touched[field] && errors[field] ? 'border-red-400' : ''}`
 
-  const inputClass = (field: string) =>
-    `form-input ${touched[field] && errors[field] ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : ''}`
+  // Auto-fetch logo from website URL
+  const handleFetchLogo = async () => {
+    if (!form.website) return
+    setFetchingLogo(true)
+    try {
+      const domain  = form.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
+      const logoUrl = `https://logo.clearbit.com/${domain}`
+      // Test if it loads
+      const img     = new Image()
+      img.onload    = () => { set('logoPreview', logoUrl); setFetchingLogo(false) }
+      img.onerror   = () => { setFetchingLogo(false) }
+      img.src       = logoUrl
+    } catch { setFetchingLogo(false) }
+  }
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    set('logoFile', file)
+    const reader = new FileReader()
+    reader.onload = ev => set('logoPreview', ev.target?.result as string)
+    reader.readAsDataURL(file)
+  }
 
   return (
     <div className="max-w-xl mx-auto">
@@ -155,57 +177,97 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
         <div className="grid grid-cols-2 gap-4">
           <div className="form-group">
             <label className="form-label">First Name</label>
-            <input className={inputClass('firstName')} placeholder="Maria"
+            <input className={ic('firstName')} placeholder="Maria"
               value={form.firstName} onChange={e => set('firstName', e.target.value)} onBlur={() => blur('firstName')}/>
             <FieldError msg={err('firstName')}/>
           </div>
           <div className="form-group">
             <label className="form-label">Last Name</label>
-            <input className={inputClass('lastName')} placeholder="Lopez"
+            <input className={ic('lastName')} placeholder="Lopez"
               value={form.lastName} onChange={e => set('lastName', e.target.value)} onBlur={() => blur('lastName')}/>
             <FieldError msg={err('lastName')}/>
           </div>
         </div>
         <div className="form-group">
           <label className="form-label">Restaurant Name</label>
-          <input className={inputClass('restaurantName')} placeholder="Fat Jimmy's Pizza"
+          <input className={ic('restaurantName')} placeholder="Fat Jimmy's Pizza"
             value={form.restaurantName} onChange={e => set('restaurantName', e.target.value)} onBlur={() => blur('restaurantName')}/>
           <FieldError msg={err('restaurantName')}/>
         </div>
         <div className="form-group">
           <label className="form-label">Email</label>
-          <input className={inputClass('email')} type="email" placeholder="hello@yourrestaurant.com"
+          <input className={ic('email')} type="email" placeholder="hello@yourrestaurant.com"
             value={form.email} onChange={e => set('email', e.target.value)} onBlur={() => blur('email')}/>
           <FieldError msg={err('email')}/>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="form-group">
             <label className="form-label">Phone</label>
-            <input className={inputClass('phone')} type="tel" placeholder="(502) 555-0198"
+            <input className={ic('phone')} type="tel" placeholder="(502) 555-0198"
               value={form.phone} onChange={e => set('phone', e.target.value)} onBlur={() => blur('phone')}/>
             <FieldError msg={err('phone')}/>
           </div>
           <div className="form-group">
             <label className="form-label">ZIP Code <span className="text-blue normal-case font-normal">★ ad targeting</span></label>
-            <input className={inputClass('zipCode')} placeholder="40202" maxLength={5}
+            <input className={ic('zipCode')} placeholder="40202" maxLength={5}
               value={form.zipCode} onChange={e => set('zipCode', e.target.value)} onBlur={() => blur('zipCode')}/>
             <FieldError msg={err('zipCode')}/>
           </div>
         </div>
         <div className="form-group">
           <label className="form-label">Restaurant Type</label>
-          <select className={inputClass('restaurantType')} value={form.restaurantType}
+          <select className={ic('restaurantType')} value={form.restaurantType}
             onChange={e => set('restaurantType', e.target.value)} onBlur={() => blur('restaurantType')}>
             <option value="">Select type...</option>
             {RESTAURANT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
           <FieldError msg={err('restaurantType')}/>
         </div>
-        <div className="form-group mb-0">
+        <div className="form-group">
           <label className="form-label">Street Address</label>
-          <input className={inputClass('address')} placeholder="123 Main St, Louisville, KY 40202"
+          <input className={ic('address')} placeholder="123 Main St, Louisville, KY 40202"
             value={form.address} onChange={e => set('address', e.target.value)} onBlur={() => blur('address')}/>
           <FieldError msg={err('address')}/>
+        </div>
+
+        {/* Website + logo auto-fetch */}
+        <div className="form-group">
+          <label className="form-label">Website <span className="text-tan-light normal-case font-normal">(optional — we'll try to find your logo)</span></label>
+          <div className="flex gap-2">
+            <input className="form-input flex-1" placeholder="https://yourrestaurant.com"
+              value={form.website} onChange={e => set('website', e.target.value)}/>
+            <button type="button" onClick={handleFetchLogo}
+              disabled={!form.website || fetchingLogo}
+              className="btn-outline text-sm px-4 whitespace-nowrap disabled:opacity-50">
+              {fetchingLogo ? '⏳' : '🔍 Find Logo'}
+            </button>
+          </div>
+        </div>
+
+        {/* Logo upload */}
+        <div className="form-group mb-0">
+          <label className="form-label">Restaurant Logo <span className="text-tan-light normal-case font-normal">(optional)</span></label>
+          <div className="flex items-center gap-4">
+            {form.logoPreview ? (
+              <div className="relative">
+                <img src={form.logoPreview} alt="Logo preview"
+                  className="h-16 w-16 object-contain rounded-xl border border-cream-dark bg-white p-1"/>
+                <button onClick={() => { set('logoPreview',''); set('logoFile', null) }}
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                  ×
+                </button>
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-xl border-2 border-dashed border-cream-dark bg-cream flex items-center justify-center text-tan-light text-xs">
+                Logo
+              </div>
+            )}
+            <label className="btn-ghost text-sm cursor-pointer">
+              📁 Upload Logo
+              <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload}/>
+            </label>
+            <p className="text-xs text-tan-light">PNG with transparent background preferred</p>
+          </div>
         </div>
       </div>
       <div className="flex justify-between mt-6">
@@ -218,7 +280,7 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
 
 // ── STEP 3 ─────────────────────────────────────────────────────────────────
 function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormData, v: any) => void; next: () => void; back: () => void }) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors]   = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const validate = () => {
@@ -237,9 +299,7 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
 
   const blur = (field: string) => setTouched(t => ({ ...t, [field]: true }))
   const err  = (field: string) => touched[field] ? errors[field] : undefined
-  const inputClass = (field: string) =>
-    `form-input ${touched[field] && errors[field] ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : ''}`
-
+  const ic   = (field: string) => `form-input ${touched[field] && errors[field] ? 'border-red-400' : ''}`
   const slug = form.offerTitle.toLowerCase().replace(/\s+/g, '-') || 'your-offer'
 
   return (
@@ -252,7 +312,7 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
       <div className="card">
         <div className="form-group">
           <label className="form-label">Offer Headline</label>
-          <input className={inputClass('offerTitle')} placeholder="Free Dessert Every Friday"
+          <input className={ic('offerTitle')} placeholder="Free Dessert Every Friday"
             value={form.offerTitle}
             onChange={e => { set('offerTitle', e.target.value); if (!form.adHeadline) set('adHeadline', e.target.value) }}
             onBlur={() => blur('offerTitle')}/>
@@ -261,7 +321,7 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
         </div>
         <div className="form-group">
           <label className="form-label">Offer Description</label>
-          <textarea className={`${inputClass('offerDescription')} min-h-[80px] resize-none`}
+          <textarea className={`${ic('offerDescription')} min-h-[80px] resize-none`}
             placeholder="Get a free churro with any entrée, every Friday. Show this email at the counter."
             value={form.offerDescription}
             onChange={e => set('offerDescription', e.target.value)}
@@ -284,16 +344,16 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
             <input className="form-input" type="date" value={form.expiryDate} onChange={e => set('expiryDate', e.target.value)}/>
           </div>
         </div>
+        {/* Landing page preview */}
         <div className="mt-2 rounded-xl overflow-hidden border border-blue-pale">
           <div className="bg-blue-deeper px-4 py-2 text-xs text-white/60 font-medium">
             Preview — queuepon.com/offers/{slug}
           </div>
           <div className="bg-gradient-to-br from-blue-deeper to-blue p-6 text-center text-white">
-            <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">{form.restaurantName || 'Your Restaurant'}</div>
             <div className="text-xl font-bold text-yellow-200 mb-1">{form.offerTitle || 'Your Offer Headline'}</div>
             <div className="text-xs opacity-75 mb-4">{form.offerDescription || 'Your offer description appears here'}</div>
             <div className="flex gap-2 max-w-xs mx-auto">
-              <input readOnly className="flex-1 rounded-lg px-3 py-2 text-xs text-tan bg-white" placeholder="Your email"/>
+              <input readOnly className="flex-1 rounded-lg px-3 py-2 text-xs text-tan bg-white" placeholder="Email address"/>
               <button className="bg-yellow-300 text-tan-dark text-xs font-bold px-3 py-2 rounded-lg">Claim →</button>
             </div>
           </div>
@@ -309,13 +369,13 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
 
 // ── STEP 4 ─────────────────────────────────────────────────────────────────
 function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormData, v: any) => void; next: () => void; back: () => void }) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors,  setErrors]  = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!form.adImage)              e.adImage     = 'Please upload a photo for your ad'
-    if (!form.adHeadline.trim())    e.adHeadline  = 'Ad headline is required'
+    if (!form.adImage)           e.adImage    = 'Please upload a photo for your ad and landing page'
+    if (!form.adHeadline.trim()) e.adHeadline = 'Ad headline is required'
     return e
   }
 
@@ -333,7 +393,6 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
     const reader = new FileReader()
     reader.onload = ev => set('adImagePreview', ev.target?.result as string)
     reader.readAsDataURL(file)
-    // Clear image error once uploaded
     setErrors(prev => { const n = {...prev}; delete n.adImage; return n })
     setTouched(prev => ({ ...prev, adImage: true }))
   }
@@ -346,21 +405,33 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
       <div className="text-center mb-8">
         <div className="eyebrow">Step 4 of 5</div>
         <h2 className="text-2xl font-bold text-tan mt-1">Ad Creative</h2>
-        <p className="text-tan-light mt-2 text-sm">Your ad runs on Facebook + Instagram, targeted to ZIP {form.zipCode || 'your zip'}.</p>
+        <p className="text-tan-light mt-2 text-sm">
+          This photo powers both your Facebook/Instagram ad <strong>and</strong> your landing page background.
+        </p>
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-5">
           {/* Photo upload */}
           <div className="card">
-            <label className="form-label">Photo Upload</label>
-            <p className="text-xs text-tan-light mb-3">2000px or larger · JPG or PNG</p>
+            <label className="form-label">Hero Photo</label>
+            <div className="bg-blue-xpale border border-blue-pale rounded-xl p-3 mb-3 text-xs text-blue-dark leading-relaxed">
+              📸 <strong>Photo requirements:</strong> JPG or PNG, minimum <strong>2000 × 2000px</strong> recommended. Square crops best for ads. High-res food or restaurant interior photos work great.
+            </div>
             <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all
               ${form.adImagePreview ? 'border-blue bg-blue-xpale' :
                 touched.adImage && errors.adImage ? 'border-red-400 bg-red-50' :
                 'border-cream-dark hover:border-blue hover:bg-blue-xpale'}`}>
               {form.adImagePreview
-                ? <div className="text-center"><div className="text-2xl mb-1">✅</div><div className="text-sm font-semibold text-blue">Photo uploaded</div><div className="text-xs text-tan-light mt-1">{form.adImage?.name}</div></div>
-                : <div className="text-center"><div className="text-3xl mb-2">📸</div><div className="text-sm font-semibold text-tan">Click to upload</div><div className="text-xs text-tan-light mt-1">JPG, PNG — 2000px+ recommended</div></div>
+                ? <div className="text-center">
+                    <img src={form.adImagePreview} alt="preview" className="h-24 w-full object-cover rounded-lg mb-2"/>
+                    <div className="text-sm font-semibold text-blue">✅ Photo ready</div>
+                    <div className="text-xs text-tan-light mt-1">{form.adImage?.name} · Click to change</div>
+                  </div>
+                : <div className="text-center">
+                    <div className="text-3xl mb-2">📸</div>
+                    <div className="text-sm font-semibold text-tan">Click to upload photo</div>
+                    <div className="text-xs text-tan-light mt-1">JPG or PNG · 2000px+ recommended</div>
+                  </div>
               }
               <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload}/>
             </label>
@@ -382,13 +453,12 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
                     }
                   </div>
                   <div className="text-xs font-semibold text-tan">{t === 'full_bleed' ? 'Full Bleed' : 'Split'}</div>
-                  <div className="text-xs text-tan-light">{t === 'full_bleed' ? 'Photo fills entire frame' : 'Photo top, color bottom'}</div>
+                  <div className="text-xs text-tan-light">{t === 'full_bleed' ? 'Photo fills frame' : 'Photo top, color bottom'}</div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Color picker */}
           {form.adTemplate === 'split' && (
             <div className="card">
               <label className="form-label">Bottom Panel Color</label>
@@ -406,17 +476,15 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
             </div>
           )}
 
-          {/* Ad copy */}
           <div className="card">
             <div className="form-group">
               <label className="form-label">Ad Headline <span className="text-tan-light normal-case font-normal">({form.adHeadline.length}/40)</span></label>
               <input className={`form-input ${touched.adHeadline && errors.adHeadline ? 'border-red-400' : ''}`}
                 placeholder="Free Pizza Buffet Every Friday" maxLength={40}
-                value={form.adHeadline}
-                onChange={e => set('adHeadline', e.target.value)}
+                value={form.adHeadline} onChange={e => set('adHeadline', e.target.value)}
                 onBlur={() => setTouched(t => ({...t, adHeadline:true}))}/>
               <FieldError msg={touched.adHeadline ? errors.adHeadline : undefined}/>
-              <p className="text-xs text-tan-light mt-1">Can differ slightly from your landing page headline.</p>
+              <p className="text-xs text-tan-light mt-1">Can differ from your landing page headline.</p>
             </div>
             <div className="form-group mb-0">
               <label className="form-label">Subheadline <span className="text-tan-light normal-case font-normal">({form.adSubheadline.length}/80)</span></label>
@@ -471,6 +539,11 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
             </div>
           </div>
           <p className="text-xs text-tan-light text-center mt-3">Facebook Feed + Instagram Feed · ZIP {form.zipCode || 'your zip'} + 5mi radius</p>
+
+          {/* Landing page preview note */}
+          <div className="mt-3 bg-blue-xpale border border-blue-pale rounded-xl p-3 text-xs text-blue-dark text-center">
+            💡 This photo also becomes the background of your customer landing page
+          </div>
         </div>
       </div>
       <div className="flex justify-between mt-8">
@@ -481,11 +554,6 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
   )
 }
 
-// ── STEP 5 ─────────────────────────────────────────────────────────────────
-function Step5({ form, back }: { form: FormData; back: () => void }) {
-  return <Step5Payment form={form} back={back} />
-}
-
 // ── Main page ───────────────────────────────────────────────────────────────
 export default function SignupPage() {
   const [step, setStep] = useState<Step>(1)
@@ -493,6 +561,7 @@ export default function SignupPage() {
     plan:'expand',
     firstName:'', lastName:'', restaurantName:'',
     email:'', phone:'', zipCode:'', address:'', restaurantType:'',
+    website:'', logoFile:null, logoPreview:'',
     offerTitle:'', offerDescription:'', offerType:'free_item', expiryDate:'',
     adHeadline:'', adSubheadline:'', adTemplate:'full_bleed',
     adColor:'#588aad', adImage:null, adImagePreview:'',
@@ -517,7 +586,7 @@ export default function SignupPage() {
         {step === 2 && <Step2 form={form} set={set} next={next} back={back}/>}
         {step === 3 && <Step3 form={form} set={set} next={next} back={back}/>}
         {step === 4 && <Step4 form={form} set={set} next={next} back={back}/>}
-        {step === 5 && <Step5 form={form} back={back}/>}
+        {step === 5 && <Step5Payment form={form} back={back}/>}
       </div>
     </div>
   )
