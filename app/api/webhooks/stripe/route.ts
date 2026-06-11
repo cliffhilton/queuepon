@@ -69,11 +69,17 @@ export async function POST(req: NextRequest) {
           })
 
           if (linkData?.properties?.action_link) {
+            // Replace any localhost or supabase URL with the real app URL
+            const rawLink = linkData.properties.action_link as string
+            const appUrl  = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
+            // The action_link goes to Supabase directly — use our callback instead
+            const token   = new URL(rawLink).searchParams.get('token') ?? ''
+            const setupUrl = `${appUrl}/auth/callback?token_hash=${token}&type=recovery&next=/dashboard`
             await sendPasswordSetupEmail({
               to:             meta.email,
               firstName:      meta.firstName,
               restaurantName: meta.restaurantName,
-              setupUrl:       linkData.properties.action_link,
+              setupUrl,
             })
             console.log(`✅ Password setup email sent to ${meta.email}`)
           }
