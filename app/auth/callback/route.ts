@@ -3,11 +3,14 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = new URL(req.url)
+  const { searchParams } = new URL(req.url)
   const code       = searchParams.get('code')
   const token_hash = searchParams.get('token_hash')
   const type       = searchParams.get('type') as 'recovery' | 'email' | null
   const next       = searchParams.get('next') ?? '/dashboard'
+
+  // Always use the real app URL, never trust the request origin
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
 
   const cookieStore = cookies()
   const supabase = createServerClient(
@@ -29,7 +32,7 @@ export async function GET(req: NextRequest) {
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash, type })
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${appUrl}${next}`)
     }
   }
 
@@ -37,9 +40,9 @@ export async function GET(req: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${appUrl}${next}`)
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`)
+  return NextResponse.redirect(`${appUrl}/login?error=auth`)
 }
