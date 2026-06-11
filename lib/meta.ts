@@ -108,8 +108,8 @@ async function createCampaign(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name:              `Queuepon — ${restaurantName}`,
-        objective:         'OUTCOME_LEADS',
-        status:            'PAUSED', // Start paused, activate after review
+        objective:         'OUTCOME_TRAFFIC',
+        status:            'PAUSED',
         special_ad_categories: [],
         access_token:      accessToken,
       }),
@@ -140,7 +140,7 @@ async function createAdSet(
         campaign_id:   campaignId,
         daily_budget:  dailyBudgetCents(params.plan),
         billing_event: 'IMPRESSIONS',
-        optimization_goal: 'LEAD_GENERATION',
+        optimization_goal: 'LINK_CLICKS',
         bid_strategy:  'LOWEST_COST_WITHOUT_CAP',
         status:        'PAUSED',
         end_time:      endTime,
