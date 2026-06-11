@@ -26,8 +26,15 @@ export default function SuccessPage() {
               </div>
             ))}
           </div>
-          <Link href="/dashboard" className="btn-primary px-10 py-4 text-base">
-            Go to My Dashboard →
+          <div className="card bg-blue-xpale border-blue-pale mb-6 text-left">
+            <div className="font-bold text-blue-dark mb-1">📧 Check your email</div>
+            <div className="text-sm text-tan-light leading-relaxed">
+              We sent two emails to get you started — a welcome email and a link to set your password. 
+              Check your inbox then come back to log in.
+            </div>
+          </div>
+          <Link href="/login" className="btn-primary px-10 py-4 text-base">
+            Go to Login →
           </Link>
         </div>
       </div>
