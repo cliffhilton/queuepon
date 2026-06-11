@@ -60,21 +60,32 @@ export async function POST(req: NextRequest) {
         userId = authData.user.id
         console.log(`✅ Auth user created: ${meta.email}`)
 
-        // Generate password reset link for them to set their password
+        // Generate password reset link
+        // We use Supabase admin to get the token, then build our own URL
         try {
           const { data: linkData } = await supabase.auth.admin.generateLink({
             type:  'recovery',
             email: meta.email,
-            options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/dashboard` },
           })
 
-          if (linkData?.properties?.action_link) {
-            // Replace any localhost or supabase URL with the real app URL
-            const rawLink = linkData.properties.action_link as string
-            const appUrl  = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
-            // The action_link goes to Supabase directly — use our callback instead
-            const token   = new URL(rawLink).searchParams.get('token') ?? ''
-            const setupUrl = `${appUrl}/auth/callback?token_hash=${token}&type=recovery&next=/dashboard`
+          if (linkData?.properties?.hashed_token) {
+            const appUrl   = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
+            const setupUrl = `${appUrl}/auth/callback?token_hash=${linkData.properties.hashed_token}&type=recovery&next=/dashboard`
+            await sendPasswordSetupEmail({
+              to:             meta.email,
+              firstName:      meta.firstName,
+              restaurantName: meta.restaurantName,
+              setupUrl,
+            })
+            console.log(`✅ Password setup email sent to ${meta.email}`)
+          } else if (linkData?.properties?.action_link) {
+            // Fallback: parse token from action_link and rebuild URL
+            const appUrl    = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
+            const actionUrl = new URL(linkData.properties.action_link as string)
+            const token     = actionUrl.searchParams.get('token') 
+                           || actionUrl.searchParams.get('token_hash') 
+                           || ''
+            const setupUrl  = `${appUrl}/auth/callback?token_hash=${token}&type=recovery&next=/dashboard`
             await sendPasswordSetupEmail({
               to:             meta.email,
               firstName:      meta.firstName,
