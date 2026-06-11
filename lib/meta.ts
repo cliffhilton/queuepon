@@ -107,11 +107,12 @@ async function createCampaign(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name:              `Queuepon — ${restaurantName}`,
-        objective:         'OUTCOME_TRAFFIC',
-        status:            'PAUSED',
-        special_ad_categories: [],
-        access_token:      accessToken,
+        name:                          `Queuepon — ${restaurantName}`,
+        objective:                     'OUTCOME_TRAFFIC',
+        status:                        'PAUSED',
+        special_ad_categories:         [],
+        is_adset_budget_sharing_enabled: false,
+        access_token:                  accessToken,
       }),
     }
   )
