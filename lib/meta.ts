@@ -200,11 +200,15 @@ export async function createMetaCampaign(params: MetaCampaignParams): Promise<Me
 
   console.log(`🚀 Creating Meta campaign for ${params.restaurantName} (ZIP ${params.zipCode})`)
 
-  // 1. Upload image
+  // 1. Upload image (non-blocking — skips if permissions not yet approved)
   let imageHash = ''
   if (params.adImageUrl) {
-    imageHash = await uploadImageToMeta(params.adImageUrl, accessToken, adAccountId)
-    console.log(`✅ Image uploaded to Meta: ${imageHash}`)
+    try {
+      imageHash = await uploadImageToMeta(params.adImageUrl, accessToken, adAccountId)
+      console.log(`✅ Image uploaded to Meta: ${imageHash}`)
+    } catch (imgErr) {
+      console.error('Image upload skipped (permissions pending):', imgErr)
+    }
   }
 
   // 2. Create ad creative
