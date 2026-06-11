@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendRestaurantWelcome, sendPasswordSetupEmail } from '@/lib/resend'
+import { createMetaCampaign } from '@/lib/meta'
 
 export async function POST(req: NextRequest) {
   const body      = await req.text()
@@ -159,8 +160,41 @@ export async function POST(req: NextRequest) {
         console.log(`✅ Welcome email sent to ${meta.email}`)
       } catch (e) { console.error('Welcome email error:', e) }
 
-      // TODO: Meta API campaign creation
-      // await createMetaCampaign({ restaurant, meta })
+      // Meta API campaign creation
+      try {
+        const slug = `${meta.offerTitle.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}`
+        const landingPageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/offers/${slug}-${Date.now()}`
+        const metaResult = await createMetaCampaign({
+          restaurantName: meta.restaurantName,
+          offerTitle:     meta.offerTitle,
+          adHeadline:     meta.adHeadline,
+          adSubheadline:  meta.adSubheadline,
+          zipCode:        meta.zipCode,
+          adImageUrl:     meta.adImageUrl || '',
+          landingPageUrl,
+          plan:           meta.plan,
+          adColor:        meta.adColor || '#588aad',
+        })
+        // Save Meta campaign IDs to the offer
+        if (metaResult) {
+          await supabase.from('offers').update({
+            meta_campaign_id: metaResult.campaignId,
+            meta_adset_id:    metaResult.adSetId,
+            meta_ad_id:       metaResult.adId,
+            meta_ad_status:   'pending_review',
+          }).eq('restaurant_id', restaurant.id)
+
+          // Update restaurant meta_ad_status
+          await supabase.from('restaurants').update({
+            meta_ad_status: 'setting_up',
+          }).eq('id', restaurant.id)
+
+          console.log(`✅ Meta campaign created for ${meta.restaurantName}`)
+        }
+      } catch (metaErr) {
+        // Don't fail the whole webhook if Meta API fails
+        console.error('Meta campaign creation error:', metaErr)
+      }
 
     } catch (err) {
       console.error('Webhook processing error:', err)
