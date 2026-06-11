@@ -23,6 +23,11 @@ export async function POST(req: NextRequest) {
       metadata: { restaurantName, zipCode, phone, address, restaurantType, plan },
     })
 
+    // Stripe metadata values are limited to 500 chars
+    // Truncate URLs safely
+    const safeLogoUrl    = (logoUrl    || '').slice(0, 490)
+    const safeAdImageUrl = (adImageUrl || '').slice(0, 490)
+
     const subscription = await stripe.subscriptions.create({
       customer:         customer.id,
       items:            [{ price: planConfig.priceId }],
@@ -32,15 +37,20 @@ export async function POST(req: NextRequest) {
       metadata: {
         firstName, lastName, restaurantName, email, zipCode,
         phone, address, restaurantType, plan,
-        website:     website     || '',
-        logoUrl:     logoUrl     || '',
-        adImageUrl:  adImageUrl  || '',
-        offerTitle, offerDescription, offerType,
-        adHeadline, adSubheadline, adTemplate, adColor,
+        website:     (website || '').slice(0, 490),
+        logoUrl:     safeLogoUrl,
+        adImageUrl:  safeAdImageUrl,
+        offerTitle:       (offerTitle       || '').slice(0, 490),
+        offerDescription: (offerDescription || '').slice(0, 490),
+        offerType:        offerType   || 'free_item',
+        adHeadline:       (adHeadline  || '').slice(0, 490),
+        adSubheadline:    (adSubheadline || '').slice(0, 490),
+        adTemplate:       adTemplate  || 'full_bleed',
+        adColor:          adColor     || '#588aad',
       },
     })
 
-    const invoice      = subscription.latest_invoice as any
+    const invoice       = subscription.latest_invoice as any
     const paymentIntent = invoice?.payment_intent as any
 
     return NextResponse.json({

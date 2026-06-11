@@ -142,19 +142,27 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
   const err  = (field: string) => touched[field] ? errors[field] : undefined
   const ic   = (field: string) => `form-input ${touched[field] && errors[field] ? 'border-red-400' : ''}`
 
-  // Auto-fetch logo from website URL
+  // Auto-fetch logo from website URL via server API (avoids CORS)
   const handleFetchLogo = async () => {
     if (!form.website) return
     setFetchingLogo(true)
     try {
-      const domain  = form.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
-      const logoUrl = `https://logo.clearbit.com/${domain}`
-      // Test if it loads
-      const img     = new Image()
-      img.onload    = () => { set('logoPreview', logoUrl); setFetchingLogo(false) }
-      img.onerror   = () => { setFetchingLogo(false) }
-      img.src       = logoUrl
-    } catch { setFetchingLogo(false) }
+      const res  = await fetch('/api/logo-fetch', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ website: form.website }),
+      })
+      const data = await res.json()
+      if (data.logoUrl) {
+        set('logoPreview', data.logoUrl)
+      } else {
+        alert('Logo not found automatically. Try uploading it manually below.')
+      }
+    } catch {
+      alert('Could not fetch logo. Try uploading it manually.')
+    } finally {
+      setFetchingLogo(false)
+    }
   }
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
