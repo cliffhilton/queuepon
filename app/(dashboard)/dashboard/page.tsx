@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { WelcomeBanner } from '@/components/dashboard/WelcomeBanner'
 
 export default async function DashboardPage() {
   const supabase = createClient()
@@ -48,9 +49,11 @@ export default async function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl">
+    <div className="max-w-5xl">
+      <WelcomeBanner firstName={firstName}/>
+
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 mt-6">
         <h1 className="text-2xl font-bold text-tan">{greeting}, {firstName} 👋</h1>
         <p className="text-tan-light mt-1">
           Here's how {restaurant?.name ?? 'your restaurant'} is performing.

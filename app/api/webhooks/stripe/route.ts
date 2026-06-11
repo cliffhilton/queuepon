@@ -119,6 +119,8 @@ export async function POST(req: NextRequest) {
           status:                'active',
           meta_ad_status:        'setting_up',
           user_id:               userId,
+          website:               meta.website   || null,
+          logo_url:              meta.logoUrl   || null,
         })
         .select()
         .single()
@@ -140,8 +142,9 @@ export async function POST(req: NextRequest) {
             status:         'live',
             ad_headline:    meta.adHeadline,
             ad_subheadline: meta.adSubheadline,
-            ad_template:    meta.adTemplate || 'full_bleed',
-            ad_color:       meta.adColor || '#588aad',
+            ad_template:    meta.adTemplate  || 'full_bleed',
+            ad_color:       meta.adColor     || '#588aad',
+            ad_image_url:   meta.adImageUrl  || null,
           })
         if (offerError) console.error('Offer insert error:', offerError)
         else console.log(`✅ Offer saved: ${meta.offerTitle}`)

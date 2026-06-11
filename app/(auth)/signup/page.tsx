@@ -322,7 +322,7 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
           <label className="form-label">Offer Headline</label>
           <input className={ic('offerTitle')} placeholder="Free Dessert Every Friday"
             value={form.offerTitle}
-            onChange={e => { set('offerTitle', e.target.value); if (!form.adHeadline) set('adHeadline', e.target.value) }}
+            onChange={e => { set('offerTitle', e.target.value); set('adHeadline', e.target.value.slice(0, 40)) }}
             onBlur={() => blur('offerTitle')}/>
           <FieldError msg={err('offerTitle')}/>
           <p className="text-xs text-tan-light mt-1">Appears on your landing page and in emails.</p>
