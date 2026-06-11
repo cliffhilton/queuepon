@@ -116,7 +116,7 @@ async function createCampaign(
     }
   )
   const data = await res.json()
-  if (data.error) throw new Error(`Meta campaign failed: ${data.error.message}`)
+  if (data.error) throw new Error(`Meta campaign failed: ${JSON.stringify(data.error)}`)
   return data.id
 }
 
