@@ -69,7 +69,7 @@ export default async function SettingsPage() {
         <div className="text-sm text-tan-light mb-4">
           Logged in as <strong className="text-tan">{session.user.email}</strong>
         </div>
-        <a href="mailto:hello@queuepon.com?subject=Password Reset Request" className="btn-ghost btn-sm">
+        <a href="/set-password" className="btn-ghost btn-sm">
           Reset Password
         </a>
       </div>
