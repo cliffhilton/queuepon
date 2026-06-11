@@ -130,8 +130,9 @@ export async function POST(req: NextRequest) {
       console.log(`✅ Restaurant saved: ${meta.restaurantName} (${restaurant.id})`)
 
       // Save offer
+      let offerSlug = ''
       if (meta.offerTitle) {
-        const slug = `${meta.offerTitle.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}-${Date.now()}`
+        offerSlug = `${meta.offerTitle.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}-${Date.now()}`
         const { error: offerError } = await supabase
           .from('offers')
           .insert({
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
             title:          meta.offerTitle,
             description:    meta.offerDescription,
             offer_type:     meta.offerType || 'free_item',
-            slug,
+            slug:           offerSlug,
             status:         'live',
             ad_headline:    meta.adHeadline,
             ad_subheadline: meta.adSubheadline,
@@ -162,8 +163,7 @@ export async function POST(req: NextRequest) {
 
       // Meta API campaign creation
       try {
-        const slug = `${meta.offerTitle.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}`
-        const landingPageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/offers/${slug}-${Date.now()}`
+        const landingPageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/offers/${offerSlug}`
         const metaResult = await createMetaCampaign({
           restaurantName: meta.restaurantName,
           offerTitle:     meta.offerTitle,
