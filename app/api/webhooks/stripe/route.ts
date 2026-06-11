@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendRestaurantWelcome, sendPasswordSetupEmail } from '@/lib/resend'
+import { sendRestaurantWelcome, sendPasswordSetupEmail, sendAdReadyEmail } from '@/lib/resend'
 import { createMetaCampaign } from '@/lib/meta'
 
 export async function POST(req: NextRequest) {
@@ -190,6 +190,26 @@ export async function POST(req: NextRequest) {
           }).eq('id', restaurant.id)
 
           console.log(`✅ Meta campaign created for ${meta.restaurantName}`)
+
+          // Schedule 24hr "ad ready" email
+          // We use setTimeout in a non-blocking way
+          // In production this should be a proper job queue (Inngest, Upstash, etc.)
+          const adReadyDelay = 24 * 60 * 60 * 1000 // 24 hours
+          setTimeout(async () => {
+            try {
+              const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
+              await sendAdReadyEmail({
+                to:             meta.email,
+                firstName:      meta.firstName,
+                restaurantName: meta.restaurantName,
+                offerTitle:     meta.offerTitle,
+                dashboardUrl:   `${appUrl}/dashboard/ads`,
+              })
+              console.log(`✅ Ad ready email scheduled for ${meta.email}`)
+            } catch (e) {
+              console.error('Ad ready email error:', e)
+            }
+          }, adReadyDelay)
         }
       } catch (metaErr) {
         // Don't fail the whole webhook if Meta API fails

@@ -133,3 +133,67 @@ export async function sendReminderEmail({
     `,
   })
 }
+
+export async function sendAdReadyEmail({
+  to, firstName, restaurantName, offerTitle, dashboardUrl,
+}: {
+  to: string; firstName: string; restaurantName: string
+  offerTitle: string; dashboardUrl: string
+}) {
+  return resend.emails.send({
+    from: `Queuepon <${FROM}>`,
+    to,
+    subject: `Your ad is ready to review, ${firstName} 🎯`,
+    html: `
+      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
+        <div style="margin-bottom:28px"><span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span></div>
+        <h1 style="font-size:24px;font-weight:700;color:#716557;margin:0 0 12px">Your ad is ready, ${firstName}! 🎯</h1>
+        <p style="color:#9e8e83;line-height:1.7;margin:0 0 20px">
+          We've built your <strong style="color:#716557">${offerTitle}</strong> campaign for 
+          <strong style="color:#716557">${restaurantName}</strong>. Review it and launch when you're ready.
+        </p>
+        <div style="background:#e8f2f8;border-radius:12px;padding:20px 24px;margin-bottom:28px">
+          <div style="font-size:13px;color:#2a5070;font-weight:700;margin-bottom:8px">What we built:</div>
+          <ul style="margin:0;padding-left:20px;color:#588aad;font-size:13px;line-height:2">
+            <li>Facebook + Instagram ad campaign</li>
+            <li>ZIP code geo-targeting configured</li>
+            <li>Your offer landing page is live</li>
+            <li>Email sequence ready to fire</li>
+          </ul>
+        </div>
+        <div style="text-align:center;margin:32px 0">
+          <a href="${dashboardUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
+            Preview & Launch My Ad →
+          </a>
+        </div>
+        <p style="font-size:12px;color:#9e8e83;margin-top:24px">
+          Questions? Cliff: (502) 881-4235 · Joel: (502) 489-4673
+        </p>
+      </div>
+    `,
+  })
+}
+
+export async function sendAdLaunchedNotification({
+  restaurantName, ownerName, zipCode, plan, campaignId,
+}: {
+  restaurantName: string; ownerName: string
+  zipCode: string; plan: string; campaignId: string
+}) {
+  return resend.emails.send({
+    from: `Queuepon System <${FROM}>`,
+    to:   FROM, // notify the team
+    subject: `🚀 New ad launched — ${restaurantName}`,
+    html: `
+      <div style="font-family:sans-serif;padding:24px;color:#333">
+        <h2>New ad just launched!</h2>
+        <p><strong>Restaurant:</strong> ${restaurantName}</p>
+        <p><strong>Owner:</strong> ${ownerName}</p>
+        <p><strong>ZIP:</strong> ${zipCode}</p>
+        <p><strong>Plan:</strong> ${plan}</p>
+        <p><strong>Campaign ID:</strong> ${campaignId}</p>
+        <p><a href="https://business.facebook.com/adsmanager">View in Ads Manager →</a></p>
+      </div>
+    `,
+  })
+}
