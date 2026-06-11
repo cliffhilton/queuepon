@@ -49,7 +49,7 @@ export default async function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl mx-auto px-5 md:px-8">
       <WelcomeBanner firstName={firstName}/>
 
       {/* Header */}

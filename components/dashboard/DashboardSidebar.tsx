@@ -12,6 +12,7 @@ interface Restaurant {
   plan: string
   zip_code: string
   meta_ad_status: string
+  logo_url?: string
 }
 
 const NAV = [
@@ -52,6 +53,13 @@ export function DashboardSidebar({ restaurant, userEmail }: { restaurant: Restau
         {/* Restaurant info */}
         {restaurant && (
           <div className="px-5 py-4 border-b border-white/10">
+            {restaurant.logo_url && (
+              <div className="mb-3">
+                <img src={restaurant.logo_url} alt={restaurant.name}
+                  className="h-10 w-auto object-contain"
+                  style={{filter:'brightness(0) invert(1)'}}/>
+              </div>
+            )}
             <div className="text-sm font-bold text-white truncate">{restaurant.name}</div>
             <div className="text-xs text-white/50 mt-0.5">
               {PLAN_LABELS[restaurant.plan] ?? restaurant.plan} · ZIP {restaurant.zip_code}

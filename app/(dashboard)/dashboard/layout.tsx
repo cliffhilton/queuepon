@@ -11,7 +11,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Get restaurant data for the logged-in user
   const { data: restaurant } = await supabase
     .from('restaurants')
-    .select('*')
+    .select('id,name,plan,zip_code,meta_ad_status,logo_url,owner_first')
     .eq('user_id', session.user.id)
     .single()
 
