@@ -33,7 +33,7 @@ Respond with ONLY this JSON object and nothing else — no markdown formatting, 
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-6',
         max_tokens: 300,
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -49,7 +49,6 @@ Respond with ONLY this JSON object and nothing else — no markdown formatting, 
     const text = data.content?.[0]?.text ?? ''
     console.log('Claude raw response:', text)
 
-    // Extract just the JSON object even if there's surrounding text
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       console.error('No JSON found in response:', text)
@@ -58,7 +57,6 @@ Respond with ONLY this JSON object and nothing else — no markdown formatting, 
 
     const parsed = JSON.parse(jsonMatch[0])
 
-    // Validate shape
     if (!Array.isArray(parsed.headlines) || parsed.headlines.length === 0) {
       return NextResponse.json({ error: 'AI response missing headlines' }, { status: 500 })
     }
