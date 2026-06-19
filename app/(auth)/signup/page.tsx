@@ -290,12 +290,13 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
 function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormData, v: any) => void; next: () => void; back: () => void }) {
   const [errors, setErrors]   = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
-  const [generating, setGenerating] = useState(false)
+  const [generatingHeadlines, setGeneratingHeadlines] = useState(false)
+  const [generatingDesc, setGeneratingDesc] = useState(false)
   const [aiOptions, setAiOptions] = useState<string[]>([])
   const [showOptions, setShowOptions] = useState(false)
 
-  const handleGenerateAI = async () => {
-    setGenerating(true)
+  const handleGenerateHeadlines = async () => {
+    setGeneratingHeadlines(true)
     setShowOptions(false)
     try {
       const res = await fetch('/api/ai-copy', {
@@ -306,19 +307,44 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
           restaurantType: form.restaurantType || 'restaurant',
           offerType: form.offerType,
           zipCode: form.zipCode,
-          mode: 'punchy',
+          generate: 'headlines',
         }),
       })
       const data = await res.json()
       if (data.headlines) {
         setAiOptions(data.headlines)
         setShowOptions(true)
-        if (data.description) set('offerDescription', data.description)
       }
     } catch (e) {
       console.error('AI generation failed', e)
     } finally {
-      setGenerating(false)
+      setGeneratingHeadlines(false)
+    }
+  }
+
+  const handleGenerateDescription = async () => {
+    setGeneratingDesc(true)
+    try {
+      const res = await fetch('/api/ai-copy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurantName: form.restaurantName,
+          restaurantType: form.restaurantType || 'restaurant',
+          offerType: form.offerType,
+          zipCode: form.zipCode,
+          offerTitle: form.offerTitle,
+          generate: 'description',
+        }),
+      })
+      const data = await res.json()
+      if (data.description) {
+        set('offerDescription', data.description)
+      }
+    } catch (e) {
+      console.error('AI description generation failed', e)
+    } finally {
+      setGeneratingDesc(false)
     }
   }
 
@@ -358,9 +384,9 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
         <div className="form-group">
           <div className="flex items-center justify-between mb-1.5">
             <label className="form-label mb-0">Offer Headline</label>
-            <button type="button" onClick={handleGenerateAI} disabled={generating}
-              className="text-xs font-bold text-blue hover:text-blue-dark transition-colors disabled:opacity-50 flex items-center gap-1">
-              {generating ? '⏳ Generating...' : '✨ Generate with AI'}
+            <button type="button" onClick={handleGenerateHeadlines} disabled={generatingHeadlines}
+              className="text-xs font-bold text-blue hover:text-blue-dark transition-colors disabled:opacity-50">
+              {generatingHeadlines ? '⏳ Generating...' : '✨ Generate Headlines'}
             </button>
           </div>
           {showOptions && aiOptions.length > 0 && (
@@ -382,7 +408,13 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
           <p className="text-xs text-tan-light mt-1">Appears on your landing page and in emails.</p>
         </div>
         <div className="form-group">
-          <label className="form-label">Offer Description</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="form-label mb-0">Offer Description</label>
+            <button type="button" onClick={handleGenerateDescription} disabled={generatingDesc || !form.offerType}
+              className="text-xs font-bold text-blue hover:text-blue-dark transition-colors disabled:opacity-50">
+              {generatingDesc ? '⏳ Generating...' : '✨ Generate Description'}
+            </button>
+          </div>
           <textarea className={`${ic('offerDescription')} min-h-[80px] resize-none`}
             placeholder="Get a free churro with any entrée, every Friday. Show this email at the counter."
             value={form.offerDescription}
