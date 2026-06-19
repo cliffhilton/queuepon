@@ -290,6 +290,43 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
 function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormData, v: any) => void; next: () => void; back: () => void }) {
   const [errors, setErrors]   = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [generating, setGenerating] = useState(false)
+  const [aiOptions, setAiOptions] = useState<string[]>([])
+  const [showOptions, setShowOptions] = useState(false)
+
+  const handleGenerateAI = async () => {
+    setGenerating(true)
+    setShowOptions(false)
+    try {
+      const res = await fetch('/api/ai-copy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurantName: form.restaurantName,
+          restaurantType: form.restaurantType || 'restaurant',
+          offerType: form.offerType,
+          zipCode: form.zipCode,
+          mode: 'punchy',
+        }),
+      })
+      const data = await res.json()
+      if (data.headlines) {
+        setAiOptions(data.headlines)
+        setShowOptions(true)
+        if (data.description) set('offerDescription', data.description)
+      }
+    } catch (e) {
+      console.error('AI generation failed', e)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const selectAiHeadline = (headline: string) => {
+    set('offerTitle', headline)
+    set('adHeadline', headline.slice(0, 40))
+    setShowOptions(false)
+  }
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -319,7 +356,24 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
       </div>
       <div className="card">
         <div className="form-group">
-          <label className="form-label">Offer Headline</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="form-label mb-0">Offer Headline</label>
+            <button type="button" onClick={handleGenerateAI} disabled={generating}
+              className="text-xs font-bold text-blue hover:text-blue-dark transition-colors disabled:opacity-50 flex items-center gap-1">
+              {generating ? '⏳ Generating...' : '✨ Generate with AI'}
+            </button>
+          </div>
+          {showOptions && aiOptions.length > 0 && (
+            <div className="bg-blue-xpale border border-blue-pale rounded-xl p-3 mb-3 space-y-2">
+              <div className="text-xs font-bold text-blue-dark uppercase tracking-wider mb-1">Pick one:</div>
+              {aiOptions.map((opt, i) => (
+                <button key={i} type="button" onClick={() => selectAiHeadline(opt)}
+                  className="w-full text-left text-sm bg-white hover:bg-blue-pale border border-blue-pale rounded-lg px-3 py-2 transition-all">
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )}
           <input className={ic('offerTitle')} placeholder="Free Dessert Every Friday"
             value={form.offerTitle}
             onChange={e => { set('offerTitle', e.target.value); set('adHeadline', e.target.value.slice(0, 40)) }}
