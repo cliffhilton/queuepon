@@ -87,6 +87,40 @@ export async function sendPasswordSetupEmail({
   })
 }
 
+export async function sendPasswordResetEmail({
+  to, resetUrl,
+}: {
+  to: string; resetUrl: string
+}) {
+  return resend.emails.send({
+    from: `Queuepon <${FROM}>`,
+    to,
+    subject: `Reset your Queuepon password`,
+    html: `
+      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
+        <div style="margin-bottom:28px">
+          <span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span>
+        </div>
+        <h1 style="font-size:24px;font-weight:700;color:#716557;margin:0 0 12px">Reset your password</h1>
+        <p style="color:#9e8e83;line-height:1.7;margin:0 0 24px">
+          We received a request to reset your Queuepon password. Click below to choose a new one.
+        </p>
+        <div style="text-align:center;margin:32px 0">
+          <a href="${resetUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
+            Reset My Password →
+          </a>
+        </div>
+        <p style="font-size:13px;color:#9e8e83;line-height:1.7">
+          This link expires in 24 hours. If you didn't request a password reset, ignore this email — your account is safe.
+        </p>
+        <p style="font-size:12px;color:#9e8e83;margin-top:24px">
+          Questions? Reach us at <a href="mailto:hello@queuepon.com" style="color:#588aad">hello@queuepon.com</a>
+        </p>
+      </div>
+    `,
+  })
+}
+
 export async function sendCustomerOfferEmail({
   to, firstName, restaurantName, offerTitle, offerDescription, landingPageUrl,
 }: {
