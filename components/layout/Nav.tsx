@@ -1,11 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Logo } from './Logo'
+import { createClient } from '@/lib/supabase/client'
 
 export function Nav() {
   const [open, setOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user)
+    })
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session)
+    })
+
+    return () => listener.subscription.unsubscribe()
+  }, [])
 
   const links = [
     { href: '/#how-it-works', label: 'How It Works' },
@@ -28,13 +44,15 @@ export function Nav() {
               {l.label}
             </Link>
           ))}
-          <Link href="/login"
-            className="text-sm font-medium text-tan-light hover:text-blue px-3 py-2 rounded-lg transition-all ml-1">
-            Log In
-          </Link>
-          <Link href="/signup"
+          {!isLoggedIn && (
+            <Link href="/login"
+              className="text-sm font-medium text-tan-light hover:text-blue px-3 py-2 rounded-lg transition-all ml-1">
+              Log In
+            </Link>
+          )}
+          <Link href={isLoggedIn ? '/dashboard' : '/signup'}
             className="btn-primary text-sm ml-2">
-            Claim Your Spot
+            {isLoggedIn ? 'Go to Dashboard' : 'Claim Your Spot'}
           </Link>
         </div>
 
@@ -60,18 +78,16 @@ export function Nav() {
             </Link>
           ))}
           <div className="h-px bg-cream-dark my-2"/>
-          <Link href="/login" onClick={() => setOpen(false)}
-            className="text-base font-semibold text-tan-light px-4 py-3 rounded-xl hover:bg-cream-dark transition-all">
-            Log In
-          </Link>
-          <Link href="/signup" onClick={() => setOpen(false)}
+          {!isLoggedIn && (
+            <Link href="/login" onClick={() => setOpen(false)}
+              className="text-base font-semibold text-tan-light px-4 py-3 rounded-xl hover:bg-cream-dark transition-all">
+              Log In
+            </Link>
+          )}
+          <Link href={isLoggedIn ? '/dashboard' : '/signup'} onClick={() => setOpen(false)}
             className="btn-primary text-center mt-2">
-            Claim Your Spot →
+            {isLoggedIn ? 'Go to Dashboard →' : 'Claim Your Spot →'}
           </Link>
-          <div className="mt-auto pt-6 text-center">
-            <p className="text-xs text-tan-light">Cliff Hilton: (502) 881-4235</p>
-            <p className="text-xs text-tan-light">Joel Gerdis: (502) 489-4673</p>
-          </div>
         </div>
       )}
     </>
