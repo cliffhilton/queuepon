@@ -75,7 +75,17 @@ async function createAdCreative(
         object_story_spec: {
           page_id: pageId,
           link_data: {
-            image_hash:   imageHash,
+            // Prefer image_hash (uploaded via /adimages) when available.
+            // Fall back to a direct picture URL — this does NOT require
+            // the /adimages upload permission, so it works even while the
+            // Marketing API tier review is pending. Without one of these,
+            // Meta defaults to pulling a preview straight from the link,
+            // which is the "SHARE"-style behavior we were seeing.
+            ...(imageHash
+              ? { image_hash: imageHash }
+              : params.adImageUrl
+                ? { picture: params.adImageUrl }
+                : {}),
             link:         params.landingPageUrl,
             message:      params.adSubheadline || `${params.offerTitle} — Exclusive offer for ${params.zipCode} locals`,
             name:         params.adHeadline || params.offerTitle,
