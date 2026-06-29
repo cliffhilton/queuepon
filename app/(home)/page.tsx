@@ -221,7 +221,7 @@ export default function HomePage() {
           ))}
         </div>
         <div className="border-t border-white/10 px-6 md:px-10 py-5 max-w-6xl mx-auto flex flex-wrap justify-between gap-3 text-xs text-white/35">
-          <span>© 2026 Queuepon LLC · Louisville, KY · All rights reserved</span>
+          <span>© 2026 Queuepon · Louisville, KY · All rights reserved</span>
           <span>Built with ♥ in Louisville</span>
         </div>
       </footer>
