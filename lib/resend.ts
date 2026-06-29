@@ -44,8 +44,7 @@ export async function sendRestaurantWelcome({
           </ul>
         </div>
         <p style="font-size:13px;color:#9e8e83;margin-top:24px">
-          Questions? Reply to this email or call:<br/>
-          Cliff Hilton: (502) 881-4235 · Joel Gerdis: (502) 489-4673
+          Questions? Reply to this email or reach us at hello@queuepon.com
         </p>
       </div>
     `,
@@ -80,7 +79,7 @@ export async function sendPasswordSetupEmail({
           This link expires in 24 hours. If you didn't create a Queuepon account, ignore this email.
         </p>
         <p style="font-size:12px;color:#9e8e83;margin-top:24px">
-          Questions? Reply to this email or call Cliff at (502) 881-4235
+          Questions? Reply to this email or reach us at hello@queuepon.com
         </p>
       </div>
     `,
@@ -201,7 +200,7 @@ export async function sendAdReadyEmail({
           </a>
         </div>
         <p style="font-size:12px;color:#9e8e83;margin-top:24px">
-          Questions? Cliff: (502) 881-4235 · Joel: (502) 489-4673
+          Questions? Reach us at hello@queuepon.com
         </p>
       </div>
     `,

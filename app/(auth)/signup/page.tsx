@@ -103,7 +103,7 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
         <button onClick={next} className="btn-primary px-12 py-4 text-base">
           Continue with {PLANS[form.plan].name} Plan →
         </button>
-        <p className="text-xs text-tan-light mt-3">No contracts · Cancel anytime · 30-day guarantee</p>
+        <p className="text-xs text-tan-light mt-3">No contracts · Cancel anytime</p>
       </div>
     </div>
   )
@@ -198,7 +198,7 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
         </div>
         <div className="form-group">
           <label className="form-label">Restaurant Name</label>
-          <input className={ic('restaurantName')} placeholder="Fat Jimmy's Pizza"
+          <input className={ic('restaurantName')} placeholder="Riverside Bistro"
             value={form.restaurantName} onChange={e => set('restaurantName', e.target.value)} onBlur={() => blur('restaurantName')}/>
           <FieldError msg={err('restaurantName')}/>
         </div>

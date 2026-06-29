@@ -78,10 +78,6 @@ export default function HomePage() {
               <Link href="/signup" className="btn-white btn-lg text-base px-8 py-4">
                 Claim Your Spot →
               </Link>
-              <Link href="/investor"
-                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white font-bold px-8 py-4 rounded-xl hover:bg-white/10 transition-all text-base">
-                Investor Deck
-              </Link>
             </div>
             <div className="flex gap-8 mt-10 flex-wrap">
               {[['+ 23%','Avg. new customers'],['15%','Gross profit in 90 days'],['100%','Done for you']].map(([num,label]) => (
@@ -98,7 +94,7 @@ export default function HomePage() {
             <div className="bg-blue-deeper px-6 py-4 flex items-center gap-3">
               <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">FJ</div>
               <div>
-                <div className="text-sm font-bold text-white">Fat Jimmy's Pizza — Beta Results</div>
+                <div className="text-sm font-bold text-white">Riverside Bistro — Beta Results</div>
                 <div className="text-xs text-white/55 mt-0.5">Louisville, KY · 90-day campaign</div>
               </div>
             </div>
@@ -136,7 +132,7 @@ export default function HomePage() {
                 <h3 className="font-bold text-tan mb-2">{step.title}</h3>
                 <p className="text-sm text-tan-light leading-relaxed">{step.sub}</p>
                 {i < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 -right-2 w-4 h-4 bg-blue rounded-full z-10 ring-2 ring-white"/>
+                  <div className="hidden md:block absolute top-8 -right-4 z-10 text-blue text-xl font-bold leading-none select-none">→</div>
                 )}
               </div>
             ))}
@@ -191,7 +187,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <p className="text-center text-sm text-tan-light mt-8">No contracts · Cancel anytime · 30-day money-back guarantee</p>
+          <p className="text-center text-sm text-tan-light mt-8">No contracts · Cancel anytime</p>
         </div>
       </section>
 
@@ -206,9 +202,6 @@ export default function HomePage() {
             <div className="mt-6 space-y-2.5">
               <a href="mailto:hello@queuepon.com" className="flex items-center gap-2 text-sm text-white/65 hover:text-white transition-colors">
                 ✉️ hello@queuepon.com
-              </a>
-              <a href="tel:5028814235" className="flex items-center gap-2 text-sm text-white/65 hover:text-white transition-colors">
-                📞 Cliff: (502) 881-4235
               </a>
             </div>
           </div>

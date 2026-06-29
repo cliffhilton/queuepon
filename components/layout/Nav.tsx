@@ -26,7 +26,6 @@ export function Nav() {
   const links = [
     { href: '/#how-it-works', label: 'How It Works' },
     { href: '/#pricing',      label: 'Pricing' },
-    { href: '/investor',      label: 'Investor Deck' },
   ]
 
   return (

@@ -48,7 +48,7 @@ export default function InvestorPage() {
               Request Full Deck →
             </a>
             <div className="mt-4 text-sm text-tan-light">
-              Cliff Hilton: (502) 881-4235 · Joel Gerdis: (502) 489-4673
+              <a href="mailto:hello@queuepon.com" className="text-blue hover:underline">hello@queuepon.com</a>
             </div>
           </div>
         </div>

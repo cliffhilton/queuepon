@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     { title: '8. Your Rights', body: 'You have the right to access, correct, or delete your personal information at any time. Contact us at hello@queuepon.com to exercise these rights.' },
     { title: '9. Cookies', body: 'We use cookies to track platform activity and maintain sessions. You can instruct your browser to refuse cookies, though this may affect functionality.' },
     { title: '10. Changes to This Policy', body: 'We may update this policy periodically. We will notify you of changes by posting the new policy and updating the date above.' },
-    { title: '11. Contact Us', body: 'Questions? Contact us at hello@queuepon.com or (502) 881-4235.' },
+    { title: '11. Contact Us', body: 'Questions? Contact us at hello@queuepon.com.' },
   ]
   return (
     <div className="min-h-screen bg-cream">
