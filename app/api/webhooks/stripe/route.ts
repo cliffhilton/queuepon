@@ -23,8 +23,12 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient()
 
-  if (event.type === 'customer.subscription.created' ||
-      event.type === 'invoice.payment_succeeded') {
+  // Only create the account, restaurant, offer, and Meta ad campaign
+  // once Stripe confirms an actual successful payment. Do NOT trigger
+  // this on customer.subscription.created — that fires the moment the
+  // subscription object is created (status: default_incomplete), before
+  // the customer has entered or confirmed payment.
+  if (event.type === 'invoice.payment_succeeded') {
 
     const obj   = event.data.object as any
     const subId = obj.subscription ?? obj.id
