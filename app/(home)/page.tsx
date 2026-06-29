@@ -92,7 +92,7 @@ export default function HomePage() {
           {/* Results card */}
           <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
             <div className="bg-blue-deeper px-6 py-4 flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">FJ</div>
+              <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">RB</div>
               <div>
                 <div className="text-sm font-bold text-white">Riverside Bistro — Beta Results</div>
                 <div className="text-xs text-white/55 mt-0.5">Louisville, KY · 90-day campaign</div>
