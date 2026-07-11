@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Nav } from '@/components/layout/Nav'
 import { Logo } from '@/components/layout/Logo'
+import { FaqAccordion } from '@/components/ui/FaqAccordion'
+import { BottomStepBar } from '@/components/layout/BottomStepBar'
 
 const plans = [
   {
@@ -191,6 +193,17 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── FAQ ──────────────────────────────────────────────── */}
+      <section className="section bg-cream">
+        <div className="max-w-6xl mx-auto px-6 md:px-10">
+          <div className="text-center mb-10">
+            <div className="eyebrow">FAQ</div>
+            <h2 className="section-title text-tan">Frequently Asked Questions</h2>
+          </div>
+          <FaqAccordion limit={4} showAllLink />
+        </div>
+      </section>
+
       {/* ── FOOTER ──────────────────────────────────────────── */}
       <footer className="bg-tan text-white">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-16 grid md:grid-cols-4 gap-10">
@@ -208,7 +221,7 @@ export default function HomePage() {
           {[
             { title:'Platform', links:[['How It Works','/#how-it-works'],['Pricing','/#pricing'],['Log In','/login'],['Sign Up','/signup']] },
             { title:'Investors', links:[['Investor Overview','/investor'],['Investment Terms','/investor#terms'],['Request Full Deck','mailto:hello@queuepon.com?subject=Investor Deck']] },
-            { title:'Resources', links:[['queuepon.com','https://queuepon.com'],['Contact Us','mailto:hello@queuepon.com'],['Privacy Policy','/privacy'],['Terms of Service','/terms']] },
+            { title:'Resources', links:[['FAQ','/faq'],['Contact Us','mailto:hello@queuepon.com'],['Privacy Policy','/privacy'],['Terms of Service','/terms']] },
           ].map(col => (
             <div key={col.title}>
               <div className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">{col.title}</div>
@@ -225,6 +238,7 @@ export default function HomePage() {
           <span>Built with ♥ in Louisville</span>
         </div>
       </footer>
+      <BottomStepBar steps={steps} />
     </div>
   )
 }
