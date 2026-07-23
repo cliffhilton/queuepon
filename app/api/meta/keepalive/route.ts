@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
       billing_event:     'IMPRESSIONS',
       optimization_goal: 'LINK_CLICKS',
       bid_strategy:      'LOWEST_COST_WITHOUT_CAP',
+      is_adset_budget_sharing_enabled: false,
       status:            'PAUSED',
       end_time:          Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
       targeting: {
