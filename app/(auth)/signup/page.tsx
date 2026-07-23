@@ -21,6 +21,10 @@ interface FormData {
   adTemplate: 'full_bleed' | 'split'
   adColor: string
   adImage: File | null; adImagePreview: string
+  audienceTypes: string[]
+  audienceAgeRange: 'all' | 'under35' | '35to55' | 'over55'
+  trafficTiming: string[]
+  adDays: string[]
 }
 
 const PLANS = {
@@ -494,6 +498,28 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
   const PRESET_COLORS = ['#588aad','#716557','#2a5070','#1a1a1a','#8B0000','#2E7D32']
   const slug = form.restaurantName.toLowerCase().replace(/\s+/g, '') || 'yourrestaurant'
 
+  const toggleAudience = (val: string) => {
+    const c = form.audienceTypes
+    set('audienceTypes', c.includes(val) ? c.filter(x => x !== val) : [...c, val])
+  }
+  const toggleTiming = (val: string) => {
+    if (val === 'All the Time') {
+      set('trafficTiming', form.trafficTiming.includes('All the Time') ? [] : ['All the Time'])
+      set('adDays', [])
+    } else {
+      const without = form.trafficTiming.filter(t => t !== 'All the Time')
+      set('trafficTiming', without.includes(val) ? without.filter(t => t !== val) : [...without, val])
+    }
+  }
+  const toggleDay = (val: string) => {
+    const c = form.adDays
+    set('adDays', c.includes(val) ? c.filter(d => d !== val) : [...c, val])
+  }
+  const pillClass = (active: boolean) =>
+    `px-3 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
+      active ? 'border-blue bg-blue text-white' : 'border-cream-dark text-tan-light hover:border-blue/40'
+    }`
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="text-center mb-8">
@@ -578,13 +604,57 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
                 value={form.adHeadline} onChange={e => set('adHeadline', e.target.value)}
                 onBlur={() => setTouched(t => ({...t, adHeadline:true}))}/>
               <FieldError msg={touched.adHeadline ? errors.adHeadline : undefined}/>
-              <p className="text-xs text-tan-light mt-1">Can differ from your landing page headline.</p>
+              <p className="text-xs text-tan-light mt-1">For best click-through rate, include your Restaurant Name. Can differ from your landing page headline.</p>
             </div>
             <div className="form-group mb-0">
               <label className="form-label">Subheadline <span className="text-tan-light normal-case font-normal">({form.adSubheadline.length}/80)</span></label>
               <input className="form-input" placeholder="Louisville locals only · Claim yours at queuepon.com"
                 maxLength={80} value={form.adSubheadline} onChange={e => set('adSubheadline', e.target.value)}/>
             </div>
+          </div>
+
+          {/* Card: Audience */}
+          <div className="card">
+            <label className="form-label">Tell us about your customers</label>
+            <p className="text-xs text-tan-light mb-3">You know your regulars better than anyone. Help us reach more of them.</p>
+            <div className="flex flex-wrap gap-2 mb-5">
+              {['Families','Young Professionals','College Students','Blue-Collar Workers','Retirees','Date Night Crowd','Lunch Crowd','Bar Crowd'].map(v => (
+                <button key={v} type="button" onClick={() => toggleAudience(v)} className={pillClass(form.audienceTypes.includes(v))}>{v}</button>
+              ))}
+            </div>
+            <div>
+              <label className="form-label">Any age group you're especially trying to reach?</label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {([['all','All Ages'],['under35','Primarily 21–35'],['35to55','Primarily 35–55'],['over55','Primarily 55+']] as [typeof form.audienceAgeRange, string][]).map(([val, label]) => (
+                  <button key={val} type="button" onClick={() => set('audienceAgeRange', val)} className={pillClass(form.audienceAgeRange === val)}>{label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Card: Traffic timing */}
+          <div className="card">
+            <label className="form-label">When do you want to drive traffic?</label>
+            <p className="text-xs text-tan-light mb-3">We'll weight your ads toward the times and days that matter most.</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {['Lunch','Dinner','Weekends','Slow Weekdays','All the Time'].map(v => (
+                <button key={v} type="button" onClick={() => toggleTiming(v)} className={pillClass(form.trafficTiming.includes(v))}>{v}</button>
+              ))}
+            </div>
+            {form.trafficTiming.length > 0 && !form.trafficTiming.includes('All the Time') && (
+              <div>
+                <label className="form-label text-xs">Any specific days to focus on?</label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
+                    <button key={d} type="button" onClick={() => toggleDay(d)} className={pillClass(form.adDays.includes(d))}>{d}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-blue-xpale border border-blue-pale rounded-xl p-3 text-xs text-blue-dark">
+            We'll optimize your ads based on the information you provide — you can always update your preferences from your dashboard.
           </div>
         </div>
 
@@ -593,9 +663,12 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
           <div className="form-label mb-3">Live Ad Preview</div>
           <div className="rounded-2xl overflow-hidden shadow-card-lg border border-cream-dark">
             <div className="bg-white px-4 py-3 flex items-center gap-2.5 border-b border-cream-dark">
-              <div className="w-9 h-9 rounded-full bg-blue flex items-center justify-center text-white text-xs font-bold flex-shrink-0">Q</div>
+              {form.logoPreview
+                ? <img src={form.logoPreview} alt="Logo" className="w-9 h-9 rounded-full object-contain flex-shrink-0"/>
+                : <div className="w-9 h-9 rounded-full bg-blue flex items-center justify-center text-white text-xs font-bold flex-shrink-0">Q</div>
+              }
               <div>
-                <div className="text-xs font-bold text-gray-800">Queuepon</div>
+                <div className="text-xs font-bold text-gray-800">{form.restaurantName || 'Your Restaurant'}</div>
                 <div className="text-xs text-gray-400">Sponsored · 📍 {form.zipCode || 'Your ZIP'}</div>
               </div>
             </div>
@@ -630,9 +703,10 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
             <div className="bg-white px-4 py-3">
               <div className="text-xs text-gray-400 uppercase tracking-wider">queuepon.com</div>
               <div className="text-sm font-bold text-gray-800 mt-0.5">{form.adHeadline || 'Your Ad Headline'}</div>
+              {form.address && <div className="text-xs text-gray-400 mt-0.5 truncate">{form.address}</div>}
             </div>
           </div>
-          <p className="text-xs text-tan-light text-center mt-3">Facebook Feed + Instagram Feed · ZIP {form.zipCode || 'your zip'} + 5mi radius</p>
+          <p className="text-xs text-tan-light text-center mt-3">Facebook Feed + Instagram Feed · 1–5 mile radius · ZIP {form.zipCode || 'your zip'}</p>
 
           {/* Landing page preview note */}
           <div className="mt-3 bg-blue-xpale border border-blue-pale rounded-xl p-3 text-xs text-blue-dark text-center">
@@ -659,6 +733,7 @@ export default function SignupPage() {
     offerTitle:'', offerDescription:'', offerType:'free_item', expiryDate:'',
     adHeadline:'', adSubheadline:'', adTemplate:'full_bleed',
     adColor:'#588aad', adImage:null, adImagePreview:'',
+    audienceTypes:[], audienceAgeRange:'all', trafficTiming:[], adDays:[],
   })
 
   const set  = (field: keyof FormData, value: any) => setForm(prev => ({...prev, [field]: value}))
