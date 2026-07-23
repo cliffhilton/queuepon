@@ -246,8 +246,20 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
         <div className="form-group">
           <label className="form-label">Website <span className="text-tan-light normal-case font-normal">(optional — we'll try to find your logo)</span></label>
           <div className="flex gap-2">
-            <input className="form-input flex-1" placeholder="https://yourrestaurant.com"
-              value={form.website} onChange={e => set('website', e.target.value)}/>
+            <div className="flex-1 flex items-center w-full border border-cream-dark rounded-xl bg-white overflow-hidden transition-all duration-200 focus-within:border-blue focus-within:ring-2 focus-within:ring-blue/20">
+              <span className="px-3 text-sm text-tan-light bg-cream border-r border-cream-dark self-stretch flex items-center flex-shrink-0 select-none">
+                https://
+              </span>
+              <input
+                className="flex-1 px-3 py-3 bg-transparent outline-none text-sm text-tan placeholder:text-tan-light min-w-0"
+                placeholder="yourrestaurant.com"
+                value={form.website.replace(/^https?:\/\//, '')}
+                onChange={e => {
+                  const raw = e.target.value.replace(/^https?:\/\//, '')
+                  set('website', raw ? `https://${raw}` : '')
+                }}
+              />
+            </div>
             <button type="button" onClick={handleFetchLogo}
               disabled={!form.website || fetchingLogo}
               className="btn-outline text-sm px-4 whitespace-nowrap disabled:opacity-50">
