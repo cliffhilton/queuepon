@@ -37,10 +37,11 @@ export async function GET(req: NextRequest) {
   try {
     // 1. Create test campaign
     const campaign = await metaPost(`${adAccountId}/campaigns`, {
-      name:                  `[KEEPALIVE] ${new Date().toISOString()}`,
-      objective:             'OUTCOME_TRAFFIC',
-      status:                'PAUSED',
-      special_ad_categories: [],
+      name:                            `[KEEPALIVE] ${new Date().toISOString()}`,
+      objective:                       'OUTCOME_TRAFFIC',
+      status:                          'PAUSED',
+      special_ad_categories:           [],
+      is_adset_budget_sharing_enabled: false,
     })
     log.push(`✅ Campaign created: ${campaign.id}`)
 
