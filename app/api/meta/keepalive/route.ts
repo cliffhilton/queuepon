@@ -24,7 +24,6 @@ async function metaDelete(id: string) {
 }
 
 export async function GET(req: NextRequest) {
-  // Verify secret token
   const secret = req.nextUrl.searchParams.get('secret')
   if (secret !== process.env.KEEPALIVE_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -34,14 +33,14 @@ export async function GET(req: NextRequest) {
   const pageId      = process.env.META_PAGE_ID!
   const log: string[] = []
 
-  // ── Supabase keepalive ─────────────────────────────────────────────────
-  // Prevents Supabase free-tier project from pausing due to inactivity
+  // ── Supabase keepalive ──────────────────────────────────────────────────
+  // Pings Supabase REST API to prevent free-tier project from pausing
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     const res = await fetch(`${supabaseUrl}/rest/v1/restaurants?select=id&limit=1`, {
       headers: {
-        apikey: supabaseKey,
+        apikey:        supabaseKey,
         Authorization: `Bearer ${supabaseKey}`,
       },
     })
@@ -54,28 +53,10 @@ export async function GET(req: NextRequest) {
     log.push(`❌ Supabase keepalive failed: ${e.message}`)
   }
 
-  // ── Supabase keepalive ─────────────────────────────────────────────────
-  // Prevents Supabase free-tier project from pausing due to inactivity
+  // ── Meta API keepalive ──────────────────────────────────────────────────
+  // Creates and immediately deletes a test campaign to build API call volume
+  // for the Marketing API Standard Access tier review
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    const res = await fetch(`${supabaseUrl}/rest/v1/restaurants?select=id&limit=1`, {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-      },
-    })
-    if (res.ok) {
-      log.push('✅ Supabase keepalive ping successful')
-    } else {
-      log.push(`⚠️ Supabase ping returned ${res.status}`)
-    }
-  } catch (e: any) {
-    log.push(`❌ Supabase keepalive failed: ${e.message}`)
-  }
-
-  try {
-    // 1. Create test campaign
     const campaign = await metaPost(`${adAccountId}/campaigns`, {
       name:                            `[KEEPALIVE] ${new Date().toISOString()}`,
       objective:                       'OUTCOME_TRAFFIC',
@@ -85,35 +66,33 @@ export async function GET(req: NextRequest) {
     })
     log.push(`✅ Campaign created: ${campaign.id}`)
 
-    // 2. Create test ad set
     const adSet = await metaPost(`${adAccountId}/adsets`, {
-      name:              '[KEEPALIVE] Test Ad Set',
-      campaign_id:       campaign.id,
-      daily_budget:      100,
-      billing_event:     'IMPRESSIONS',
-      optimization_goal: 'LINK_CLICKS',
-      bid_strategy:      'LOWEST_COST_WITHOUT_CAP',
+      name:                            '[KEEPALIVE] Test Ad Set',
+      campaign_id:                     campaign.id,
+      daily_budget:                    100,
+      billing_event:                   'IMPRESSIONS',
+      optimization_goal:               'LINK_CLICKS',
+      bid_strategy:                    'LOWEST_COST_WITHOUT_CAP',
       is_adset_budget_sharing_enabled: false,
-      status:            'PAUSED',
-      end_time:          Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+      status:                          'PAUSED',
+      end_time:                        Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
       targeting: {
         geo_locations: {
-          zips: [{ key: 'US:40202' }],
+          zips:           [{ key: 'US:40202' }],
           location_types: ['home', 'recent'],
         },
-        age_min: 18,
-        age_max: 65,
+        age_min:             18,
+        age_max:             65,
         publisher_platforms: ['facebook'],
         facebook_positions:  ['feed'],
       },
     })
     log.push(`✅ Ad set created: ${adSet.id}`)
 
-    // 3. Create test creative
     const creative = await metaPost(`${adAccountId}/adcreatives`, {
       name: '[KEEPALIVE] Test Creative',
       object_story_spec: {
-        page_id: pageId,
+        page_id:   pageId,
         link_data: {
           link:    'https://queuepon.com',
           message: 'Keepalive test — safe to ignore',
@@ -127,7 +106,6 @@ export async function GET(req: NextRequest) {
     })
     log.push(`✅ Creative created: ${creative.id}`)
 
-    // 4. Create test ad
     const ad = await metaPost(`${adAccountId}/ads`, {
       name:     '[KEEPALIVE] Test Ad',
       adset_id: adSet.id,
@@ -136,15 +114,14 @@ export async function GET(req: NextRequest) {
     })
     log.push(`✅ Ad created: ${ad.id}`)
 
-    // 5. Delete everything immediately
     await metaDelete(ad.id)
-    log.push(`🗑 Ad deleted`)
+    log.push('🗑 Ad deleted')
     await metaDelete(creative.id)
-    log.push(`🗑 Creative deleted`)
+    log.push('🗑 Creative deleted')
     await metaDelete(adSet.id)
-    log.push(`🗑 Ad set deleted`)
+    log.push('🗑 Ad set deleted')
     await metaDelete(campaign.id)
-    log.push(`🗑 Campaign deleted`)
+    log.push('🗑 Campaign deleted')
 
     log.push(`✅ Keepalive complete — ${new Date().toISOString()}`)
     console.log(log.join('\n'))
