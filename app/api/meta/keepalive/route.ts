@@ -34,6 +34,26 @@ export async function GET(req: NextRequest) {
   const pageId      = process.env.META_PAGE_ID!
   const log: string[] = []
 
+  // ── Supabase keepalive ─────────────────────────────────────────────────
+  // Prevents Supabase free-tier project from pausing due to inactivity
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const res = await fetch(`${supabaseUrl}/rest/v1/restaurants?select=id&limit=1`, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+    })
+    if (res.ok) {
+      log.push('✅ Supabase keepalive ping successful')
+    } else {
+      log.push(`⚠️ Supabase ping returned ${res.status}`)
+    }
+  } catch (e: any) {
+    log.push(`❌ Supabase keepalive failed: ${e.message}`)
+  }
+
   try {
     // 1. Create test campaign
     const campaign = await metaPost(`${adAccountId}/campaigns`, {
