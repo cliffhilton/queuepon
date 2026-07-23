@@ -169,15 +169,19 @@ export async function POST(req: NextRequest) {
       try {
         const landingPageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/offers/${offerSlug}`
         const metaResult = await createMetaCampaign({
-          restaurantName: meta.restaurantName,
-          offerTitle:     meta.offerTitle,
-          adHeadline:     meta.adHeadline,
-          adSubheadline:  meta.adSubheadline,
-          zipCode:        meta.zipCode,
-          adImageUrl:     meta.adImageUrl || '',
+          restaurantName:   meta.restaurantName,
+          offerTitle:       meta.offerTitle,
+          adHeadline:       meta.adHeadline,
+          adSubheadline:    meta.adSubheadline,
+          zipCode:          meta.zipCode,
+          adImageUrl:       meta.adImageUrl || '',
           landingPageUrl,
-          plan:           meta.plan,
-          adColor:        meta.adColor || '#588aad',
+          plan:             meta.plan,
+          adColor:          meta.adColor || '#588aad',
+          audienceTypes:    JSON.parse(meta.audienceTypes    || '[]'),
+          audienceAgeRange: meta.audienceAgeRange             || 'all',
+          trafficTiming:    JSON.parse(meta.trafficTiming    || '[]'),
+          adDays:           JSON.parse(meta.adDays           || '[]'),
         })
         // Save Meta campaign IDs to the offer
         if (metaResult) {

@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
       phone, address, restaurantType, website, logoUrl, adImageUrl,
       offerTitle, offerDescription, offerType,
       adHeadline, adSubheadline, adTemplate, adColor,
+      audienceTypes, audienceAgeRange, trafficTiming, adDays,
     } = body
 
     if (!plan || !PLANS[plan as PlanKey]) {
@@ -47,6 +48,10 @@ export async function POST(req: NextRequest) {
         adSubheadline:    (adSubheadline || '').slice(0, 490),
         adTemplate:       adTemplate  || 'full_bleed',
         adColor:          adColor     || '#588aad',
+        audienceTypes:    JSON.stringify(audienceTypes  || []),
+        audienceAgeRange: audienceAgeRange || 'all',
+        trafficTiming:    JSON.stringify(trafficTiming  || []),
+        adDays:           JSON.stringify(adDays         || []),
       },
     })
 
