@@ -54,14 +54,13 @@ export function DashboardSidebar({ restaurant, userEmail }: { restaurant: Restau
         {restaurant && (
           <div className="px-5 py-4 border-b border-white/10">
             {restaurant.logo_url && (
-              <div className="mb-3">
+              <div className="mb-3 inline-block bg-white/15 rounded-xl p-2">
                 <img src={restaurant.logo_url} alt={restaurant.name}
-                  className="h-10 w-auto object-contain"
-                  style={{filter:'brightness(0) invert(1)'}}/>
+                  className="h-10 w-auto object-contain"/>
               </div>
             )}
-            <div className="text-sm font-bold text-white truncate">{restaurant.name}</div>
-            <div className="text-xs text-white/50 mt-0.5">
+            <div className="text-base font-bold text-white truncate">{restaurant.name}</div>
+            <div className="text-sm text-white/70 mt-1">
               {PLAN_LABELS[restaurant.plan] ?? restaurant.plan} · ZIP {restaurant.zip_code}
             </div>
             <div className={`inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2 py-0.5 rounded-full
