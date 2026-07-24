@@ -52,7 +52,7 @@ export function DashboardSidebar({ restaurant, userEmail }: { restaurant: Restau
 
         {/* Restaurant info */}
         {restaurant && (
-          <div className="px-5 py-4 border-b border-white/10">
+          <div className="px-5 py-4 border-b border-white/10" style={{backgroundColor:'#ddeaf5'}}>
             {restaurant.logo_url && (
               <div className="mb-3 inline-block bg-white/15 rounded-xl p-2">
                 <img src={restaurant.logo_url} alt={restaurant.name}
