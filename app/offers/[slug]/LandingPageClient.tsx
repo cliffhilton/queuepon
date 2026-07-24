@@ -61,12 +61,12 @@ function useCountdown(expiryDate?: string) {
 function CountdownBlock({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="bg-white/15 backdrop-blur-sm border border-white/25 rounded-xl w-14 h-14 flex items-center justify-center">
-        <span className="text-2xl font-bold text-white tabular-nums">
+      <div className="bg-blue-pale border border-blue-light/30 rounded-xl w-14 h-14 flex items-center justify-center">
+        <span className="text-2xl font-bold text-blue tabular-nums">
           {String(value).padStart(2, '0')}
         </span>
       </div>
-      <span className="text-white/60 text-xs mt-1.5 uppercase tracking-wider">{label}</span>
+      <span className="text-tan-light text-xs mt-1.5 uppercase tracking-wider">{label}</span>
     </div>
   )
 }
@@ -83,6 +83,10 @@ export function LandingPageClient({ offer, restaurant }: Props) {
   const expiryDate = offer.expiry_date
     ? new Date(offer.expiry_date).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : null
+
+  const city = restaurant.address
+    ? (restaurant.address.split(',')[1]?.trim() || restaurant.zip_code)
+    : restaurant.zip_code
 
   const handleSubmit = async () => {
     if (!email.trim()) { setError('Please enter your email address'); return }
@@ -150,119 +154,48 @@ export function LandingPageClient({ offer, restaurant }: Props) {
 
   // ── Main landing page ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen bg-cream">
 
-      {/* Background — photo or gradient */}
-      {hasPhoto ? (
-        <>
-          <div className="absolute inset-0">
-            <img src={offer.ad_image_url} alt="" className="w-full h-full object-cover"/>
+      {/* Nav */}
+      <nav className="bg-white border-b border-cream-dark h-14 flex items-center justify-between px-6">
+        <Logo variant="dark" size="sm"/>
+        <div className="text-tan-light text-xs font-medium uppercase tracking-wider">Exclusive Local Offer</div>
+      </nav>
+
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col md:grid md:grid-cols-5 gap-6 md:gap-8">
+
+          {/* Photo — order-1 mobile · top-left desktop */}
+          <div className="order-1 md:col-start-1 md:col-span-3 md:row-start-1 overflow-hidden rounded-2xl">
+            {hasPhoto
+              ? <img src={offer.ad_image_url} alt={offer.title} className="w-full h-64 md:h-80 object-cover"/>
+              : <div className="w-full h-64 md:h-80 bg-gradient-to-br from-blue-deeper to-blue"/>
+            }
           </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/75"/>
-        </>
-      ) : (
-        <div className="absolute inset-0" style={{background:'linear-gradient(135deg,#1a3a52 0%,#2a5070 40%,#588aad 100%)'}}/>
-      )}
 
-      {/* Dot pattern overlay */}
-      <div className="absolute inset-0 opacity-10"
-        style={{backgroundImage:'radial-gradient(circle,white 1px,transparent 1px)',backgroundSize:'28px 28px'}}/>
-
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-
-        {/* Nav */}
-        <nav className="flex items-center justify-between px-6 py-4">
-          <Logo variant="white" size="sm"/>
-          <div className="text-white/50 text-xs font-medium uppercase tracking-wider">Exclusive Local Offer</div>
-        </nav>
-
-        {/* Main */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
-          <div className="w-full max-w-md">
-
-            {/* Restaurant logo */}
-            {restaurant.logo_url && (
-              <div className="text-center mb-5">
-                <img src={restaurant.logo_url} alt={restaurant.name}
-                  className="h-16 object-contain mx-auto drop-shadow-lg"/>
-              </div>
-            )}
-
-            {/* Restaurant + ZIP badge */}
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest">
-                📍 {restaurant.name} · ZIP {restaurant.zip_code}
-              </div>
-            </div>
-
-            {/* Offer headline */}
-            <div className="text-center mb-6">
-              <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-3">
-                Exclusive Offer for {restaurant.zip_code} Locals
-              </div>
-              <h1 className="text-4xl md:text-5xl font-black text-yellow-300 leading-tight mb-3 drop-shadow-lg">
-                {offer.title}
-              </h1>
-              <p className="text-white/85 text-lg leading-relaxed max-w-sm mx-auto">
-                {offer.description}
-              </p>
-            </div>
-
-            {/* Countdown timer */}
-            {hasExpiry && countdown.days >= 0 && (
-              <div className="mb-6">
-                <div className="text-center text-white/60 text-xs font-bold uppercase tracking-widest mb-3">
-                  ⏰ Offer expires in
-                </div>
-                <div className="flex items-center justify-center gap-3">
-                  <CountdownBlock value={countdown.days}    label="Days"/>
-                  <span className="text-white/40 text-2xl font-light mb-5">:</span>
-                  <CountdownBlock value={countdown.hours}   label="Hours"/>
-                  <span className="text-white/40 text-2xl font-light mb-5">:</span>
-                  <CountdownBlock value={countdown.minutes} label="Mins"/>
-                  <span className="text-white/40 text-2xl font-light mb-5">:</span>
-                  <CountdownBlock value={countdown.seconds} label="Secs"/>
-                </div>
-              </div>
-            )}
-
-            {/* Claim form */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-7 shadow-2xl">
-              <div className="text-center mb-5">
+          {/* Form — order-2 mobile · right col desktop spanning both rows */}
+          <div className="order-2 md:col-start-4 md:col-span-2 md:row-start-1 md:row-span-2 md:sticky md:top-8 md:self-start">
+            <div className="bg-white rounded-3xl p-7 shadow-card">
+              <div className="mb-5">
                 <div className="text-lg font-bold text-tan">Claim Your Offer</div>
-                <div className="text-sm text-tan-light mt-1">
-                  We'll email it instantly — show it at the counter.
-                </div>
+                <div className="text-sm text-tan-light mt-1">We'll email it instantly — show it at the counter.</div>
               </div>
-
               <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="First name (optional)"
-                  className="form-input"
-                  value={firstName}
-                  onChange={e => setFirstName(e.target.value)}
+                <input type="text" placeholder="First name (optional)" className="form-input"
+                  value={firstName} onChange={e => setFirstName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSubmit()}/>
                 <div>
-                  <input
-                    type="email"
-                    placeholder="Your email address"
+                  <input type="email" placeholder="Your email address"
                     className={`form-input ${error ? 'border-red-400' : ''}`}
-                    value={email}
-                    onChange={e => { setEmail(e.target.value); setError('') }}
+                    value={email} onChange={e => { setEmail(e.target.value); setError('') }}
                     onKeyDown={e => e.key === 'Enter' && handleSubmit()}/>
                   {error && <p className="text-red-500 text-xs font-semibold mt-1.5">⚠ {error}</p>}
                 </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={state === 'loading'}
+                <button onClick={handleSubmit} disabled={state === 'loading'}
                   className="w-full py-4 rounded-xl font-bold text-base transition-all bg-blue text-white hover:bg-blue-dark hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-wait">
                   {state === 'loading' ? '⏳ Sending your offer...' : 'Send Me This Offer →'}
                 </button>
               </div>
-
-              {/* Social proof */}
               <div className="flex items-center justify-center gap-4 mt-5 pt-4 border-t border-cream-dark">
                 <div className="text-center">
                   <div className="text-lg font-bold text-tan">{offer.subscriber_count ?? 0}</div>
@@ -279,21 +212,63 @@ export function LandingPageClient({ offer, restaurant }: Props) {
                   <div className="text-xs text-tan-light">email delivery</div>
                 </div>
               </div>
+              <p className="text-center text-tan-light text-xs mt-4 leading-relaxed">
+                No spam, ever. Unsubscribe anytime.
+              </p>
             </div>
-
-            {/* Trust line */}
-            <p className="text-center text-white/45 text-xs mt-5 leading-relaxed">
-              No spam, ever. Unsubscribe anytime.<br/>
-              Show on your phone at the counter — no app or printing needed.
-            </p>
-
-            {/* Powered by */}
-            <div className="flex items-center justify-center gap-2 mt-4 opacity-35">
-              <Logo variant="white" size="sm" showWordmark={false}/>
-              <span className="text-white text-xs">Powered by Queuepon</span>
-            </div>
-
           </div>
+
+          {/* About content — order-3 mobile · bottom-left desktop */}
+          <div className="order-3 md:col-start-1 md:col-span-3 md:row-start-2 bg-white rounded-2xl p-6">
+            {restaurant.logo_url && (
+              <img src={restaurant.logo_url} alt={restaurant.name} className="h-12 object-contain mb-3"/>
+            )}
+            <div className="inline-flex items-center gap-1.5 bg-cream border border-cream-dark text-tan-light text-xs font-medium px-3 py-1 rounded-full mb-3">
+              📍 {restaurant.name} · ZIP {restaurant.zip_code}
+            </div>
+            <h1 className="text-2xl font-bold text-tan leading-tight mb-2">{offer.title}</h1>
+            <p className="text-sm text-tan-light leading-relaxed mb-5">{offer.description}</p>
+
+            <div className="border-t border-cream-dark pt-5">
+              <div className="text-xs font-bold uppercase tracking-wider text-tan-light mb-3">About</div>
+              <p className="text-sm text-tan-light leading-relaxed mb-4">
+                {restaurant.name} is a neighborhood favorite in {city} serving{' '}
+                {restaurant.restaurant_type?.toLowerCase() || 'great food'}. Come see why locals keep coming back.
+              </p>
+              {restaurant.address && (
+                <div className="flex items-start gap-2 text-sm">
+                  <span className="mt-0.5 flex-shrink-0">📍</span>
+                  <div>
+                    <div className="text-tan">{restaurant.address}</div>
+                    <a href={`https://www.google.com/maps/search/${encodeURIComponent(restaurant.address)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="text-blue font-medium hover:underline">
+                      Get directions →
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {hasExpiry && countdown.days >= 0 && (
+              <div className="border-t border-cream-dark mt-5 pt-5">
+                <div className="text-xs font-bold uppercase tracking-wider text-tan-light mb-3">⏰ Offer expires in</div>
+                <div className="flex items-center gap-3">
+                  <CountdownBlock value={countdown.days}    label="Days"/>
+                  <span className="text-tan-light text-2xl font-light mb-5">:</span>
+                  <CountdownBlock value={countdown.hours}   label="Hours"/>
+                  <span className="text-tan-light text-2xl font-light mb-5">:</span>
+                  <CountdownBlock value={countdown.minutes} label="Mins"/>
+                  <span className="text-tan-light text-2xl font-light mb-5">:</span>
+                  <CountdownBlock value={countdown.seconds} label="Secs"/>
+                </div>
+                {expiryDate && (
+                  <div className="text-xs text-tan-light mt-2">Valid through {expiryDate}</div>
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
     </div>
