@@ -170,6 +170,8 @@ async function createAdSet(
         billing_event:     'IMPRESSIONS',
         optimization_goal: 'LINK_CLICKS',
         bid_strategy:      'LOWEST_COST_WITHOUT_CAP',
+        destination_type:  'WEBSITE',
+        targeting_optimization: 'none',
         status:            'PAUSED',
         end_time:          endTime,
         targeting: {
