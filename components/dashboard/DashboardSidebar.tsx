@@ -59,14 +59,14 @@ export function DashboardSidebar({ restaurant, userEmail }: { restaurant: Restau
                   className="h-10 w-auto object-contain"/>
               </div>
             )}
-            <div className="text-base font-bold text-white truncate">{restaurant.name}</div>
-            <div className="text-sm text-white/70 mt-1">
+            <div className="text-base font-bold text-blue-deeper truncate">{restaurant.name}</div>
+            <div className="text-sm text-blue-deeper/70 mt-1">
               {PLAN_LABELS[restaurant.plan] ?? restaurant.plan} · ZIP {restaurant.zip_code}
             </div>
             <div className={`inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2 py-0.5 rounded-full
               ${restaurant.meta_ad_status === 'live'
-                ? 'bg-green-500/20 text-green-400'
-                : 'bg-yellow-500/20 text-yellow-300'}`}>
+                ? 'bg-green-700 text-green-100'
+                : 'bg-yellow-700 text-yellow-100'}`}>
               <span className="w-1.5 h-1.5 rounded-full bg-current"/>
               {restaurant.meta_ad_status === 'live' ? 'Ad Live' : 'Ad Setting Up'}
             </div>
