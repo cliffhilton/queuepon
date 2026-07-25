@@ -151,6 +151,7 @@ export async function POST(req: NextRequest) {
             ad_template:    meta.adTemplate  || 'full_bleed',
             ad_color:       meta.adColor     || '#588aad',
             ad_image_url:   meta.adImageUrl  || null,
+            ad_image_urls:  JSON.parse(meta.adImageUrls || '[]'),
           })
         if (offerError) console.error('Offer insert error:', offerError)
         else console.log(`✅ Offer saved: ${meta.offerTitle}`)

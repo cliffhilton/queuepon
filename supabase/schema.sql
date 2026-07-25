@@ -125,6 +125,7 @@ alter table offers
   add column if not exists ad_template    text default 'full_bleed',
   add column if not exists ad_color       text default '#588aad',
   add column if not exists ad_image_url   text,
+  add column if not exists ad_image_urls  text[] default '{}',
   add column if not exists meta_campaign_id text,
   add column if not exists meta_adset_id    text,
   add column if not exists meta_ad_id       text,

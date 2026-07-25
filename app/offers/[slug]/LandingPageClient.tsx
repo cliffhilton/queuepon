@@ -11,6 +11,7 @@ interface Offer {
   slug: string
   expiry_date?: string
   ad_image_url?: string
+  ad_image_urls?: string[]
   subscriber_count: number
 }
 
@@ -76,6 +77,7 @@ export function LandingPageClient({ offer, restaurant }: Props) {
   const [firstName, setFirstName] = useState('')
   const [state,     setState]     = useState<FormState>('idle')
   const [error,     setError]     = useState('')
+  const [activeImage, setActiveImage] = useState(offer.ad_image_url || '')
   const countdown = useCountdown(offer.expiry_date)
 
   const hasPhoto   = !!offer.ad_image_url
@@ -166,11 +168,24 @@ export function LandingPageClient({ offer, restaurant }: Props) {
         <div className="flex flex-col md:grid md:grid-cols-5 gap-6 md:gap-8">
 
           {/* Photo — order-1 mobile · top-left desktop */}
-          <div className="order-1 md:col-start-1 md:col-span-3 md:row-start-1 overflow-hidden rounded-2xl">
-            {hasPhoto
-              ? <img src={offer.ad_image_url} alt={offer.title} className="w-full h-64 md:h-80 object-cover"/>
-              : <div className="w-full h-64 md:h-80 bg-gradient-to-br from-blue-deeper to-blue"/>
-            }
+          <div className="order-1 md:col-start-1 md:col-span-3 md:row-start-1">
+            <div className="overflow-hidden rounded-2xl">
+              {activeImage
+                ? <img src={activeImage} alt={offer.title} className="w-full h-64 md:h-80 object-cover"/>
+                : <div className="w-full h-64 md:h-80 bg-gradient-to-br from-blue-deeper to-blue"/>
+              }
+            </div>
+            {offer.ad_image_urls && offer.ad_image_urls.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto py-2">
+                {offer.ad_image_urls.map((url, i) => (
+                  <button key={i} type="button" onClick={() => setActiveImage(url)}
+                    className={`h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer
+                      ${activeImage === url ? 'border-blue' : 'border-cream-dark hover:border-blue/40'}`}>
+                    <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover"/>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Form — order-2 mobile · right col desktop spanning both rows */}
