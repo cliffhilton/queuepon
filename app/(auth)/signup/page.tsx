@@ -20,7 +20,7 @@ interface FormData {
   adHeadline: string; adSubheadline: string
   adTemplate: 'full_bleed' | 'split'
   adColor: string
-  adImage: File | null; adImagePreview: string
+  adImages: Array<{ file: File | null; preview: string }>
   audienceTypes: string[]
   audienceAgeRange: 'all' | 'under35' | '35to55' | 'over55'
   trafficTiming: string[]
@@ -484,7 +484,7 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!form.adImage)           e.adImage    = 'Please upload a photo for your ad and landing page'
+    if (!form.adImages[0].file) e.adImage    = 'Please upload a primary photo for your ad'
     if (!form.adHeadline.trim()) e.adHeadline = 'Ad headline is required'
     return e
   }
@@ -496,15 +496,26 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
     if (Object.keys(e).length === 0) next()
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    set('adImage', file)
     const reader = new FileReader()
-    reader.onload = ev => set('adImagePreview', ev.target?.result as string)
+    reader.onload = ev => {
+      const updated = [...form.adImages]
+      updated[index] = { file, preview: ev.target?.result as string }
+      set('adImages', updated)
+    }
     reader.readAsDataURL(file)
-    setErrors(prev => { const n = {...prev}; delete n.adImage; return n })
-    setTouched(prev => ({ ...prev, adImage: true }))
+    if (index === 0) {
+      setErrors(prev => { const n = {...prev}; delete n.adImage; return n })
+      setTouched(prev => ({ ...prev, adImage: true }))
+    }
+  }
+
+  const removeImage = (index: number) => {
+    const updated = [...form.adImages]
+    updated[index] = { file: null, preview: '' }
+    set('adImages', updated)
   }
 
   const PRESET_COLORS = ['#588aad','#716557','#2a5070','#1a1a1a','#8B0000','#2E7D32']
@@ -545,29 +556,69 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
         <div className="space-y-5">
           {/* Photo upload */}
           <div className="card">
-            <label className="form-label">Hero Photo</label>
-            <div className="bg-blue-xpale border border-blue-pale rounded-xl p-3 mb-3 text-xs text-blue-dark leading-relaxed">
-              📸 <strong>Photo requirements:</strong> JPG or PNG, minimum <strong>2000 × 2000px</strong> recommended. Square crops best for ads. High-res food or restaurant interior photos work great.
+            <label className="form-label">Ad Photos</label>
+
+            {/* Primary */}
+            <div className="mb-5">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-xs font-bold text-tan uppercase tracking-wider">Primary Photo</span>
+                <span className="text-blue text-xs font-bold">★ Required</span>
+              </div>
+              <p className="text-xs text-tan-light mb-2">This becomes your immediate ad image and landing page background.</p>
+              <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-5 cursor-pointer transition-all
+                ${form.adImages[0].preview ? 'border-blue bg-blue-xpale' :
+                  touched.adImage && errors.adImage ? 'border-red-400 bg-red-50' :
+                  'border-cream-dark hover:border-blue hover:bg-blue-xpale'}`}>
+                {form.adImages[0].preview
+                  ? <div className="text-center w-full">
+                      <img src={form.adImages[0].preview} alt="Primary" className="h-24 w-full object-cover rounded-lg mb-2"/>
+                      <div className="text-sm font-semibold text-blue">✅ Primary photo ready</div>
+                      <div className="text-xs text-tan-light mt-1">{form.adImages[0].file?.name} · Click to change</div>
+                    </div>
+                  : <div className="text-center">
+                      <div className="text-3xl mb-2">📸</div>
+                      <div className="text-sm font-semibold text-tan">Upload primary photo</div>
+                      <div className="text-xs text-tan-light mt-1">JPG or PNG · 2000px+ recommended</div>
+                    </div>
+                }
+                <input type="file" accept="image/*" className="hidden" onChange={e => handleImageUpload(0, e)}/>
+              </label>
+              <FieldError msg={touched.adImage ? errors.adImage : undefined}/>
             </div>
-            <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all
-              ${form.adImagePreview ? 'border-blue bg-blue-xpale' :
-                touched.adImage && errors.adImage ? 'border-red-400 bg-red-50' :
-                'border-cream-dark hover:border-blue hover:bg-blue-xpale'}`}>
-              {form.adImagePreview
-                ? <div className="text-center">
-                    <img src={form.adImagePreview} alt="preview" className="h-24 w-full object-cover rounded-lg mb-2"/>
-                    <div className="text-sm font-semibold text-blue">✅ Photo ready</div>
-                    <div className="text-xs text-tan-light mt-1">{form.adImage?.name} · Click to change</div>
+
+            {/* Additional */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-tan uppercase tracking-wider">Additional Photos</span>
+                <span className="text-xs text-tan-light font-normal">(optional)</span>
+              </div>
+              <p className="text-xs text-tan-light mb-3">
+                We'll rotate and optimize these on your behalf — Meta will automatically find the best performer.
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="relative">
+                    <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl cursor-pointer transition-all aspect-square overflow-hidden
+                      ${form.adImages[i].preview ? 'border-blue bg-blue-xpale' : 'border-cream-dark hover:border-blue/40 hover:bg-blue-xpale'}`}>
+                      {form.adImages[i].preview
+                        ? <img src={form.adImages[i].preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover"/>
+                        : <div className="text-center">
+                            <div className="text-2xl text-tan-light">+</div>
+                            <div className="text-xs text-tan-light mt-1">Photo {i + 1}</div>
+                          </div>
+                      }
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleImageUpload(i, e)}/>
+                    </label>
+                    {form.adImages[i].preview && (
+                      <button type="button" onClick={() => removeImage(i)}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center z-10">
+                        ×
+                      </button>
+                    )}
                   </div>
-                : <div className="text-center">
-                    <div className="text-3xl mb-2">📸</div>
-                    <div className="text-sm font-semibold text-tan">Click to upload photo</div>
-                    <div className="text-xs text-tan-light mt-1">JPG or PNG · 2000px+ recommended</div>
-                  </div>
-              }
-              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload}/>
-            </label>
-            <FieldError msg={touched.adImage ? errors.adImage : undefined}/>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Template */}
@@ -685,9 +736,9 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
               </div>
             </div>
             <div className="relative aspect-square overflow-hidden bg-blue-pale">
-              {form.adImagePreview ? (
+              {form.adImages[0].preview ? (
                 <>
-                  <img src={form.adImagePreview} alt="Ad preview" className="w-full h-full object-cover"/>
+                  <img src={form.adImages[0].preview} alt="Ad preview" className="w-full h-full object-cover"/>
                   {form.adTemplate === 'full_bleed'
                     ? <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent flex flex-col justify-end p-5">
                         <div className="text-white font-bold text-lg leading-tight">{form.adHeadline || 'Your Ad Headline'}</div>
@@ -744,7 +795,8 @@ export default function SignupPage() {
     website:'', logoFile:null, logoPreview:'',
     offerTitle:'', offerDescription:'', offerType:'free_item', expiryDate:'',
     adHeadline:'', adSubheadline:'', adTemplate:'full_bleed',
-    adColor:'#588aad', adImage:null, adImagePreview:'',
+    adColor:'#588aad',
+    adImages:[{file:null,preview:''},{file:null,preview:''},{file:null,preview:''},{file:null,preview:''}],
     audienceTypes:[], audienceAgeRange:'all', trafficTiming:[], adDays:[],
   })
 

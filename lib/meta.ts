@@ -18,6 +18,7 @@ interface MetaCampaignParams {
   audienceAgeRange: string
   trafficTiming:    string[]
   adDays:           string[]
+  adImageUrls:      string[]
 }
 
 interface MetaCampaignResult {
@@ -60,45 +61,63 @@ async function uploadImageToMeta(imageUrl: string, accessToken: string, adAccoun
 }
 
 // ── Step 2: Create ad creative ─────────────────────────────────────────────
+// Uses asset_feed_spec (dynamic creative) when 2+ image hashes are provided;
+// falls back to object_story_spec for a single image.
 async function createAdCreative(
-  imageHash: string,
+  imageHashes: string[],
   params: MetaCampaignParams,
   accessToken: string,
   adAccountId: string,
   pageId: string,
-): Promise<string> {
-  const res = await fetch(
-    `${BASE_URL}/${adAccountId}/adcreatives`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: `${params.restaurantName} — ${params.offerTitle}`,
-        object_story_spec: {
-          page_id: pageId,
-          link_data: {
-            ...(imageHash
-              ? { image_hash: imageHash }
-              : params.adImageUrl
-                ? { picture: params.adImageUrl }
-                : {}),
-            link:        params.landingPageUrl,
-            message:     params.adSubheadline || `${params.offerTitle} — Exclusive offer for ${params.zipCode} locals`,
-            name:        params.adHeadline || params.offerTitle,
-            description: `Claim your offer at ${params.landingPageUrl}`,
-            call_to_action: {
-              type:  'LEARN_MORE',
-              value: { link: params.landingPageUrl },
-            },
-          },
-        },
-        access_token: accessToken,
-      }),
+): Promise<{ creativeId: string; isDynamic: boolean }> {
+  const primaryHash  = imageHashes[0] || ''
+  const isDynamic    = imageHashes.length > 1
+  const postText     = params.adSubheadline || `${params.offerTitle} — Exclusive offer for ${params.zipCode} locals`
+  const headline     = params.adHeadline || params.offerTitle
+
+  const body: Record<string, any> = {
+    name:         `${params.restaurantName} — ${params.offerTitle}`,
+    access_token: accessToken,
+  }
+
+  if (isDynamic) {
+    body.asset_feed_spec = {
+      images:                imageHashes.map(h => ({ hash: h })),
+      bodies:                [{ text: postText }],
+      titles:                [{ text: headline }],
+      descriptions:          [{ text: `Claim your offer at ${params.landingPageUrl}` }],
+      link_urls:             [{ website_url: params.landingPageUrl }],
+      call_to_action_types:  ['LEARN_MORE'],
     }
-  )
+  } else {
+    body.object_story_spec = {
+      page_id: pageId,
+      link_data: {
+        ...(primaryHash
+          ? { image_hash: primaryHash }
+          : params.adImageUrl
+            ? { picture: params.adImageUrl }
+            : {}),
+        link:        params.landingPageUrl,
+        message:     postText,
+        name:        headline,
+        description: `Claim your offer at ${params.landingPageUrl}`,
+        call_to_action: {
+          type:  'LEARN_MORE',
+          value: { link: params.landingPageUrl },
+        },
+      },
+    }
+  }
+
+  const res = await fetch(`${BASE_URL}/${adAccountId}/adcreatives`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  })
   const data = await res.json()
   if (data.error) throw new Error(`Meta creative failed: ${data.error.message}`)
-  return data.id
+  return { creativeId: data.id, isDynamic }
 }
 
 // ── Step 3: Create campaign ────────────────────────────────────────────────
@@ -201,23 +220,24 @@ async function createAd(
   creativeId: string,
   restaurantName: string,
   offerTitle: string,
+  isDynamic: boolean,
   accessToken: string,
   adAccountId: string,
 ): Promise<string> {
-  const res = await fetch(
-    `${BASE_URL}/${adAccountId}/ads`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name:         `${restaurantName} — ${offerTitle}`,
-        adset_id:     adSetId,
-        creative:     { creative_id: creativeId },
-        status:       'PAUSED',
-        access_token: accessToken,
-      }),
-    }
-  )
+  const body: Record<string, any> = {
+    name:         `${restaurantName} — ${offerTitle}`,
+    adset_id:     adSetId,
+    creative:     { creative_id: creativeId },
+    status:       'PAUSED',
+    access_token: accessToken,
+  }
+  if (isDynamic) body.is_dynamic_creative = true
+
+  const res = await fetch(`${BASE_URL}/${adAccountId}/ads`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  })
   const data = await res.json()
   if (data.error) throw new Error(`Meta ad failed: ${data.error.message}`)
   return data.id
@@ -231,18 +251,25 @@ export async function createMetaCampaign(params: MetaCampaignParams): Promise<Me
 
   console.log(`🚀 Creating Meta campaign for ${params.restaurantName} (ZIP ${params.zipCode})`)
 
-  let imageHash = ''
-  if (params.adImageUrl) {
+  // Upload all provided images; collect hashes (primary first)
+  const allUrls = params.adImageUrls?.length > 0
+    ? params.adImageUrls
+    : params.adImageUrl ? [params.adImageUrl] : []
+
+  const imageHashes: string[] = []
+  for (let i = 0; i < allUrls.length; i++) {
+    if (!allUrls[i]) continue
     try {
-      imageHash = await uploadImageToMeta(params.adImageUrl, accessToken, adAccountId)
-      console.log(`✅ Image uploaded to Meta: ${imageHash}`)
+      const hash = await uploadImageToMeta(allUrls[i], accessToken, adAccountId)
+      imageHashes.push(hash)
+      console.log(`✅ Image ${i + 1} uploaded to Meta: ${hash}`)
     } catch (imgErr) {
-      console.error('Image upload skipped (permissions pending):', imgErr)
+      console.error(`Image ${i + 1} upload skipped:`, imgErr)
     }
   }
 
-  const creativeId = await createAdCreative(imageHash || '', params, accessToken, adAccountId, pageId)
-  console.log(`✅ Ad creative created: ${creativeId}`)
+  const { creativeId, isDynamic } = await createAdCreative(imageHashes, params, accessToken, adAccountId, pageId)
+  console.log(`✅ Ad creative created: ${creativeId}${isDynamic ? ' (dynamic — rotating images)' : ''}`)
 
   const campaignId = await createCampaign(params.restaurantName, accessToken, adAccountId)
   console.log(`✅ Campaign created: ${campaignId}`)
@@ -250,7 +277,7 @@ export async function createMetaCampaign(params: MetaCampaignParams): Promise<Me
   const adSetId = await createAdSet(campaignId, params, accessToken, adAccountId)
   console.log(`✅ Ad set created: ${adSetId}`)
 
-  const adId = await createAd(adSetId, creativeId, params.restaurantName, params.offerTitle, accessToken, adAccountId)
+  const adId = await createAd(adSetId, creativeId, params.restaurantName, params.offerTitle, isDynamic, accessToken, adAccountId)
   console.log(`✅ Ad created: ${adId}`)
 
   console.log(`🎯 Full Meta campaign ready for ${params.restaurantName} — awaiting review then will go live`)

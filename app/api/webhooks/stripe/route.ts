@@ -182,6 +182,7 @@ export async function POST(req: NextRequest) {
           audienceAgeRange: meta.audienceAgeRange             || 'all',
           trafficTiming:    JSON.parse(meta.trafficTiming    || '[]'),
           adDays:           JSON.parse(meta.adDays           || '[]'),
+          adImageUrls:      JSON.parse(meta.adImageUrls      || '[]'),
         })
         // Save Meta campaign IDs to the offer
         if (metaResult) {

@@ -41,19 +41,25 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
   useEffect(() => {
     const init = async () => {
       try {
-        // Upload ad image + logo to Supabase Storage first
-        let adImageUrl = ''
-        let logoUrl    = form.logoPreview || '' // may be a clearbit URL already
+        // Upload ad images + logo to Supabase Storage first
+        const slug = form.restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        let logoUrl = form.logoPreview || ''
 
-        if (form.adImage) {
-          setUploadStatus('Uploading your ad photo...')
-          const slug = form.restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-          adImageUrl = await uploadImage(form.adImage, 'offer-images', `${slug}/ad-${Date.now()}.jpg`) ?? ''
+        const adImageFiles = ((form.adImages || []) as Array<{ file: File | null; preview: string }>)
+          .map(img => img.file).filter((f): f is File => !!f)
+
+        const adImageUrls: string[] = []
+        for (let i = 0; i < adImageFiles.length; i++) {
+          setUploadStatus(adImageFiles.length > 1
+            ? `Uploading photo ${i + 1} of ${adImageFiles.length}...`
+            : 'Uploading your ad photo...')
+          const url = await uploadImage(adImageFiles[i], 'offer-images', `${slug}/ad-${i}-${Date.now()}.jpg`)
+          if (url) adImageUrls.push(url)
         }
+        const adImageUrl = adImageUrls[0] ?? ''
 
         if (form.logoFile) {
           setUploadStatus('Uploading your logo...')
-          const slug = form.restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
           logoUrl = await uploadImage(form.logoFile, 'logos', `${slug}/logo-${Date.now()}.png`) ?? ''
         }
 
@@ -76,6 +82,7 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
             website:          form.website,
             logoUrl,
             adImageUrl,
+            adImageUrls: JSON.stringify(adImageUrls),
             offerTitle:       form.offerTitle,
             offerDescription: form.offerDescription,
             offerType:        form.offerType,
