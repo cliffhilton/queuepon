@@ -8,27 +8,27 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export const PLANS = {
   grow: {
     name: 'Grow',
-    price: 199,
+    price: 299,
     priceId: process.env.STRIPE_PRICE_GROW!,
-    adSpend: '$50/mo',
-    offers: 3,
-    emails: 4,
+    audienceReach: '4,500–5,500',
+    offerLimit: 1,
+    locationLimit: 1,
   },
   expand: {
     name: 'Expand',
     price: 499,
     priceId: process.env.STRIPE_PRICE_EXPAND!,
-    adSpend: '$150/mo',
-    offers: 10,
-    emails: 8,
+    audienceReach: '9,000–10,000',
+    offerLimit: 2,
+    locationLimit: 1,
   },
   thrive: {
     name: 'Thrive',
     price: 799,
     priceId: process.env.STRIPE_PRICE_THRIVE!,
-    adSpend: '$350/mo',
-    offers: -1, // unlimited
-    emails: -1,
+    audienceReach: '15,000–16,000',
+    offerLimit: 4,
+    locationLimit: 3,
   },
 } as const
 

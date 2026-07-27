@@ -130,3 +130,8 @@ alter table offers
   add column if not exists meta_adset_id    text,
   add column if not exists meta_ad_id       text,
   add column if not exists meta_ad_status   text default 'pending';
+
+-- ── BIRTHDAY + COME BACK OFFER FIELDS ────────────────────────────────────────
+alter table offers      add column if not exists come_back_offer text;
+alter table restaurants add column if not exists birthday_offer  text;
+alter table customers   add column if not exists birth_month     text;

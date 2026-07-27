@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { CopyLinkButton } from '@/components/dashboard/CopyLinkButton'
+import { BirthdayOfferSection } from '@/components/dashboard/BirthdayOfferSection'
+
+const OFFER_LIMITS: Record<string, number> = { grow: 1, expand: 2, thrive: 4 }
 
 export default async function OffersPage() {
   const supabase = createClient()
@@ -9,11 +12,16 @@ export default async function OffersPage() {
   if (!session) redirect('/login')
 
   const { data: restaurant } = await supabase
-    .from('restaurants').select('id,name,zip_code').eq('user_id', session.user.id).single()
+    .from('restaurants').select('id,name,zip_code,plan,birthday_offer').eq('user_id', session.user.id).single()
 
   const { data: offers } = await supabase
     .from('offers').select('*').eq('restaurant_id', restaurant?.id)
     .order('created_at', { ascending: false })
+
+  const plan         = restaurant?.plan ?? 'grow'
+  const offerLimit   = OFFER_LIMITS[plan] ?? 1
+  const activeOffers = (offers ?? []).filter(o => o.status !== 'expired')
+  const atLimit      = activeOffers.length >= offerLimit
 
   return (
     <div className="p-6 md:p-8 max-w-5xl">
@@ -22,7 +30,14 @@ export default async function OffersPage() {
           <h1 className="text-2xl font-bold text-tan">My Offers</h1>
           <p className="text-tan-light mt-1">Each offer generates a shareable landing page that captures customer emails.</p>
         </div>
-        <Link href="/dashboard/offers/new" className="btn-primary">+ New Offer</Link>
+        {atLimit
+          ? <p className="text-xs text-tan-light text-right max-w-[180px]">
+              You've reached your plan limit.{' '}
+              <Link href="/dashboard/billing" className="text-blue underline">Upgrade</Link>{' '}
+              to add more offers.
+            </p>
+          : <Link href="/dashboard/offers/new" className="btn-primary">+ New Offer</Link>
+        }
       </div>
 
       {offers && offers.length > 0 ? (
@@ -61,15 +76,21 @@ export default async function OffersPage() {
                   </div>
                   <CopyLinkButton slug={offer.slug}/>
                 </div>
+                <BirthdayOfferSection
+                  restaurantId={restaurant?.id ?? ''}
+                  birthdayOffer={restaurant?.birthday_offer ?? ''}
+                />
               </div>
             </div>
           ))}
-          <Link href="/dashboard/offers/new"
-            className="border-2 border-dashed border-cream-dark rounded-2xl flex flex-col items-center justify-center p-8 text-center hover:border-blue hover:bg-blue-xpale transition-all min-h-[200px]">
-            <div className="text-3xl mb-3 text-blue-light">+</div>
-            <div className="font-semibold text-tan">Create New Offer</div>
-            <div className="text-xs text-tan-light mt-1">Generates a landing page instantly</div>
-          </Link>
+          {!atLimit && (
+            <Link href="/dashboard/offers/new"
+              className="border-2 border-dashed border-cream-dark rounded-2xl flex flex-col items-center justify-center p-8 text-center hover:border-blue hover:bg-blue-xpale transition-all min-h-[200px]">
+              <div className="text-3xl mb-3 text-blue-light">+</div>
+              <div className="font-semibold text-tan">Create New Offer</div>
+              <div className="text-xs text-tan-light mt-1">Generates a landing page instantly</div>
+            </Link>
+          )}
         </div>
       ) : (
         <div className="card text-center py-16">

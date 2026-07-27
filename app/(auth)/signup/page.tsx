@@ -17,6 +17,7 @@ interface FormData {
   logoFile: File | null; logoPreview: string
   offerTitle: string; offerDescription: string
   offerType: string; expiryDate: string
+  comeBackOffer: string
   adHeadline: string; adSubheadline: string
   adTemplate: 'full_bleed' | 'split'
   adColor: string
@@ -28,9 +29,9 @@ interface FormData {
 }
 
 const PLANS = {
-  grow:   { name:'Grow',   price:199, adSpend:'$50/mo',  tag:'Single location · Just starting out',  features:['3 active offers','4-email sequence','Zip targeting','Dashboard'] },
-  expand: { name:'Expand', price:499, adSpend:'$150/mo', tag:'Growing restaurants ready to amplify',  features:['10 active offers','8-email + SMS','Referral campaigns','Full analytics'], popular:true },
-  thrive: { name:'Thrive', price:799, adSpend:'$350/mo', tag:'Multi-location · Franchises',           features:['Unlimited offers','Multi-location','White-label pages','Strategy calls'] },
+  grow:   { name:'Grow',   price:299, audienceReach:'4,500–5,500',   tag:'Single location · Just starting out',  features:['1 Active Offer / 1 Active Ad','Single landing page','4-email automated sequence','ZIP code targeting','Owner dashboard'] },
+  expand: { name:'Expand', price:499, audienceReach:'9,000–10,000',  tag:'Growing restaurants ready to amplify',  features:['2 Active Offers / 2 Active Ads','4-email sequence + comment entry','ZIP code targeting','Owner dashboard'], popular:true },
+  thrive: { name:'Thrive', price:799, audienceReach:'15,000–16,000', tag:'Multi-location · Franchises',           features:['4 Active Offers / 4 Active Ads','Multi-location (up to 3)','4-email sequence + contest offer*','Marketplace prioritization','Owner dashboard'] },
 }
 
 const RESTAURANT_TYPES = ['Quick Service (Fast Food)','Fast Casual','Pizza','Casual Dining','Food Truck','Bakery / Café','Bar & Grill','Other']
@@ -88,8 +89,8 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
             <div className="text-xs text-tan-light mb-4">{plan.tag}</div>
             <div className="text-3xl font-bold text-blue mb-1">${plan.price}<span className="text-sm text-tan-light font-normal">/mo</span></div>
             <div className="bg-blue-pale rounded-xl p-3 my-4">
-              <div className="text-xs font-bold text-blue-dark uppercase tracking-wider">📣 Meta Ads Included</div>
-              <div className="text-sm font-bold text-blue-deeper mt-1">{plan.adSpend} ad spend</div>
+              <div className="text-xs font-bold text-blue-dark uppercase tracking-wider">📣 Meta Audience Reach</div>
+              <div className="text-sm font-bold text-blue-deeper mt-1">{plan.audienceReach} people</div>
             </div>
             <ul className="space-y-2">
               {plan.features.map(f => (
@@ -103,6 +104,9 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
           </div>
         ))}
       </div>
+      <p className="text-xs text-tan-light text-center mt-4 max-w-2xl mx-auto">
+        *Estimated results based on typical Meta performance for localized restaurant campaigns. Actual reach and impressions vary based on audience size, campaign objective, creative quality, competition in the Meta ad auction, seasonality, and population density.
+      </p>
       <div className="text-center mt-8">
         <button onClick={next} className="btn-primary px-12 py-4 text-base">
           Continue with {PLANS[form.plan].name} Plan →
@@ -454,8 +458,15 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
             <input className="form-input" type="date" value={form.expiryDate} onChange={e => set('expiryDate', e.target.value)}/>
           </div>
         </div>
+        <div className="form-group mb-0">
+          <label className="form-label">Return Visit Offer <span className="text-tan-light normal-case font-normal">(optional)</span></label>
+          <p className="text-xs text-tan-light mb-2">💡 Used in your automated Day 25 'Come Back' email — give returning customers a reason to visit again.</p>
+          <input className="form-input" placeholder="e.g. 10% off your next visit, free appetizer on return"
+            value={form.comeBackOffer} onChange={e => set('comeBackOffer', e.target.value)}/>
+        </div>
+
         {/* Landing page preview */}
-        <div className="mt-2 rounded-xl overflow-hidden border border-blue-pale">
+        <div className="mt-4 rounded-xl overflow-hidden border border-blue-pale">
           <div className="bg-blue-deeper px-4 py-2 text-xs text-white/60 font-medium">
             Preview — queuepon.com/offers/{slug}
           </div>
@@ -793,7 +804,7 @@ export default function SignupPage() {
     firstName:'', lastName:'', restaurantName:'',
     email:'', phone:'', zipCode:'', address:'', restaurantType:'',
     website:'', logoFile:null, logoPreview:'',
-    offerTitle:'', offerDescription:'', offerType:'free_item', expiryDate:'',
+    offerTitle:'', offerDescription:'', offerType:'free_item', expiryDate:'', comeBackOffer:'',
     adHeadline:'', adSubheadline:'', adTemplate:'full_bleed',
     adColor:'#588aad',
     adImages:[{file:null,preview:''},{file:null,preview:''},{file:null,preview:''},{file:null,preview:''}],

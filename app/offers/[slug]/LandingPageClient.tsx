@@ -73,10 +73,11 @@ function CountdownBlock({ value, label }: { value: number; label: string }) {
 }
 
 export function LandingPageClient({ offer, restaurant }: Props) {
-  const [email,     setEmail]     = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [state,     setState]     = useState<FormState>('idle')
-  const [error,     setError]     = useState('')
+  const [email,       setEmail]       = useState('')
+  const [firstName,   setFirstName]   = useState('')
+  const [birthMonth,  setBirthMonth]  = useState('')
+  const [state,       setState]       = useState<FormState>('idle')
+  const [error,       setError]       = useState('')
   const [activeImage, setActiveImage] = useState(offer.ad_image_url || '')
   const countdown = useCountdown(offer.expiry_date)
 
@@ -104,6 +105,7 @@ export function LandingPageClient({ offer, restaurant }: Props) {
           restaurantId:   restaurant.id,
           email:          email.trim(),
           firstName:      firstName.trim(),
+          birthMonth,
           offerTitle:     offer.title,
           restaurantName: restaurant.name,
           slug:           offer.slug,
@@ -199,6 +201,16 @@ export function LandingPageClient({ offer, restaurant }: Props) {
                 <input type="text" placeholder="First name (optional)" className="form-input"
                   value={firstName} onChange={e => setFirstName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSubmit()}/>
+                <div>
+                  <select className="form-input text-sm"
+                    value={birthMonth} onChange={e => setBirthMonth(e.target.value)}>
+                    <option value="">🎂 Birthday month (optional)</option>
+                    {['January','February','March','April','May','June','July','August','September','October','November','December'].map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-tan-light mt-1">Get a special birthday offer from {restaurant.name} — we'll only use this to send you something nice.</p>
+                </div>
                 <div>
                   <input type="email" placeholder="Your email address"
                     className={`form-input ${error ? 'border-red-400' : ''}`}

@@ -5,7 +5,7 @@ import { sendCustomerOfferEmail } from '@/lib/resend'
 export async function POST(req: NextRequest) {
   try {
     const {
-      offerId, restaurantId, email, firstName,
+      offerId, restaurantId, email, firstName, birthMonth,
       offerTitle, restaurantName, slug,
     } = await req.json()
 
@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
         offer_id:        offerId,
         email,
         first_name:      firstName || null,
+        birth_month:     birthMonth || null,
         sequence_status: 'active',
         emails_sent:     0,
       })

@@ -19,6 +19,7 @@ interface MetaCampaignParams {
   trafficTiming:    string[]
   adDays:           string[]
   adImageUrls:      string[]
+  zipCodes?:        string[]
 }
 
 interface MetaCampaignResult {
@@ -87,7 +88,7 @@ async function createAdCreative(
       titles:                [{ text: headline }],
       descriptions:          [{ text: `Claim your offer at ${params.landingPageUrl}` }],
       link_urls:             [{ website_url: params.landingPageUrl }],
-      call_to_action_types:  ['LEARN_MORE'],
+      call_to_action_types:  ['GET_OFFER'],
     }
   } else {
     body.object_story_spec = {
@@ -103,7 +104,7 @@ async function createAdCreative(
         name:        headline,
         description: `Claim your offer at ${params.landingPageUrl}`,
         call_to_action: {
-          type:  'LEARN_MORE',
+          type:  'GET_OFFER',
           value: { link: params.landingPageUrl },
         },
       },
@@ -195,7 +196,10 @@ async function createAdSet(
         end_time:          endTime,
         targeting: {
           geo_locations: {
-            zips:           [{ key: `US:${params.zipCode}` }],
+            zips: (params.zipCodes && params.zipCodes.length > 0
+              ? params.zipCodes
+              : [params.zipCode]
+            ).map(z => ({ key: `US:${z}` })),
             location_types: ['home', 'recent'],
           },
           age_min:             ageMin,

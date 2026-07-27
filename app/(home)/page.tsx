@@ -8,10 +8,10 @@ const plans = [
   {
     key: 'grow',
     name: 'Grow',
-    price: 199,
-    adSpend: '$50/mo',
+    price: 299,
+    audienceReach: '4,500–5,500',
     tag: 'Single-location · Just starting out',
-    features: ['Up to 3 active offers','Unlimited landing pages','4-email automated sequence','Zip code geo-targeting','Customer dashboard'],
+    features: ['1 Active Offer / 1 Active Ad','Single landing page','4-email automated sequence','ZIP code targeting','Owner dashboard'],
     cta: 'Select Grow',
     variant: 'outline',
     popular: false,
@@ -20,9 +20,9 @@ const plans = [
     key: 'expand',
     name: 'Expand',
     price: 499,
-    adSpend: '$150/mo',
+    audienceReach: '9,000–10,000',
     tag: 'Growing restaurants ready to amplify',
-    features: ['Up to 10 active offers','Unlimited landing pages','8-email sequence + SMS','Zip + radius targeting','Referral campaigns','Full analytics dashboard'],
+    features: ['2 Active Offers / 2 Active Ads','4-email sequence + comment entry','ZIP code targeting','Owner dashboard'],
     cta: 'Select Expand',
     variant: 'primary',
     popular: true,
@@ -31,9 +31,9 @@ const plans = [
     key: 'thrive',
     name: 'Thrive',
     price: 799,
-    adSpend: '$350/mo',
+    audienceReach: '15,000–16,000',
     tag: 'Multi-location · Franchises',
-    features: ['Unlimited active offers','Multi-location support','Full email + SMS sequences','White-label landing pages','Monthly strategy call','Priority onboarding'],
+    features: ['4 Active Offers / 4 Active Ads','Multi-location (up to 3)','4-email sequence + contest offer*','Marketplace prioritization','Owner dashboard'],
     cta: 'Select Thrive',
     variant: 'secondary',
     popular: false,
@@ -166,8 +166,8 @@ export default function HomePage() {
                   ${plan.price}<span className="text-base text-tan-light font-normal">/mo</span>
                 </div>
                 <div className="mt-5 bg-blue-pale border border-blue-light/30 rounded-xl p-4 mb-5">
-                  <div className="text-xs font-bold uppercase tracking-wider text-blue-dark mb-1">📣 Meta Ads Included</div>
-                  <div className="text-base font-bold text-blue-deeper">{plan.adSpend} ad spend</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-blue-dark mb-1">📣 Meta Audience Reach</div>
+                  <div className="text-base font-bold text-blue-deeper">{plan.audienceReach} people</div>
                 </div>
                 <ul className="space-y-2.5 mb-7">
                   {plan.features.map(f => (
@@ -189,7 +189,10 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <p className="text-center text-sm text-tan-light mt-8">No contracts · Cancel anytime</p>
+          <p className="text-xs text-tan-light text-center mt-6 max-w-2xl mx-auto">
+            *Estimated results based on typical Meta performance for localized restaurant campaigns. Actual reach and impressions vary based on audience size, campaign objective, creative quality, competition in the Meta ad auction, seasonality, and population density.
+          </p>
+          <p className="text-center text-sm text-tan-light mt-4">No contracts · Cancel anytime</p>
         </div>
       </section>
 
