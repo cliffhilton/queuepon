@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Logo } from '@/components/layout/Logo'
@@ -876,6 +876,12 @@ function SignupPageInner() {
   const planParam    = searchParams.get('plan')
   const validPlans   = ['grow', 'expand', 'thrive']
   const initialPlan  = validPlans.includes(planParam ?? '') ? planParam as Plan : 'expand'
+
+  useEffect(() => {
+    if (planParam) {
+      window.history.replaceState({}, '', '/signup')
+    }
+  }, [])
 
   const [step, setStep] = useState<Step>(1)
   const [form, setForm] = useState<FormData>({
