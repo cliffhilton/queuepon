@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Logo } from '@/components/layout/Logo'
 import { Step5Payment } from '@/components/ui/Step5Payment'
@@ -870,10 +871,15 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
 }
 
 // ── Main page ───────────────────────────────────────────────────────────────
-export default function SignupPage() {
+function SignupPageInner() {
+  const searchParams = useSearchParams()
+  const planParam    = searchParams.get('plan')
+  const validPlans   = ['grow', 'expand', 'thrive']
+  const initialPlan  = validPlans.includes(planParam ?? '') ? planParam as Plan : 'expand'
+
   const [step, setStep] = useState<Step>(1)
   const [form, setForm] = useState<FormData>({
-    plan:'expand',
+    plan: initialPlan,
     firstName:'', lastName:'', restaurantName:'',
     email:'', phone:'', zipCode:'', address:'', restaurantType:'',
     website:'', logoFile:null, logoPreview:'',
@@ -906,5 +912,13 @@ export default function SignupPage() {
         {step === 5 && <Step5Payment form={form} back={back}/>}
       </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupPageInner />
+    </Suspense>
   )
 }
