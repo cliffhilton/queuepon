@@ -90,7 +90,8 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
             adSubheadline:    form.adSubheadline,
             adTemplate:       form.adTemplate,
             adColor:          form.adColor,
-            comeBackOffer:    form.comeBackOffer,
+            comeBackOffer:        form.comeBackOffer,
+            additionalLocations:  JSON.stringify(form.additionalLocations || []),
           }),
         })
 

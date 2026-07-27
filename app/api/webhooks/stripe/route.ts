@@ -170,6 +170,8 @@ export async function POST(req: NextRequest) {
       // Meta API campaign creation
       try {
         const landingPageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/offers/${offerSlug}`
+        const parsedAdditionalLocations: Array<{ address: string; zipCode: string }> =
+          JSON.parse(meta.additionalLocations || '[]')
         const metaResult = await createMetaCampaign({
           restaurantName:   meta.restaurantName,
           offerTitle:       meta.offerTitle,
@@ -185,6 +187,7 @@ export async function POST(req: NextRequest) {
           trafficTiming:    JSON.parse(meta.trafficTiming    || '[]'),
           adDays:           JSON.parse(meta.adDays           || '[]'),
           adImageUrls:      JSON.parse(meta.adImageUrls      || '[]'),
+          zipCodes:         [meta.zipCode, ...parsedAdditionalLocations.map(l => l.zipCode)].filter(Boolean),
         })
         // Save Meta campaign IDs to the offer
         if (metaResult) {

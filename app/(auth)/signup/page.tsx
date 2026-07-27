@@ -26,6 +26,7 @@ interface FormData {
   audienceAgeRange: 'all' | 'under35' | '35to55' | 'over55'
   trafficTiming: string[]
   adDays: string[]
+  additionalLocations: Array<{ address: string; zipCode: string }>
 }
 
 const PLANS = {
@@ -150,6 +151,28 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
   const err  = (field: string) => touched[field] ? errors[field] : undefined
   const ic   = (field: string) => `form-input ${touched[field] && errors[field] ? 'border-red-400' : ''}`
 
+  const toggleSecondLocation = () => {
+    if (form.additionalLocations.length >= 1) {
+      set('additionalLocations', [])
+    } else {
+      set('additionalLocations', [{ address: '', zipCode: '' }])
+    }
+  }
+
+  const toggleThirdLocation = () => {
+    if (form.additionalLocations.length >= 2) {
+      set('additionalLocations', [form.additionalLocations[0]])
+    } else {
+      set('additionalLocations', [...form.additionalLocations, { address: '', zipCode: '' }])
+    }
+  }
+
+  const updateLocation = (index: number, field: 'address' | 'zipCode', value: string) => {
+    const updated = [...form.additionalLocations]
+    updated[index] = { ...updated[index], [field]: value }
+    set('additionalLocations', updated)
+  }
+
   // Auto-fetch logo from website URL via server API (avoids CORS)
   const handleFetchLogo = async () => {
     if (!form.website) return
@@ -245,6 +268,56 @@ function Step2({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
             value={form.address} onChange={e => set('address', e.target.value)} onBlur={() => blur('address')}/>
           <FieldError msg={err('address')}/>
         </div>
+
+        {form.plan === 'thrive' && (
+          <div className="border border-blue-pale rounded-xl p-4 bg-blue-xpale">
+            <div className="text-xs font-bold text-blue-dark uppercase tracking-wider mb-3">📍 Additional Locations</div>
+
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-tan font-medium">
+              <input type="checkbox"
+                checked={form.additionalLocations.length >= 1}
+                onChange={toggleSecondLocation}
+                className="rounded border-cream-dark accent-blue"/>
+              Add a second location
+            </label>
+
+            {form.additionalLocations.length >= 1 && (
+              <div className="ml-6 mt-3 space-y-2">
+                <div className="flex gap-2">
+                  <input className="form-input flex-1" placeholder="123 Main St, Louisville, KY"
+                    value={form.additionalLocations[0].address}
+                    onChange={e => updateLocation(0, 'address', e.target.value)}/>
+                  <input className="form-input w-24" placeholder="40202" maxLength={5}
+                    value={form.additionalLocations[0].zipCode}
+                    onChange={e => updateLocation(0, 'zipCode', e.target.value)}/>
+                </div>
+                <p className="text-xs text-tan-light">Each location gets its own targeted ad campaign</p>
+
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-tan font-medium mt-2">
+                  <input type="checkbox"
+                    checked={form.additionalLocations.length >= 2}
+                    onChange={toggleThirdLocation}
+                    className="rounded border-cream-dark accent-blue"/>
+                  Add a third location
+                </label>
+
+                {form.additionalLocations.length >= 2 && (
+                  <div className="ml-6 space-y-2">
+                    <div className="flex gap-2">
+                      <input className="form-input flex-1" placeholder="456 Oak Ave, Louisville, KY"
+                        value={form.additionalLocations[1].address}
+                        onChange={e => updateLocation(1, 'address', e.target.value)}/>
+                      <input className="form-input w-24" placeholder="40205" maxLength={5}
+                        value={form.additionalLocations[1].zipCode}
+                        onChange={e => updateLocation(1, 'zipCode', e.target.value)}/>
+                    </div>
+                    <p className="text-xs text-tan-light">Each location gets its own targeted ad campaign</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Website + logo auto-fetch */}
         <div className="form-group">
@@ -808,7 +881,7 @@ export default function SignupPage() {
     adHeadline:'', adSubheadline:'', adTemplate:'full_bleed',
     adColor:'#588aad',
     adImages:[{file:null,preview:''},{file:null,preview:''},{file:null,preview:''},{file:null,preview:''}],
-    audienceTypes:[], audienceAgeRange:'all', trafficTiming:[], adDays:[],
+    audienceTypes:[], audienceAgeRange:'all', trafficTiming:[], adDays:[], additionalLocations:[],
   })
 
   const set  = (field: keyof FormData, value: any) => setForm(prev => ({...prev, [field]: value}))
