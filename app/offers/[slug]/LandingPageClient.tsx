@@ -188,13 +188,6 @@ export function LandingPageClient({ offer, restaurant }: Props) {
                 ))}
               </div>
             )}
-            <div className="flex items-center gap-3 mt-3">
-              {restaurant.logo_url && (
-                <img src={restaurant.logo_url} alt={restaurant.name}
-                  className="h-10 w-10 object-contain flex-shrink-0 rounded-lg"/>
-              )}
-              <h2 className="text-lg font-bold text-tan">{restaurant.name}</h2>
-            </div>
           </div>
 
           {/* Form — order-2 mobile · right col desktop spanning both rows */}
@@ -254,6 +247,13 @@ export function LandingPageClient({ offer, restaurant }: Props) {
 
           {/* About content — order-3 mobile · bottom-left desktop */}
           <div className="order-3 md:col-start-1 md:col-span-3 md:row-start-2 bg-white rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              {restaurant.logo_url && (
+                <img src={restaurant.logo_url} alt={restaurant.name}
+                  className="h-10 w-10 object-contain flex-shrink-0 rounded-lg"/>
+              )}
+              <h2 className="text-lg font-bold text-tan">{restaurant.name}</h2>
+            </div>
             <div className="inline-flex items-center gap-1.5 bg-cream border border-cream-dark text-tan-light text-xs font-medium px-3 py-1 rounded-full mb-3">
               📍 {restaurant.name} · ZIP {restaurant.zip_code}
             </div>
