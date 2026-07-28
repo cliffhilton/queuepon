@@ -917,6 +917,40 @@ function SignupPageInner() {
         {step === 4 && <Step4 form={form} set={set} next={next} back={back}/>}
         {step === 5 && <Step5Payment form={form} back={back}/>}
       </div>
+
+      <footer className="bg-tan text-white mt-12">
+        <div className="max-w-6xl mx-auto px-6 md:px-10 py-16 grid md:grid-cols-4 gap-10">
+          <div className="md:col-span-1">
+            <Logo variant="white" size="md"/>
+            <p className="text-sm text-white/65 mt-4 leading-relaxed max-w-xs">
+              Done-for-you Meta ads that turn local restaurants into local favorites — all on autopilot.
+            </p>
+            <div className="mt-6 space-y-2.5">
+              <a href="mailto:hello@queuepon.com" className="flex items-center gap-2 text-sm text-white/65 hover:text-white transition-colors">
+                ✉️ hello@queuepon.com
+              </a>
+            </div>
+          </div>
+          {[
+            { title:'Platform',   links:[['How It Works','https://queuepon.com/#how-it-works'],['Pricing','https://queuepon.com/#pricing'],['Log In','/login'],['Sign Up','/signup']] },
+            { title:'Investors',  links:[['Investor Overview','/investor'],['Investment Terms','/investor#terms'],['Request Full Deck','mailto:hello@queuepon.com?subject=Investor Deck']] },
+            { title:'Resources',  links:[['FAQ','/faq'],['Contact Us','mailto:hello@queuepon.com'],['Privacy Policy','/privacy'],['Terms of Service','/terms']] },
+          ].map(col => (
+            <div key={col.title}>
+              <div className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">{col.title}</div>
+              <div className="space-y-3">
+                {col.links.map(([label, href]) => (
+                  <a key={label} href={href} className="block text-sm text-white/65 hover:text-white transition-colors">{label}</a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-white/10 px-6 md:px-10 py-5 max-w-6xl mx-auto flex flex-wrap justify-between gap-3 text-xs text-white/35">
+          <span>© 2026 Queuepon · Louisville, KY · All rights reserved</span>
+          <span>Built with ♥ in Louisville</span>
+        </div>
+      </footer>
     </div>
   )
 }

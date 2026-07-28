@@ -23,6 +23,7 @@ interface Restaurant {
   restaurant_type?: string
   logo_url?: string
   website?: string
+  additional_locations?: Array<{ address: string; zipCode: string }>
 }
 
 interface Props {
@@ -87,9 +88,10 @@ export function LandingPageClient({ offer, restaurant }: Props) {
     ? new Date(offer.expiry_date).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : null
 
-  const city = restaurant.address
-    ? (restaurant.address.split(',')[1]?.trim() || restaurant.zip_code)
-    : restaurant.zip_code
+  const cityFromAddress = restaurant.address
+    ? restaurant.address.split(',')[1]?.trim() || null
+    : null
+  const city = cityFromAddress || restaurant.zip_code
 
   const handleSubmit = async () => {
     if (!email.trim()) { setError('Please enter your email address'); return }
@@ -255,7 +257,11 @@ export function LandingPageClient({ offer, restaurant }: Props) {
               <h2 className="text-lg font-bold text-tan">{restaurant.name}</h2>
             </div>
             <div className="inline-flex items-center gap-1.5 bg-cream border border-cream-dark text-tan-light text-xs font-medium px-3 py-1 rounded-full mb-3">
-              📍 {restaurant.name} · ZIP {restaurant.zip_code}
+              {cityFromAddress
+                ? restaurant.additional_locations?.length
+                  ? `📍 ${cityFromAddress} · ${restaurant.additional_locations.length + 1} locations`
+                  : `📍 ${cityFromAddress} · ZIP ${restaurant.zip_code}`
+                : `📍 ZIP ${restaurant.zip_code}`}
             </div>
             <h1 className="text-2xl font-bold text-tan leading-tight mb-2">{offer.title}</h1>
             <p className="text-sm text-tan-light leading-relaxed mb-5">{offer.description}</p>
