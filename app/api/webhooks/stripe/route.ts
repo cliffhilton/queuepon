@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendRestaurantWelcome, sendPasswordSetupEmail, sendAdReadyEmail } from '@/lib/resend'
+import { sendWelcomeAndPasswordEmail, sendAdReadyEmail } from '@/lib/resend'
 import { createMetaCampaign } from '@/lib/meta'
 
 export async function POST(req: NextRequest) {
@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
 
       // Create Supabase auth user
       let userId: string | null = null
+      let setupUrl = ''
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email:         meta.email,
         email_confirm: true,
@@ -74,30 +75,15 @@ export async function POST(req: NextRequest) {
           })
 
           if (linkData?.properties?.hashed_token) {
-            const appUrl   = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
-            const setupUrl = `${appUrl}/auth/callback?token_hash=${linkData.properties.hashed_token}&type=recovery&next=/dashboard`
-            await sendPasswordSetupEmail({
-              to:             meta.email,
-              firstName:      meta.firstName,
-              restaurantName: meta.restaurantName,
-              setupUrl,
-            })
-            console.log(`✅ Password setup email sent to ${meta.email}`)
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
+            setupUrl = `${appUrl}/auth/callback?token_hash=${linkData.properties.hashed_token}&type=recovery&next=/dashboard`
           } else if (linkData?.properties?.action_link) {
-            // Fallback: parse token from action_link and rebuild URL
             const appUrl    = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
             const actionUrl = new URL(linkData.properties.action_link as string)
-            const token     = actionUrl.searchParams.get('token') 
-                           || actionUrl.searchParams.get('token_hash') 
+            const token     = actionUrl.searchParams.get('token')
+                           || actionUrl.searchParams.get('token_hash')
                            || ''
-            const setupUrl  = `${appUrl}/auth/callback?token_hash=${token}&type=recovery&next=/dashboard`
-            await sendPasswordSetupEmail({
-              to:             meta.email,
-              firstName:      meta.firstName,
-              restaurantName: meta.restaurantName,
-              setupUrl,
-            })
-            console.log(`✅ Password setup email sent to ${meta.email}`)
+            setupUrl = `${appUrl}/auth/callback?token_hash=${token}&type=recovery&next=/dashboard`
           }
         } catch (e) {
           console.error('Password setup email error:', e)
@@ -157,13 +143,17 @@ export async function POST(req: NextRequest) {
         else console.log(`✅ Offer saved: ${meta.offerTitle}`)
       }
 
-      // Send welcome email
+      // Send merged welcome + password setup email
       try {
-        await sendRestaurantWelcome({
-          to: meta.email, firstName: meta.firstName,
-          restaurantName: meta.restaurantName, plan: meta.plan, zipCode: meta.zipCode,
+        await sendWelcomeAndPasswordEmail({
+          to:             meta.email,
+          firstName:      meta.firstName,
+          restaurantName: meta.restaurantName,
+          plan:           meta.plan,
+          zipCode:        meta.zipCode,
+          setupUrl,
         })
-        console.log(`✅ Welcome email sent to ${meta.email}`)
+        console.log(`✅ Welcome + password setup email sent to ${meta.email}`)
       } catch (e) { console.error('Welcome email error:', e) }
 
       // Meta API campaign creation

@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { Nav } from '@/components/layout/Nav'
 
 export default function SuccessPage() {
@@ -33,9 +32,9 @@ export default function SuccessPage() {
               Check your inbox then come back to log in.
             </div>
           </div>
-          <Link href="/login" className="btn-primary px-10 py-4 text-base">
-            Go to Login →
-          </Link>
+          <p className="text-sm text-tan-light text-center">
+            Your confirmation email will hit your inbox shortly!
+          </p>
         </div>
       </div>
     </div>
