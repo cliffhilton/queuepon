@@ -16,9 +16,7 @@ export async function sendRestaurantWelcome({
     subject: `You're live on Queuepon, ${firstName}! Here's how to access your dashboard.`,
     html: `
       <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
-        <div style="margin-bottom:28px">
-          <span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span>
-        </div>
+        <img src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-web.png" alt="Queuepon" style="height:36px;width:auto;display:block;margin-bottom:28px;" />
         <h1 style="font-size:26px;font-weight:700;color:#716557;margin:0 0 12px">Welcome to Queuepon, ${firstName}! 🎉</h1>
         <p style="color:#9e8e83;line-height:1.7;margin:0 0 24px">
           <strong style="color:#716557">${restaurantName}</strong> is now live on the 
@@ -64,9 +62,7 @@ export async function sendWelcomeAndPasswordEmail({
     subject: `Welcome to Queuepon, ${firstName}! Set your password to get started.`,
     html: `
       <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
-        <div style="margin-bottom:28px">
-          <span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span>
-        </div>
+        <img src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-web.png" alt="Queuepon" style="height:36px;width:auto;display:block;margin-bottom:28px;" />
         <h1 style="font-size:28px;font-weight:700;color:#716557;margin:0 0 16px">Welcome to Queuepon, ${firstName}! 🎉</h1>
         <p style="color:#9e8e83;line-height:1.7;margin:0 0 16px">
           <strong style="color:#716557">${restaurantName}</strong> is now live on the
@@ -112,9 +108,7 @@ export async function sendPasswordSetupEmail({
     subject: `Set your password to access your ${restaurantName} dashboard`,
     html: `
       <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
-        <div style="margin-bottom:28px">
-          <span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span>
-        </div>
+        <img src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-web.png" alt="Queuepon" style="height:36px;width:auto;display:block;margin-bottom:28px;" />
         <h1 style="font-size:24px;font-weight:700;color:#716557;margin:0 0 12px">One more step, ${firstName} 👋</h1>
         <p style="color:#9e8e83;line-height:1.7;margin:0 0 24px">
           Your <strong style="color:#716557">${restaurantName}</strong> account is ready. 
@@ -147,9 +141,7 @@ export async function sendPasswordResetEmail({
     subject: `Reset your Queuepon password`,
     html: `
       <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
-        <div style="margin-bottom:28px">
-          <span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span>
-        </div>
+        <img src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-web.png" alt="Queuepon" style="height:36px;width:auto;display:block;margin-bottom:28px;" />
         <h1 style="font-size:24px;font-weight:700;color:#716557;margin:0 0 12px">Reset your password</h1>
         <p style="color:#9e8e83;line-height:1.7;margin:0 0 24px">
           We received a request to reset your Queuepon password. Click below to choose a new one.
@@ -229,7 +221,7 @@ export async function sendAdReadyEmail({
     subject: `Your ad is ready to review, ${firstName} 🎯`,
     html: `
       <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
-        <div style="margin-bottom:28px"><span style="font-size:22px;font-weight:900;color:#716557">queue<span style="color:#588aad">pon</span></span></div>
+        <img src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-web.png" alt="Queuepon" style="height:36px;width:auto;display:block;margin-bottom:28px;" />
         <h1 style="font-size:24px;font-weight:700;color:#716557;margin:0 0 12px">Your ad is ready, ${firstName}! 🎯</h1>
         <p style="color:#9e8e83;line-height:1.7;margin:0 0 20px">
           We've built your <strong style="color:#716557">${offerTitle}</strong> campaign for 
