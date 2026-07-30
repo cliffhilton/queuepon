@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
         website:     (website || '').slice(0, 490),
         logoUrl:     safeLogoUrl,
         adImageUrl:  safeAdImageUrl,
-        adImageUrls: (adImageUrls || '[]').slice(0, 490),
         offerTitle:       (offerTitle       || '').slice(0, 490),
         offerDescription: (offerDescription || '').slice(0, 490),
         offerType:        offerType   || 'free_item',

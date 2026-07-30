@@ -151,7 +151,6 @@ export async function POST(req: NextRequest) {
             ad_template:    meta.adTemplate  || 'full_bleed',
             ad_color:       meta.adColor     || '#588aad',
             ad_image_url:   meta.adImageUrl  || null,
-            ad_image_urls:  JSON.parse(meta.adImageUrls || '[]'),
             come_back_offer: meta.comeBackOffer || null,
           })
         if (offerError) console.error('Offer insert error:', offerError)
@@ -186,7 +185,7 @@ export async function POST(req: NextRequest) {
           audienceAgeRange: meta.audienceAgeRange             || 'all',
           trafficTiming:    JSON.parse(meta.trafficTiming    || '[]'),
           adDays:           JSON.parse(meta.adDays           || '[]'),
-          adImageUrls:      JSON.parse(meta.adImageUrls      || '[]'),
+          adImageUrls:      meta.adImageUrl ? [meta.adImageUrl] : [],
           zipCodes:         [meta.zipCode, ...parsedAdditionalLocations.map(l => l.zipCode)].filter(Boolean),
         })
         // Save Meta campaign IDs to the offer
