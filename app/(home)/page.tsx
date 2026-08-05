@@ -142,6 +142,24 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── GROWTH CALCULATOR TEASER ────────────────────────── */}
+      <section className="bg-white py-16 px-6">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <img
+            src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/images/calc_image.png"
+            className="w-full rounded-2xl object-cover shadow-card"
+            alt="180-Day Growth Planner"/>
+          <div>
+            <div className="eyebrow">180-DAY GROWTH PLANNER</div>
+            <h2 className="text-3xl font-bold text-tan mt-2">Not sure which plan fits your business?</h2>
+            <p className="text-tan-light text-base leading-relaxed mt-4">
+              Every restaurant is different. Our 180-Day Growth Planner uses your actual numbers — ticket size, monthly orders, growth goal — to show you exactly how many new customers each plan will bring in, and when you'll hit your goal. Takes 2 minutes.
+            </p>
+            <Link href="/growth" className="btn-primary inline-block mt-8">See Your 180-Day Plan →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── PRICING ─────────────────────────────────────────── */}
       <section id="pricing" className="section bg-cream">
         <div className="max-w-6xl mx-auto px-6 md:px-10">

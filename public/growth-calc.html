@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUEUEPON 180-Day Growth Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f3f0 0%, #e8e3df 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4B7A8F 0%, #3d5f73 100%);
+            color: white;
+            padding: 40px 30px 30px;
+            text-align: center;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: #F4D03F;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        .content {
+            padding: 40px 30px;
+            min-height: 300px;
+        }
+
+        .question-block {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .question-block.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-label {
+            font-size: 13px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            color: #222;
+            margin-bottom: 20px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input[type="number"]:focus {
+            outline: none;
+            border-color: #4B7A8F;
+            background: #f9fafb;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-option {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .btn-option:hover {
+            border-color: #4B7A8F;
+            background: #f9fafb;
+        }
+
+        .btn-option.selected {
+            background: #4B7A8F;
+            color: white;
+            border-color: #4B7A8F;
+        }
+
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider-value {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #4B7A8F;
+            margin-bottom: 12px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4B7A8F;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4B7A8F;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4B7A8F;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3d5f73;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* Results Page */
+        .results-page {
+            display: none;
+        }
+
+        .results-page.active {
+            display: block;
+        }
+
+        .result-section {
+            margin-bottom: 24px;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .result-headline {
+            font-size: 26px;
+            color: #222;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .tier-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tier-tab {
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            margin-bottom: -2px;
+        }
+
+        .tier-tab:hover {
+            color: #4B7A8F;
+        }
+
+        .tier-tab.active {
+            color: #4B7A8F;
+            border-bottom-color: #4B7A8F;
+        }
+
+        .tier-content {
+            display: none;
+        }
+
+        .tier-content.active {
+            display: block;
+        }
+
+        .tier-header {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .tier-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4B7A8F;
+            margin-bottom: 4px;
+        }
+
+        .tier-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tier-metrics {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .metric-box {
+            flex: 1;
+            min-width: 140px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            color: #4B7A8F;
+            font-weight: 700;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #f9fafb;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .number {
+            font-weight: 600;
+            color: #4B7A8F;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, #4B7A8F 0%, #3d5f73 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .cta-text {
+            font-size: 14px;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .info-box {
+            background: #f9fafb;
+            border-left: 4px solid #4B7A8F;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #222;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-badge">LOCAL-FIRST · DONE FOR YOU</div>
+            <h1>180-Day Growth Planner</h1>
+            <p>See your realistic 6-month flywheel</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Question 1: Average Sale -->
+            <div class="question-block active" id="q1">
+                <div class="question-label">Question 1 of 5</div>
+                <div class="question-text">What's your average sale?</div>
+                <div class="input-group">
+                    <input type="number" id="avgTicketPrice" placeholder="$" value="15" min="1">
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="nextQuestion(1)">Next</button>
+                </div>
+            </div>
+
+            <!-- Question 2: Current Orders -->
+            <div class="question-block" id="q2">
+                <div class="question-label">Question 2 of 5</div>
+                <div class="question-text">How many orders per month are you currently doing?</div>
+                <div class="input-group">
+                    <input type="number" id="currentOrders" placeholder="e.g., 2500" value="2500" min="100">
+                </div>
+                <div class="controls">
+                    <button class="btn btn-secondary" onclick="prevQuestion(2)">Back</button>
+                    <button class="btn btn-primary" onclick="nextQuestion(2)">Next</button>
+                </div>
+            </div>
+
+            <!-- Question 3: Growth Goal -->
+            <div class="question-block" id="q3">
+                <div class="question-label">Question 3 of 5</div>
+                <div class="question-text">What's your 180-day growth target?</div>
+                <div class="button-group" id="growthGroup">
+                    <button class="btn-option" onclick="selectGrowth(10, this)">10%</button>
+                    <button class="btn-option selected" onclick="selectGrowth(15, this)">15%</button>
+                    <button class="btn-option" onclick="selectGrowth(20, this)">20%</button>
+                    <button class="btn-option" onclick="selectGrowth(25, this)">25%</button>
+                </div>
+                <div class="controls" style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="prevQuestion(3)">Back</button>
+                    <button class="btn btn-primary" onclick="nextQuestion(3)">Next</button>
+                </div>
+            </div>
+
+            <!-- Question 4: Repeat Rate -->
+            <div class="question-block" id="q4">
+                <div class="question-label">Question 4 of 5</div>
+                <div class="question-text">What % of customers return within 180 days?</div>
+                <div class="slider-container">
+                    <div class="slider-value"><span id="sliderValue">30</span>%</div>
+                    <input type="range" id="repeatSlider" min="0" max="100" value="30" step="1" oninput="updateSliderValue(this.value)">
+                </div>
+                <div style="margin-top: 16px; padding: 12px; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 6px; font-size: 12px; line-height: 1.6; color: #92400e;">
+                    <strong>📌 The Baseline Reality:</strong> A 2026 <a href="https://bloomintelligence.com/blog/restaurant-customer-retention-2026-guide/" target="_blank" style="color: #d97706; text-decoration: underline;">Bloom Intelligence analysis</a> of 1,000+ locations found that only <strong>23% of first-time guests return</strong>, resulting in <strong>77.4% customer churn</strong> after a single visit. This is your baseline without intentional marketing.<br><br>
+                    <strong>📊 Industry Benchmarks by Type (180-day window):</strong><br>
+                    <strong>Pizza &amp; Fast-Casual:</strong> 35–55% return rate (lower price point, high convenience)<br>
+                    <strong>Coffee Shops &amp; Cafes:</strong> 50–70% return rate (daily routine habits)<br>
+                    <strong>Fine Dining:</strong> 15–30% return rate (destination establishments, longer consideration cycle)<br><br>
+                    Reference: <a href="https://qubriux.com/what-is-a-good-repeat-customer-rate/" target="_blank" style="color: #d97706; text-decoration: underline;">Qubriux</a> | <a href="https://bloomintelligence.com/blog/restaurant-customer-retention-2026-guide/" target="_blank" style="color: #d97706; text-decoration: underline;">Bloom Intelligence 2026</a><br><br>
+                    Enter your actual repeat rate based on POS data, or your realistic improvement target with QUEUEPON.
+                </div>
+                <div class="controls" style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="prevQuestion(4)">Back</button>
+                    <button class="btn btn-primary" onclick="nextQuestion(4)">Next</button>
+                </div>
+            </div>
+
+            <!-- Question 5: In-Store Lead Capture -->
+            <div class="question-block" id="q5">
+                <div class="question-label">Question 5 of 5</div>
+                <div class="question-text">Actively grow your customer database with in-store mobile signups</div>
+                <div style="font-size: 14px; color: #666; margin-bottom: 20px;">We will provide a QR code or quicklink for mobile signups</div>
+                <div style="margin: 24px 0;">
+                    <label style="display: flex; align-items: flex-start; cursor: pointer; padding: 14px; background: #f9fafb; border-radius: 8px; border: 2px solid #e0e0e0; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#4B7A8F'; this.style.background='#f0f9ff';" onmouseout="this.style.borderColor='#e0e0e0'; this.style.background='#f9fafb';">
+                        <input type="checkbox" id="inStoreCapture" style="width: 20px; height: 20px; margin-right: 14px; margin-top: 2px; cursor: pointer; flex-shrink: 0;">
+                        <span style="color: #333; font-size: 14px; line-height: 1.5;">
+                            <strong>Yes—with an incentive (free drink, discount, or bundle)</strong><br>
+                            <span style="color: #666; font-size: 13px;">Staff encourage QR signup at checkout for exclusive offers</span>
+                        </span>
+                    </label>
+                    <div style="margin-top: 16px; padding: 14px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; border-left: 4px solid #4B7A8F;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 24px; font-weight: 700; color: #10b981;">+10–20%</span>
+                            <span style="color: #4B7A8F; font-weight: 600;">Return Rate Boost</span>
+                        </div>
+                        <div style="font-size: 12px; color: #666; line-height: 1.6;">
+                            In-store capture + weekly email/SMS nurturing turns warm customers into repeat visitors. Warm leads from your location always outperform cold ads.
+                        </div>
+                    </div>
+                </div>
+                <div class="controls" style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="prevQuestion(5)">Back</button>
+                    <button class="btn btn-primary" onclick="showResults()">See 180-Day Plan</button>
+                </div>
+            </div>
+
+            <!-- Results Page -->
+            <div class="results-page" id="resultsPage">
+                <div class="result-section">
+                    <div class="result-label">Your 6-month growth opportunity</div>
+                    <div class="result-headline">
+                        <span id="goalOrders">450</span> new orders needed
+                    </div>
+                    <div style="font-size: 14px; color: #666; margin-top: 8px;">
+                        To grow <span id="displayGoal">15</span>% from your current <span id="displayCurrent">2,500</span>/month baseline
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 13px;">
+                    <div style="background: #f9fafb; padding: 12px; border-radius: 6px; border-left: 3px solid #4B7A8F;">
+                        <div style="color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Average Sale</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #222;">$<span id="summaryAvgSale">15</span></div>
+                    </div>
+                    <div style="background: #f9fafb; padding: 12px; border-radius: 6px; border-left: 3px solid #4B7A8F;">
+                        <div style="color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Monthly Orders</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #222;"><span id="summaryMonthly">2,500</span></div>
+                    </div>
+                    <div style="background: #f9fafb; padding: 12px; border-radius: 6px; border-left: 3px solid #4B7A8F;">
+                        <div style="color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Growth Goal</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #222;"><span id="summaryGrowth">15</span>%</div>
+                    </div>
+                    <div style="background: #f9fafb; padding: 12px; border-radius: 6px; border-left: 3px solid #4B7A8F;">
+                        <div style="color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Repeat Rate</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #222;"><span id="summaryRepeatRate">30</span>%</div>
+                    </div>
+                </div>
+
+                <div id="missingPromotionBox" style="display: none; padding: 16px; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 8px; border: 2px solid #ef4444; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 20px;">⚠️</span>
+                            <strong style="color: #991b1b; font-size: 16px;">You're Missing Out on 15% More Repeat Customers</strong>
+                        </div>
+                        <button onclick="togglePromotionAndRecalculate()" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">Toggle On</button>
+                    </div>
+                    <div style="font-size: 13px; color: #7f1d1d; margin-bottom: 12px;">
+                        In-store mobile signups with weekly nurture emails can boost your repeat customer rate by 15%. This compounds month after month—dramatically accelerating your path to your growth goal.
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>How the flywheel works:</strong> Month 1 brings new customers from ads. Month 2 those customers return (based on your repeat rate), plus new ones keep coming. Month after month, repeats compound. The tier you choose determines your speed—see below which month you'll hit your growth goal.
+                </div>
+
+                <div id="repeatRateBoost" style="display: none; padding: 16px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 8px; border: 2px solid #10b981; margin-bottom: 20px; font-size: 14px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 20px;">✅</span>
+                            <strong style="color: #15803d; font-size: 16px;">In-Store Promotion Active</strong>
+                        </div>
+                        <button onclick="togglePromotionAndRecalculate()" style="background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">Toggle Off</button>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                        <div>
+                            <div style="font-size: 12px; color: #4b5563; margin-bottom: 4px;">Repeat Rate Increase</div>
+                            <div style="font-size: 28px; font-weight: 700; color: #15803d;"><span id="boostPercent">15</span>% avg.</div>
+                        </div>
+                        <div style="text-align: center; font-size: 12px; color: #666;">
+                            <div style="margin-bottom: 4px;"><span id="baselineMonthly" style="font-weight: 600;">250</span> monthly returns → <span id="boostedMonthly" style="font-weight: 600;">287</span></div>
+                            <div style="font-size: 11px; color: #888;">+15% boost via in-store QR + weekly nurture</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier Tabs -->
+                <div class="tier-tabs">
+                    <button class="tier-tab active" onclick="switchTier('grow')">Grow ($299)</button>
+                    <button class="tier-tab" onclick="switchTier('expand')">Expand ($499)</button>
+                    <button class="tier-tab" onclick="switchTier('thrive')">Thrive ($799)</button>
+                </div>
+
+                <!-- Grow Tier -->
+                <div class="tier-content active" id="tier-grow">
+                    <div class="tier-header">
+                        <div class="tier-name">Grow Plan</div>
+                        <div class="tier-price">$299/month · 40–50 new orders/month from ads</div>
+                    </div>
+                    <div class="tier-metrics">
+                        <div class="metric-box">
+                            <div class="metric-label">Total Orders Generated</div>
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <div class="metric-value" id="grow-total">285</div>
+                                <div id="grow-boost" style="display: none; font-size: 12px; color: #10b981; font-weight: 600;">+<span id="grow-boost-num">87</span> (+30%)</div>
+                            </div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">180-Day Revenue Potential</div>
+                            <div class="metric-value" id="grow-revenue">$4,275</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Hit Goal By...?</div>
+                            <div class="metric-value" id="grow-status" style="color: #ef4444;">No</div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="grow-table"></table>
+                    </div>
+                </div>
+
+                <!-- Expand Tier -->
+                <div class="tier-content" id="tier-expand">
+                    <div class="tier-header">
+                        <div class="tier-name">Expand Plan</div>
+                        <div class="tier-price">$499/month · 65–80 new orders/month from ads</div>
+                    </div>
+                    <div class="tier-metrics">
+                        <div class="metric-box">
+                            <div class="metric-label">Total Orders Generated</div>
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <div class="metric-value" id="expand-total">455</div>
+                                <div id="expand-boost" style="display: none; font-size: 12px; color: #10b981; font-weight: 600;">+<span id="expand-boost-num">140</span> (+31%)</div>
+                            </div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">180-Day Revenue Potential</div>
+                            <div class="metric-value" id="expand-revenue">$6,825</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Hit Goal By...?</div>
+                            <div class="metric-value" id="expand-status" style="color: #10b981;">Yes</div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="expand-table"></table>
+                    </div>
+                </div>
+
+                <!-- Thrive Tier -->
+                <div class="tier-content" id="tier-thrive">
+                    <div class="tier-header">
+                        <div class="tier-name">Thrive Plan</div>
+                        <div class="tier-price">$799/month · 120+ new orders/month from ads</div>
+                    </div>
+                    <div class="tier-metrics">
+                        <div class="metric-box">
+                            <div class="metric-label">Total Orders Generated</div>
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <div class="metric-value" id="thrive-total">810</div>
+                                <div id="thrive-boost" style="display: none; font-size: 12px; color: #10b981; font-weight: 600;">+<span id="thrive-boost-num">250</span> (+31%)</div>
+                            </div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">180-Day Revenue Potential</div>
+                            <div class="metric-value" id="thrive-revenue">$12,150</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Hit Goal By...?</div>
+                            <div class="metric-value" id="thrive-status" style="color: #10b981;">Yes</div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="thrive-table"></table>
+                    </div>
+                </div>
+
+                <div class="controls" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="startNow()" style="flex: 1; min-width: 150px;">Get Started</button>
+                    <button id="testDriveBtn" class="btn btn-primary" onclick="testDrive()" style="background: #10b981; flex: 1; min-width: 150px;">Test Drive - $99</button>
+                    <button class="btn btn-secondary" onclick="recalculate()" style="flex: 0 1 auto;">Recalculate</button>
+                </div>
+
+                <div style="margin-top: 24px; padding: 12px; background: #f9fafb; border-radius: 8px; border-left: 3px solid #999; font-size: 12px; color: #666; line-height: 1.6;">
+                    <strong style="color: #333;">*Disclaimer:</strong> These projections are goals based on typical performance metrics. Actual results vary based on seasonality, ad spend fluctuations, offer/ad quality and desirability, competitive landscape, and market conditions. These figures represent potential outcomes, not guaranteed results. Individual restaurant performance depends on execution, market fit, and ongoing optimization.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQ = 1;
+        let answers = {
+            avgTicketPrice: 15,
+            currentOrders: 2500,
+            growth: 15,
+            repeatRate: 30,
+            inStoreCapture: false
+        };
+
+        // Tier data: [minNewOrders, maxNewOrders, monthlyPrice]
+        const tiers = {
+            grow: { name: 'Grow', price: 299, minNew: 40, maxNew: 50 },
+            expand: { name: 'Expand', price: 499, minNew: 65, maxNew: 80 },
+            thrive: { name: 'Thrive', price: 799, minNew: 120, maxNew: 150 }
+        };
+
+        function setQuestion(n) {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`q${i}`).classList.remove('active');
+            }
+            document.getElementById(`q${n}`).classList.add('active');
+            document.getElementById('progressFill').style.width = (n / 5 * 100) + '%';
+            currentQ = n;
+            window.scrollTo(0, 0);
+        }
+
+        function nextQuestion(from) {
+            if (from === 1) answers.avgTicketPrice = parseInt(document.getElementById('avgTicketPrice').value) || 15;
+            if (from === 2) answers.currentOrders = parseInt(document.getElementById('currentOrders').value) || 2500;
+            if (from === 3) answers.growth = parseInt(document.getElementById('growthGroup').querySelector('.selected').textContent) || 15;
+            if (from === 4) answers.repeatRate = parseInt(document.getElementById('repeatSlider').value) || 30;
+
+            if (from < 5) {
+                setQuestion(from + 1);
+            }
+        }
+
+        function prevQuestion(from) {
+            if (from > 1) {
+                setQuestion(from - 1);
+            }
+        }
+
+        function selectGrowth(value, btn) {
+            document.getElementById('growthGroup').querySelectorAll('.btn-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        function updateSliderValue(value) {
+            document.getElementById('sliderValue').textContent = value;
+        }
+
+        function calculateFlywheelMonth(newOrdersPerMonth, repeatRate, months) {
+            const data = [];
+            const returnCustomers = {};
+
+            for (let m = 1; m <= months; m++) {
+                let newThisMonth = newOrdersPerMonth;
+                let returningThisMonth = 0;
+
+                for (let prevMonth = 1; prevMonth < m; prevMonth++) {
+                    if (returnCustomers[prevMonth]) {
+                        returningThisMonth += returnCustomers[prevMonth];
+                    }
+                }
+
+                const totalThisMonth = newThisMonth + returningThisMonth;
+                returnCustomers[m] = Math.round(newThisMonth * (repeatRate / 100));
+
+                data.push({
+                    month: m,
+                    new: newThisMonth,
+                    returning: returningThisMonth,
+                    total: totalThisMonth
+                });
+            }
+
+            return data;
+        }
+
+        function buildTable(tierId, tableId, newOrdersPerMonth) {
+            const data = calculateFlywheelMonth(newOrdersPerMonth, answers.repeatRate, 12);
+            const table = document.getElementById(tableId);
+            table.innerHTML = '';
+
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            const headers = ['Month', 'New from Ads', 'Returns from Ads', 'Growing Baseline Repeats', 'Total That Month', 'Running Total'];
+            headers.forEach(h => {
+                const th = document.createElement('th');
+                th.textContent = h;
+                headerRow.appendChild(th);
+            });
+
+            // Baseline in 90 days: currentOrders × repeatRate / 100
+            const baselineIn90Days = Math.round(answers.currentOrders * answers.repeatRate / 100);
+            const boostedIn90Days = Math.round(baselineIn90Days * 1.15);
+            const increaseIn90Days = boostedIn90Days - baselineIn90Days;
+            const baselineBoostPerMonth = Math.round(increaseIn90Days / 3);
+
+            let cumulativeTotal = 0;
+            let cumulativeBaseline = 0;
+            const tbody = table.createTBody();
+            const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+            let currentQuarter = 1;
+
+            data.forEach((row, idx) => {
+                cumulativeTotal += row.total;
+                const tr = tbody.insertRow();
+
+                if (row.month === 6) {
+                    tr.style.background = '#f0f9ff';
+                    tr.style.fontWeight = '600';
+                    tr.style.borderTop = '2px solid #4B7A8F';
+                    tr.style.borderBottom = '2px solid #4B7A8F';
+                }
+
+                const quarterMonths = [1, 4];
+                if (quarterMonths.includes(row.month)) {
+                    tr.insertCell(0).textContent = `${quarters[currentQuarter - 1]} - M${row.month}`;
+                    if (row.month === 4) currentQuarter++;
+                } else if (row.month === 6) {
+                    tr.insertCell(0).innerHTML = `<strong>M${row.month}</strong> <span style="font-size: 11px; color: #4B7A8F;">(180 days)</span>`;
+                } else {
+                    tr.insertCell(0).textContent = `M${row.month}`;
+                }
+
+                tr.insertCell(1).textContent = `${row.new}`;
+                tr.insertCell(2).textContent = `${row.returning}`;
+
+                if (answers.inStoreCapture) {
+                    let monthlyBoost = baselineBoostPerMonth;
+                    const growthByMonth = [0, 0, 10, 12, 12, 6, 4, 3, 2, 2, 1, 1, 1];
+
+                    if (row.month > 1 && growthByMonth[row.month]) {
+                        monthlyBoost = baselineBoostPerMonth + growthByMonth[row.month];
+                        for (let m = 2; m < row.month; m++) {
+                            monthlyBoost += growthByMonth[m];
+                        }
+                    }
+
+                    tr.insertCell(3).innerHTML = `<span class="number" style="color: #10b981;">+${monthlyBoost}</span>`;
+                    cumulativeBaseline += monthlyBoost;
+                    const totalThisMonth = row.total + monthlyBoost;
+                    tr.insertCell(4).innerHTML = `<span class="number">${totalThisMonth}</span>`;
+                    tr.insertCell(5).innerHTML = `<span class="number">${cumulativeTotal + cumulativeBaseline}</span>`;
+                } else {
+                    tr.insertCell(3).textContent = '—';
+                    tr.insertCell(4).innerHTML = `<span class="number">${row.total}</span>`;
+                    tr.insertCell(5).innerHTML = `<span class="number">${cumulativeTotal}</span>`;
+                }
+            });
+        }
+
+        function showResults() {
+            answers.repeatRate = parseInt(document.getElementById('repeatSlider').value) || 30;
+            answers.inStoreCapture = document.getElementById('inStoreCapture').checked;
+
+            let effectiveRepeatRate = answers.repeatRate;
+            if (answers.inStoreCapture) {
+                effectiveRepeatRate = Math.min(100, answers.repeatRate + 15);
+            }
+
+            const currentOrders = answers.currentOrders;
+            const growth = answers.growth;
+            const goalOrders = Math.round(currentOrders * (growth / 100));
+
+            document.getElementById('goalOrders').textContent = goalOrders;
+            document.getElementById('displayGoal').textContent = growth;
+            document.getElementById('displayCurrent').textContent = currentOrders.toLocaleString();
+            document.getElementById('summaryAvgSale').textContent = answers.avgTicketPrice;
+            document.getElementById('summaryMonthly').textContent = currentOrders.toLocaleString();
+            document.getElementById('summaryGrowth').textContent = growth;
+            document.getElementById('summaryRepeatRate').textContent = answers.repeatRate;
+
+            const baselineIn90Days = Math.round(currentOrders * answers.repeatRate / 100);
+            const boostedIn90Days = Math.round(baselineIn90Days * 1.15);
+            const increaseIn90Days = boostedIn90Days - baselineIn90Days;
+            const baselineBoostPerMonth = Math.round(increaseIn90Days / 3);
+
+            Object.keys(tiers).forEach(tierKey => {
+                const tier = tiers[tierKey];
+                const avgNew = Math.round((tier.minNew + tier.maxNew) / 2);
+                const data12month = calculateFlywheelMonth(avgNew, answers.repeatRate, 12);
+                const baselineData = calculateFlywheelMonth(avgNew, answers.repeatRate, 12);
+
+                let monthReachesGoal = null;
+                const growthByMonth = [0, 0, 10, 12, 12, 6, 4, 3, 2, 2, 1, 1, 1];
+                data12month.forEach(m => {
+                    let monthTotal = m.total;
+                    if (answers.inStoreCapture) {
+                        let monthlyBoost = baselineBoostPerMonth;
+                        if (m.month > 1 && growthByMonth[m.month]) {
+                            monthlyBoost = baselineBoostPerMonth + growthByMonth[m.month];
+                            for (let mon = 2; mon < m.month; mon++) {
+                                monthlyBoost += growthByMonth[mon];
+                            }
+                        }
+                        monthTotal = m.total + monthlyBoost;
+                    }
+                    if (monthTotal >= goalOrders && !monthReachesGoal) {
+                        monthReachesGoal = m.month;
+                    }
+                });
+
+                const totalNew12month = data12month.reduce((sum, m) => sum + m.new, 0);
+                const baselineTotal = baselineData.reduce((sum, m) => sum + m.new, 0);
+                const ticketIncrease = totalNew12month - baselineTotal;
+                const percentIncrease = Math.round((ticketIncrease / baselineTotal) * 100);
+                const totalOrdersGenerated = data12month.reduce((sum, m) => sum + m.total, 0);
+                const sixMonthNew = data12month.slice(0, 6).reduce((sum, m) => sum + m.new, 0);
+                const revenueFromNew = sixMonthNew * answers.avgTicketPrice;
+
+                buildTable(tierKey, `${tierKey}-table`, avgNew);
+
+                document.getElementById(`${tierKey}-total`).textContent = totalOrdersGenerated;
+                document.getElementById(`${tierKey}-revenue`).textContent = `$${revenueFromNew.toLocaleString()}`;
+                const statusEl = document.getElementById(`${tierKey}-status`);
+                if (monthReachesGoal) {
+                    statusEl.textContent = `Yes (M${monthReachesGoal})`;
+                    statusEl.style.color = '#10b981';
+                } else {
+                    statusEl.textContent = 'No';
+                    statusEl.style.color = '#ef4444';
+                }
+
+                if (answers.inStoreCapture && ticketIncrease > 0) {
+                    const boostEl = document.getElementById(`${tierKey}-boost`);
+                    const boostNumEl = document.getElementById(`${tierKey}-boost-num`);
+                    boostEl.style.display = 'inline-block';
+                    boostNumEl.textContent = ticketIncrease;
+                    boostEl.textContent = `+${ticketIncrease} (+${percentIncrease}%)`;
+                }
+            });
+
+            if (answers.inStoreCapture) {
+                document.getElementById('repeatRateBoost').style.display = 'block';
+                document.getElementById('missingPromotionBox').style.display = 'none';
+                const baselineMonthlyReturns = Math.round(answers.currentOrders * answers.repeatRate / 100 / 3);
+                const boostedMonthlyReturns = Math.round(baselineMonthlyReturns * 1.15);
+                document.getElementById('baselineMonthly').textContent = baselineMonthlyReturns;
+                document.getElementById('boostedMonthly').textContent = boostedMonthlyReturns;
+            } else {
+                document.getElementById('repeatRateBoost').style.display = 'none';
+                document.getElementById('missingPromotionBox').style.display = 'block';
+            }
+
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`q${i}`).style.display = 'none';
+            }
+            document.getElementById('resultsPage').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        let selectedTier = 'grow';
+
+        function switchTier(tierName) {
+            selectedTier = tierName;
+            document.querySelectorAll('.tier-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tier-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`tier-${tierName}`).classList.add('active');
+            const tierPrices = { grow: 99, expand: 199, thrive: 299 };
+            const price = tierPrices[tierName] || 99;
+            document.getElementById('testDriveBtn').textContent = `Test Drive - $${price}`;
+        }
+
+        function startNow() {
+            const activeTierTab = document.querySelector('.tier-tab.active');
+            const tierName = activeTierTab.textContent.toLowerCase().split(' ')[0];
+            const tierMap = { grow: 'grow', expand: 'expand', thrive: 'thrive' };
+            const planParam = tierMap[tierName];
+            window.location.href = `https://queuepon.com/signup?plan=${planParam}`;
+        }
+
+        function testDrive() {
+            const tierUrls = {
+                'grow':   'https://queuepon.com/signup?plan=grow&coupon=getgrow',
+                'expand': 'https://queuepon.com/signup?plan=expand&coupon=getexpand',
+                'thrive': 'https://queuepon.com/signup?plan=thrive&coupon=getthrive'
+            };
+            window.location.href = tierUrls[selectedTier] || tierUrls['grow'];
+        }
+
+        function togglePromotionAndRecalculate() {
+            const checkbox = document.getElementById('inStoreCapture');
+            checkbox.checked = !checkbox.checked;
+            showResults();
+            window.scrollTo(0, 0);
+        }
+
+        function recalculate() {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`q${i}`).style.display = 'none';
+            }
+            document.getElementById('resultsPage').classList.remove('active');
+            setQuestion(1);
+            document.getElementById('avgTicketPrice').value = 15;
+            document.getElementById('currentOrders').value = 2500;
+            document.getElementById('repeatSlider').value = 30;
+            document.getElementById('sliderValue').textContent = 30;
+            document.getElementById('inStoreCapture').checked = false;
+        }
+
+        setQuestion(1);
+    </script>
+</body>
+</html>

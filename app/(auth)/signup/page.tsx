@@ -28,6 +28,7 @@ interface FormData {
   trafficTiming: string[]
   adDays: string[]
   additionalLocations: Array<{ address: string; zipCode: string }>
+  coupon: string
 }
 
 const PLANS = {
@@ -36,7 +37,14 @@ const PLANS = {
   thrive: { name:'Thrive', price:799, audienceReach:'15,000–16,000', tag:'Multi-location · Franchises',           features:['4 Active Offers / 4 Active Ads','Multi-location (up to 3)','4-email sequence + contest offer*','Marketplace prioritization','Owner dashboard'] },
 }
 
-const RESTAURANT_TYPES = ['Quick Service (Fast Food)','Fast Casual','Pizza','Casual Dining','Food Truck','Bakery / Café','Bar & Grill','Other']
+const COUPON_DISCOUNTS: Record<string, number> = {
+  getgrow: 200, getexpand: 300, getthrive: 500,
+}
+const PLAN_COUPONS: Record<string, string> = {
+  grow: 'getgrow', expand: 'getexpand', thrive: 'getthrive',
+}
+
+const RESTAURANT_TYPES =['Quick Service (Fast Food)','Fast Casual','Pizza','Casual Dining','Food Truck','Bakery / Café','Bar & Grill','Other']
 const STEPS = [{num:1,label:'Plan'},{num:2,label:'Restaurant'},{num:3,label:'Your Offer'},{num:4,label:'Ad Creative'},{num:5,label:'Payment'}]
 
 function FieldError({ msg }: { msg?: string }) {
@@ -81,7 +89,7 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
       </div>
       <div className="grid md:grid-cols-3 gap-5">
         {(Object.entries(PLANS) as [Plan, typeof PLANS.grow][]).map(([key, plan]) => (
-          <div key={key} onClick={() => set('plan', key)}
+          <div key={key} onClick={() => { set('plan', key); set('coupon', PLAN_COUPONS[key]) }}
             className={`relative bg-white rounded-2xl p-7 border-2 cursor-pointer transition-all hover:-translate-y-1
               ${form.plan === key ? 'border-blue shadow-card' : 'border-cream-dark hover:border-blue/40'}`}>
             {'popular' in plan && (
@@ -89,7 +97,14 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
             )}
             <div className="font-bold text-tan text-lg mb-1">{plan.name}</div>
             <div className="text-xs text-tan-light mb-4">{plan.tag}</div>
-            <div className="text-3xl font-bold text-blue mb-1">${plan.price}<span className="text-sm text-tan-light font-normal">/mo</span></div>
+            {form.coupon ? (
+              <div className="mb-1">
+                <span className="line-through text-tan-light text-sm">${plan.price}/mo</span>
+                <span className="text-blue font-black text-xl ml-2">${plan.price - COUPON_DISCOUNTS[PLAN_COUPONS[key]]}/mo</span>
+              </div>
+            ) : (
+              <div className="text-3xl font-bold text-blue mb-1">${plan.price}<span className="text-sm text-tan-light font-normal">/mo</span></div>
+            )}
             <div className="bg-blue-pale rounded-xl p-3 my-4">
               <div className="text-xs font-bold text-blue-dark uppercase tracking-wider">📣 Meta Audience Reach</div>
               <div className="text-sm font-bold text-blue-deeper mt-1">{plan.audienceReach} people</div>
@@ -106,6 +121,11 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
           </div>
         ))}
       </div>
+      {form.coupon && (
+        <div className="bg-blue-pale border border-blue-light rounded-xl p-4 text-center mt-6">
+          <span className="text-blue font-semibold">🎉 Test drive pricing applied — your discount will be reflected at checkout.</span>
+        </div>
+      )}
       <p className="text-xs text-tan-light text-center mt-4 max-w-2xl mx-auto">
         *Estimated results based on typical Meta performance for localized restaurant campaigns. Actual reach and impressions vary based on audience size, campaign objective, creative quality, competition in the Meta ad auction, seasonality, and population density.
       </p>
@@ -874,11 +894,14 @@ function Step4({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
 function SignupPageInner() {
   const searchParams = useSearchParams()
   const planParam    = searchParams.get('plan')
+  const couponParam  = searchParams.get('coupon')
   const validPlans   = ['grow', 'expand', 'thrive']
   const initialPlan  = validPlans.includes(planParam ?? '') ? planParam as Plan : 'expand'
+  const validCoupons = ['getgrow', 'getexpand', 'getthrive']
+  const initialCoupon = validCoupons.includes(couponParam ?? '') ? couponParam! : ''
 
   useEffect(() => {
-    if (planParam) {
+    if (planParam || couponParam) {
       window.history.replaceState({}, '', '/signup')
     }
   }, [])
@@ -893,7 +916,7 @@ function SignupPageInner() {
     adHeadline:'', adSubheadline:'', adTemplate:'full_bleed',
     adColor:'#588aad',
     adImages:[{file:null,preview:''},{file:null,preview:''},{file:null,preview:''},{file:null,preview:''}],
-    audienceTypes:[], audienceAgeRange:'all', trafficTiming:[], adDays:[], additionalLocations:[],
+    audienceTypes:[], audienceAgeRange:'all', trafficTiming:[], adDays:[], additionalLocations:[], coupon: initialCoupon,
   })
 
   const set  = (field: keyof FormData, value: any) => setForm(prev => ({...prev, [field]: value}))

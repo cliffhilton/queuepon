@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
       plan, email, firstName, lastName, restaurantName, zipCode,
       phone, address, restaurantType, website, logoUrl, adImageUrl, adImageUrls,
       offerTitle, offerDescription, offerType,
-      adHeadline, adSubheadline, adTemplate, adColor, comeBackOffer,
+      adHeadline, adSubheadline, adTemplate, adColor, comeBackOffer, coupon,
       audienceTypes, audienceAgeRange, trafficTiming, adDays, additionalLocations,
     } = body
 
@@ -29,12 +29,20 @@ export async function POST(req: NextRequest) {
     const safeLogoUrl    = (logoUrl    || '').slice(0, 490)
     const safeAdImageUrl = (adImageUrl || '').slice(0, 490)
 
-    const subscription = await stripe.subscriptions.create({
+    // Resolve Stripe promotion code if coupon provided
+    let promotionCodeId: string | undefined
+    if (coupon) {
+      const promoCodes = await stripe.promotionCodes.list({ code: coupon, active: true, limit: 1 })
+      if (promoCodes.data.length > 0) promotionCodeId = promoCodes.data[0].id
+    }
+
+    const subscriptionParams: any = {
       customer:         customer.id,
       items:            [{ price: planConfig.priceId }],
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
       expand:           ['latest_invoice.payment_intent'],
+      ...(promotionCodeId ? { discounts: [{ promotion_code: promotionCodeId }] } : {}),
       metadata: {
         firstName, lastName, restaurantName, email, zipCode,
         phone, address, restaurantType, plan,
@@ -54,8 +62,10 @@ export async function POST(req: NextRequest) {
         audienceAgeRange: audienceAgeRange || 'all',
         trafficTiming:    JSON.stringify(trafficTiming  || []),
         adDays:           JSON.stringify(adDays         || []),
+        coupon:           coupon || '',
       },
-    })
+    }
+    const subscription = await stripe.subscriptions.create(subscriptionParams)
 
     const invoice       = subscription.latest_invoice as any
     const paymentIntent = invoice?.payment_intent as any
