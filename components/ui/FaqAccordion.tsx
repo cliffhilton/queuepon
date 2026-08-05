@@ -17,8 +17,8 @@ const FAQS = [
     a: 'The best-performing offers are simple and have clear value: BOGO deals, free appetizer with entree, a discount on a first visit, or a free dessert. We\'ll help you choose during setup.',
   },
   {
-    q: 'Is Meta (Facebook/Instagram) ad spend included?',
-    a: 'Yes, it\'s built into your plan. Grow includes $50/mo in ad spend, Expand includes $150/mo, and Thrive includes $350/mo. No separate ad account billing required.',
+    q: 'Is Meta (Facebook/Instagram) advertising included?',
+    a: 'Yes — every plan includes a done-for-you Meta ad campaign targeting locals in your ZIP code. Estimated audience reach varies by plan: Grow reaches 4,500–5,500 people, Expand reaches 9,000–10,000, and Thrive reaches 15,000–16,000. *Actual reach varies based on audience size, creative quality, and competition in the Meta ad auction.',
   },
   {
     q: 'How do customers claim the offer?',

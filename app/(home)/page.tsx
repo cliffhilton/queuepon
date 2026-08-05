@@ -148,7 +148,7 @@ export default function HomePage() {
           <div className="text-center mb-14">
             <div className="eyebrow">Plans & Pricing</div>
             <h2 className="section-title text-tan mb-4">Simple. Transparent. <span className="text-blue">All-inclusive.</span></h2>
-            <p className="section-sub max-w-md mx-auto">Meta ad spend is baked into every plan. We run the ads. You get the customers.</p>
+            <p className="section-sub max-w-md mx-auto">Meta audience targeting is built into every plan. We run the ads. You get the customers.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {plans.map(plan => (

@@ -77,7 +77,7 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
       <div className="text-center mb-10">
         <div className="eyebrow">Step 1 of 5</div>
         <h2 className="text-2xl font-bold text-tan mt-1">Choose Your Plan</h2>
-        <p className="text-tan-light mt-2 text-sm">Meta ad spend is included in every plan — targeted to your zip code.</p>
+        <p className="text-tan-light mt-2 text-sm">Meta audience targeting is included in every plan — targeted to your zip code.</p>
       </div>
       <div className="grid md:grid-cols-3 gap-5">
         {(Object.entries(PLANS) as [Plan, typeof PLANS.grow][]).map(([key, plan]) => (

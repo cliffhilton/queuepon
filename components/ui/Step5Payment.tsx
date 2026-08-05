@@ -9,9 +9,9 @@ import Link from 'next/link'
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 const PLANS = {
-  grow:   { name:'Grow',   price:199, adSpend:'$50/mo' },
-  expand: { name:'Expand', price:499, adSpend:'$150/mo' },
-  thrive: { name:'Thrive', price:799, adSpend:'$350/mo' },
+  grow:   { name:'Grow',   price:299, audienceReach:'4,500–5,500 people' },
+  expand: { name:'Expand', price:499, audienceReach:'9,000–10,000 people' },
+  thrive: { name:'Thrive', price:799, audienceReach:'15,000–16,000 people' },
 }
 
 interface Step5PaymentProps {
@@ -166,7 +166,7 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
         clientSecret={clientSecret}
         planName={plan.name}
         planPrice={plan.price}
-        adSpend={plan.adSpend}
+        audienceReach={plan.audienceReach}
         restaurantName={form.restaurantName}
         address={form.address}
         offerTitle={form.offerTitle}

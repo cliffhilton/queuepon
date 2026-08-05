@@ -11,7 +11,7 @@ interface StripeCardFormProps {
   clientSecret: string
   planName: string
   planPrice: number
-  adSpend: string
+  audienceReach: string
   restaurantName: string
   address: string
   offerTitle: string
@@ -22,7 +22,7 @@ interface StripeCardFormProps {
 }
 
 export function StripeCardForm({
-  clientSecret, planName, planPrice, adSpend,
+  clientSecret, planName, planPrice, audienceReach,
   restaurantName, address, offerTitle, adTemplate,
   zipCode, onBack, onSuccess,
 }: StripeCardFormProps) {
@@ -105,8 +105,8 @@ export function StripeCardForm({
             <div className="text-sm font-bold">${planPrice}/mo</div>
           </div>
           <div className="flex justify-between">
-            <div className="text-sm">Meta Ad Spend Included</div>
-            <div className="text-sm font-bold text-yellow-300">{adSpend}</div>
+            <div className="text-sm">Meta Audience Reach</div>
+            <div className="text-sm font-bold text-yellow-300">{audienceReach}</div>
           </div>
           <div className="flex justify-between">
             <div className="text-sm">Setup Fee</div>
