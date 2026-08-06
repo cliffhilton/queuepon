@@ -146,7 +146,7 @@ export default function HomePage() {
       <section className="bg-white py-16 px-6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <img
-            src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/images/calc_image.png"
+            src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/images/chef-sizzle.jpg"
             className="w-full rounded-2xl object-cover shadow-card"
             alt="180-Day Growth Planner"/>
           <div>
