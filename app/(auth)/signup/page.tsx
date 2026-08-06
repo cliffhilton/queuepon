@@ -38,7 +38,7 @@ const PLANS = {
 }
 
 const COUPON_DISCOUNTS: Record<string, number> = {
-  getgrow: 200, getexpand: 300, getthrive: 500,
+  getgrow: 200, getexpand: 300, getthrive: 400,
 }
 const PLAN_COUPONS: Record<string, string> = {
   grow: 'getgrow', expand: 'getexpand', thrive: 'getthrive',

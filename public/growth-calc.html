@@ -964,7 +964,7 @@
             event.target.classList.add('active');
             document.querySelectorAll('.tier-content').forEach(c => c.classList.remove('active'));
             document.getElementById(`tier-${tierName}`).classList.add('active');
-            const tierPrices = { grow: 99, expand: 199, thrive: 299 };
+            const tierPrices = { grow: 99, expand: 199, thrive: 399 };
             const price = tierPrices[tierName] || 99;
             document.getElementById('testDriveBtn').textContent = `Test Drive - $${price}`;
         }
