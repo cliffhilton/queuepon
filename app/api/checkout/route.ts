@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
       const promoCodes = await stripe.promotionCodes.list({ code: coupon, active: true, limit: 1 })
       if (promoCodes.data.length > 0) promotionCodeId = promoCodes.data[0].id
     }
+    console.log('Coupon received:', coupon)
+    console.log('Promotion code ID found:', promotionCodeId)
 
     const subscriptionParams: any = {
       customer:         customer.id,

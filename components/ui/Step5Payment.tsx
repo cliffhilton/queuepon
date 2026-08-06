@@ -92,6 +92,7 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
             adColor:          form.adColor,
             comeBackOffer:        form.comeBackOffer,
             additionalLocations:  JSON.stringify(form.additionalLocations || []),
+            coupon:               form.coupon,
           }),
         })
 
