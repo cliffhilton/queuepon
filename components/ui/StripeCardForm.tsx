@@ -11,6 +11,8 @@ interface StripeCardFormProps {
   clientSecret: string
   planName: string
   planPrice: number
+  discount: number
+  discountedPrice: number
   audienceReach: string
   restaurantName: string
   address: string
@@ -22,7 +24,7 @@ interface StripeCardFormProps {
 }
 
 export function StripeCardForm({
-  clientSecret, planName, planPrice, audienceReach,
+  clientSecret, planName, planPrice, discount, discountedPrice, audienceReach,
   restaurantName, address, offerTitle, adTemplate,
   zipCode, onBack, onSuccess,
 }: StripeCardFormProps) {
@@ -88,7 +90,7 @@ export function StripeCardForm({
             onClick={handleSubmit}
             disabled={paying || !stripe}
             className={`btn-primary px-8 py-3 ${paying ? 'opacity-75 cursor-wait' : ''}`}>
-            {paying ? '⏳ Processing...' : `🚀 Launch — $${planPrice}/mo`}
+            {paying ? '⏳ Processing...' : `🚀 Launch — $${discountedPrice}/mo`}
           </button>
         </div>
       </div>
@@ -102,7 +104,14 @@ export function StripeCardForm({
               <div className="text-sm font-semibold">{planName} Plan</div>
               <div className="text-xs opacity-50 mt-0.5">Billed monthly · Cancel anytime</div>
             </div>
-            <div className="text-sm font-bold">${planPrice}/mo</div>
+            {discount > 0 ? (
+              <div className="text-right">
+                <span className="line-through text-white/40 text-sm">${planPrice}/mo</span>
+                <span className="text-yellow-300 font-black text-xl ml-2">${discountedPrice}/mo</span>
+              </div>
+            ) : (
+              <span className="text-sm font-bold">${planPrice}/mo</span>
+            )}
           </div>
           <div className="flex justify-between">
             <div className="text-sm">Meta Audience Reach</div>
@@ -112,10 +121,16 @@ export function StripeCardForm({
             <div className="text-sm">Setup Fee</div>
             <div className="text-sm font-bold text-green-400">FREE</div>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-green-300">Test Drive Discount</span>
+              <span className="text-green-300 font-semibold">-${discount}</span>
+            </div>
+          )}
         </div>
         <div className="flex justify-between items-center mt-5">
           <div className="font-bold">Due Today</div>
-          <div className="text-3xl font-bold text-yellow-300">${planPrice}</div>
+          <div className="text-3xl font-bold text-yellow-300">${discountedPrice}</div>
         </div>
         <div className="mt-5 bg-white/10 rounded-xl p-4 text-xs opacity-75 leading-relaxed">
           Your Meta ad targeting <strong>ZIP {zipCode}</strong> goes live within 24 hours.

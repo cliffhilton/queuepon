@@ -14,6 +14,10 @@ const PLANS = {
   thrive: { name:'Thrive', price:799, audienceReach:'15,000–16,000 people' },
 }
 
+const COUPON_DISCOUNTS: Record<string, number> = {
+  getgrow: 200, getexpand: 300, getthrive: 400,
+}
+
 interface Step5PaymentProps {
   form: any
   back: () => void
@@ -37,6 +41,8 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
   const [uploadStatus, setUploadStatus] = useState('Uploading your photos...')
 
   const plan = PLANS[form.plan as keyof typeof PLANS]
+  const discount = form.coupon ? COUPON_DISCOUNTS[form.coupon] || 0 : 0
+  const discountedPrice = plan.price - discount
 
   useEffect(() => {
     const init = async () => {
@@ -167,6 +173,8 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
         clientSecret={clientSecret}
         planName={plan.name}
         planPrice={plan.price}
+        discount={discount}
+        discountedPrice={discountedPrice}
         audienceReach={plan.audienceReach}
         restaurantName={form.restaurantName}
         address={form.address}
