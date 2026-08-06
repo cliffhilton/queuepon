@@ -114,7 +114,7 @@ export default function GrowthPage() {
       {/* Test drive pricing */}
       <section className="bg-blue-deeper py-16 px-6">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-yellow-300">Ready to test drive Queuepon?</h2>
+          <h2 className="text-3xl font-bold" style={{color:'rgb(253 224 71)'}}>Ready to test drive Queuepon?</h2>
           <p className="text-white/70 mt-3 max-w-xl mx-auto">
             Go through the calculator above and claim your test drive rate below. Available exclusively through this page.
           </p>
