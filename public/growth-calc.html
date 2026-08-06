@@ -33,8 +33,36 @@
         .header {
             background: linear-gradient(135deg, #4B7A8F 0%, #3d5f73 100%);
             color: white;
-            padding: 40px 30px 30px;
+            padding: 20px 30px 30px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-top {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 11px;
+            opacity: 0.85;
+        }
+
+        .header-top-left {
+            flex: 1;
+            text-align: left;
+        }
+
+        .header-top-right {
+            flex: 1;
+            text-align: right;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 13px;
         }
 
         .header-badge {
@@ -432,6 +460,10 @@
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
+            <div class="header-top" style="margin-top: 12px; margin-bottom: 0;">
+                <div class="header-top-left"></div>
+                <div class="header-top-right" style="font-size: 10px; opacity: 0.8;">powered by <span class="logo-text">queuepon</span></div>
+            </div>
         </div>
 
         <!-- Content -->
@@ -440,10 +472,15 @@
             <div class="question-block active" id="q1">
                 <div class="question-label">Question 1 of 5</div>
                 <div class="question-text">What's your average sale?</div>
-                <div class="input-group">
-                    <input type="number" id="avgTicketPrice" placeholder="$" value="15" min="1">
+                <div class="input-group" style="position: relative;">
+                    <span style="position: absolute; left: 12px; top: 12px; font-size: 16px; color: #666;">$</span>
+                    <input type="number" id="avgOrderPrice" placeholder="25" value="25" min="1" style="padding-left: 28px;">
                 </div>
-                <div class="controls">
+                <div style="margin-top: 12px; padding: 8px; background: #f0fdf4; border-left: 3px solid #10b981; border-radius: 6px; font-size: 10px; line-height: 1.4; color: #555;">
+                    <strong style="color: #15803d; font-size: 11px;">Order Value Guide</strong><br>
+                    <span style="color: #666;">Total order value (typically 1.8 people). Fast Food: $14–$22 | Fast Casual: $22–$32 | Casual Dining: $36–$72</span>
+                </div>
+                <div class="controls" style="margin-top: 16px;">
                     <button class="btn btn-primary" onclick="nextQuestion(1)">Next</button>
                 </div>
             </div>
@@ -453,7 +490,7 @@
                 <div class="question-label">Question 2 of 5</div>
                 <div class="question-text">How many orders per month are you currently doing?</div>
                 <div class="input-group">
-                    <input type="number" id="currentOrders" placeholder="e.g., 2500" value="2500" min="100">
+                    <input type="number" id="currentOrders" placeholder="e.g., 1500" value="1500" min="100">
                 </div>
                 <div class="controls">
                     <button class="btn btn-secondary" onclick="prevQuestion(2)">Back</button>
@@ -482,17 +519,11 @@
                 <div class="question-label">Question 4 of 5</div>
                 <div class="question-text">What % of customers return within 180 days?</div>
                 <div class="slider-container">
-                    <div class="slider-value"><span id="sliderValue">30</span>%</div>
-                    <input type="range" id="repeatSlider" min="0" max="100" value="30" step="1" oninput="updateSliderValue(this.value)">
+                    <div class="slider-value"><span id="sliderValue">23</span>%</div>
+                    <input type="range" id="repeatSlider" min="0" max="100" value="23" step="1" oninput="updateSliderValue(this.value)">
                 </div>
-                <div style="margin-top: 16px; padding: 12px; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 6px; font-size: 12px; line-height: 1.6; color: #92400e;">
-                    <strong>📌 The Baseline Reality:</strong> A 2026 <a href="https://bloomintelligence.com/blog/restaurant-customer-retention-2026-guide/" target="_blank" style="color: #d97706; text-decoration: underline;">Bloom Intelligence analysis</a> of 1,000+ locations found that only <strong>23% of first-time guests return</strong>, resulting in <strong>77.4% customer churn</strong> after a single visit. This is your baseline without intentional marketing.<br><br>
-                    <strong>📊 Industry Benchmarks by Type (180-day window):</strong><br>
-                    <strong>Pizza &amp; Fast-Casual:</strong> 35–55% return rate (lower price point, high convenience)<br>
-                    <strong>Coffee Shops &amp; Cafes:</strong> 50–70% return rate (daily routine habits)<br>
-                    <strong>Fine Dining:</strong> 15–30% return rate (destination establishments, longer consideration cycle)<br><br>
-                    Reference: <a href="https://qubriux.com/what-is-a-good-repeat-customer-rate/" target="_blank" style="color: #d97706; text-decoration: underline;">Qubriux</a> | <a href="https://bloomintelligence.com/blog/restaurant-customer-retention-2026-guide/" target="_blank" style="color: #d97706; text-decoration: underline;">Bloom Intelligence 2026</a><br><br>
-                    Enter your actual repeat rate based on POS data, or your realistic improvement target with QUEUEPON.
+                <div style="margin-top: 12px; padding: 8px; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 6px; font-size: 10px; line-height: 1.4; color: #92400e;">
+                    <strong>💡 The Baseline:</strong> <a href="https://bloomintelligence.com/blog/restaurant-customer-retention-2026-guide/" target="_blank" style="color: #d97706; text-decoration: underline;">Bloom Intelligence 2026</a> found 23% baseline return rate (77% churn). Industry ranges: Pizza/Fast-Casual 35–55% | Coffee 50–70% | Fine Dining 15–30%. Enter your POS rate or QUEUEPON improvement target.
                 </div>
                 <div class="controls" style="margin-top: 20px;">
                     <button class="btn btn-secondary" onclick="prevQuestion(4)">Back</button>
@@ -537,7 +568,7 @@
                         <span id="goalOrders">450</span> new orders needed
                     </div>
                     <div style="font-size: 14px; color: #666; margin-top: 8px;">
-                        To grow <span id="displayGoal">15</span>% from your current <span id="displayCurrent">2,500</span>/month baseline
+                        To grow <span id="displayGoal">15</span>% from your current <span style="font-weight: 600;"><span id="displayCurrent">2,500</span> orders</span>/month baseline
                     </div>
                 </div>
 
@@ -612,7 +643,7 @@
                     </div>
                     <div class="tier-metrics">
                         <div class="metric-box">
-                            <div class="metric-label">Total Orders Generated</div>
+                            <div class="metric-label">180 Day Additional Orders</div>
                             <div style="display: flex; align-items: baseline; gap: 8px;">
                                 <div class="metric-value" id="grow-total">285</div>
                                 <div id="grow-boost" style="display: none; font-size: 12px; color: #10b981; font-weight: 600;">+<span id="grow-boost-num">87</span> (+30%)</div>
@@ -640,7 +671,7 @@
                     </div>
                     <div class="tier-metrics">
                         <div class="metric-box">
-                            <div class="metric-label">Total Orders Generated</div>
+                            <div class="metric-label">180 Day Additional Orders</div>
                             <div style="display: flex; align-items: baseline; gap: 8px;">
                                 <div class="metric-value" id="expand-total">455</div>
                                 <div id="expand-boost" style="display: none; font-size: 12px; color: #10b981; font-weight: 600;">+<span id="expand-boost-num">140</span> (+31%)</div>
@@ -668,7 +699,7 @@
                     </div>
                     <div class="tier-metrics">
                         <div class="metric-box">
-                            <div class="metric-label">Total Orders Generated</div>
+                            <div class="metric-label">180 Day Additional Orders</div>
                             <div style="display: flex; align-items: baseline; gap: 8px;">
                                 <div class="metric-value" id="thrive-total">810</div>
                                 <div id="thrive-boost" style="display: none; font-size: 12px; color: #10b981; font-weight: 600;">+<span id="thrive-boost-num">250</span> (+31%)</div>
@@ -704,10 +735,10 @@
     <script>
         let currentQ = 1;
         let answers = {
-            avgTicketPrice: 15,
-            currentOrders: 2500,
+            avgOrderPrice: 25,
+            currentOrders: 1500,
             growth: 15,
-            repeatRate: 30,
+            repeatRate: 23,
             inStoreCapture: false
         };
 
@@ -729,7 +760,7 @@
         }
 
         function nextQuestion(from) {
-            if (from === 1) answers.avgTicketPrice = parseInt(document.getElementById('avgTicketPrice').value) || 15;
+            if (from === 1) answers.avgOrderPrice = parseInt(document.getElementById('avgOrderPrice').value) || 15;
             if (from === 2) answers.currentOrders = parseInt(document.getElementById('currentOrders').value) || 2500;
             if (from === 3) answers.growth = parseInt(document.getElementById('growthGroup').querySelector('.selected').textContent) || 15;
             if (from === 4) answers.repeatRate = parseInt(document.getElementById('repeatSlider').value) || 30;
@@ -762,6 +793,7 @@
                 let newThisMonth = newOrdersPerMonth;
                 let returningThisMonth = 0;
 
+                // Calculate returns from previous months
                 for (let prevMonth = 1; prevMonth < m; prevMonth++) {
                     if (returnCustomers[prevMonth]) {
                         returningThisMonth += returnCustomers[prevMonth];
@@ -769,6 +801,8 @@
                 }
 
                 const totalThisMonth = newThisMonth + returningThisMonth;
+
+                // Store who returns next month
                 returnCustomers[m] = Math.round(newThisMonth * (repeatRate / 100));
 
                 data.push({
@@ -796,7 +830,7 @@
                 headerRow.appendChild(th);
             });
 
-            // Baseline in 90 days: currentOrders × repeatRate / 100
+            // Calculate baseline repeats boost
             const baselineIn90Days = Math.round(answers.currentOrders * answers.repeatRate / 100);
             const boostedIn90Days = Math.round(baselineIn90Days * 1.15);
             const increaseIn90Days = boostedIn90Days - baselineIn90Days;
@@ -812,6 +846,7 @@
                 cumulativeTotal += row.total;
                 const tr = tbody.insertRow();
 
+                // Highlight M6 (180-day mark)
                 if (row.month === 6) {
                     tr.style.background = '#f0f9ff';
                     tr.style.fontWeight = '600';
@@ -819,6 +854,7 @@
                     tr.style.borderBottom = '2px solid #4B7A8F';
                 }
 
+                // Add quarter marker for first month of each quarter
                 const quarterMonths = [1, 4];
                 if (quarterMonths.includes(row.month)) {
                     tr.insertCell(0).textContent = `${quarters[currentQuarter - 1]} - M${row.month}`;
@@ -832,6 +868,7 @@
                 tr.insertCell(1).textContent = `${row.new}`;
                 tr.insertCell(2).textContent = `${row.returning}`;
 
+                // Baseline repeats boost column with growth from organic discovery
                 if (answers.inStoreCapture) {
                     let monthlyBoost = baselineBoostPerMonth;
                     const growthByMonth = [0, 0, 10, 12, 12, 6, 4, 3, 2, 2, 1, 1, 1];
@@ -849,7 +886,7 @@
                     tr.insertCell(4).innerHTML = `<span class="number">${totalThisMonth}</span>`;
                     tr.insertCell(5).innerHTML = `<span class="number">${cumulativeTotal + cumulativeBaseline}</span>`;
                 } else {
-                    tr.insertCell(3).textContent = '—';
+                    tr.insertCell(3).textContent = '–';
                     tr.insertCell(4).innerHTML = `<span class="number">${row.total}</span>`;
                     tr.insertCell(5).innerHTML = `<span class="number">${cumulativeTotal}</span>`;
                 }
@@ -860,6 +897,7 @@
             answers.repeatRate = parseInt(document.getElementById('repeatSlider').value) || 30;
             answers.inStoreCapture = document.getElementById('inStoreCapture').checked;
 
+            // Increase repeat rate by 15% if in-store capture is enabled
             let effectiveRepeatRate = answers.repeatRate;
             if (answers.inStoreCapture) {
                 effectiveRepeatRate = Math.min(100, answers.repeatRate + 15);
@@ -869,29 +907,37 @@
             const growth = answers.growth;
             const goalOrders = Math.round(currentOrders * (growth / 100));
 
+            // Update display
             document.getElementById('goalOrders').textContent = goalOrders;
             document.getElementById('displayGoal').textContent = growth;
             document.getElementById('displayCurrent').textContent = currentOrders.toLocaleString();
-            document.getElementById('summaryAvgSale').textContent = answers.avgTicketPrice;
+
+            // Update answer summary
+            document.getElementById('summaryAvgSale').textContent = answers.avgOrderPrice;
             document.getElementById('summaryMonthly').textContent = currentOrders.toLocaleString();
             document.getElementById('summaryGrowth').textContent = growth;
             document.getElementById('summaryRepeatRate').textContent = answers.repeatRate;
 
+            // Calculate baseline repeats boost for use in goal checking
             const baselineIn90Days = Math.round(currentOrders * answers.repeatRate / 100);
             const boostedIn90Days = Math.round(baselineIn90Days * 1.15);
             const increaseIn90Days = boostedIn90Days - baselineIn90Days;
             const baselineBoostPerMonth = Math.round(increaseIn90Days / 3);
 
+            // Calculate and display tiers
             Object.keys(tiers).forEach(tierKey => {
                 const tier = tiers[tierKey];
                 const avgNew = Math.round((tier.minNew + tier.maxNew) / 2);
+
                 const data12month = calculateFlywheelMonth(avgNew, answers.repeatRate, 12);
                 const baselineData = calculateFlywheelMonth(avgNew, answers.repeatRate, 12);
 
+                // Find which month's total first meets or exceeds goal
                 let monthReachesGoal = null;
                 const growthByMonth = [0, 0, 10, 12, 12, 6, 4, 3, 2, 2, 1, 1, 1];
                 data12month.forEach(m => {
                     let monthTotal = m.total;
+
                     if (answers.inStoreCapture) {
                         let monthlyBoost = baselineBoostPerMonth;
                         if (m.month > 1 && growthByMonth[m.month]) {
@@ -902,21 +948,51 @@
                         }
                         monthTotal = m.total + monthlyBoost;
                     }
+
                     if (monthTotal >= goalOrders && !monthReachesGoal) {
                         monthReachesGoal = m.month;
                     }
                 });
 
+                // Calculate totals
                 const totalNew12month = data12month.reduce((sum, m) => sum + m.new, 0);
                 const baselineTotal = baselineData.reduce((sum, m) => sum + m.new, 0);
-                const ticketIncrease = totalNew12month - baselineTotal;
-                const percentIncrease = Math.round((ticketIncrease / baselineTotal) * 100);
-                const totalOrdersGenerated = data12month.reduce((sum, m) => sum + m.total, 0);
-                const sixMonthNew = data12month.slice(0, 6).reduce((sum, m) => sum + m.new, 0);
-                const revenueFromNew = sixMonthNew * answers.avgTicketPrice;
+                const orderIncrease = totalNew12month - baselineTotal;
+                const percentIncrease = Math.round((orderIncrease / baselineTotal) * 100);
 
-                buildTable(tierKey, `${tierKey}-table`, avgNew);
+                // 180-day additional orders
+                let totalOrdersGenerated = data12month.slice(0, 6).reduce((sum, m) => sum + m.total, 0);
 
+                if (answers.inStoreCapture) {
+                    const baselineIn90Days = Math.round(answers.currentOrders * answers.repeatRate / 100);
+                    const boostedIn90Days = Math.round(baselineIn90Days * 1.15);
+                    const increaseIn90Days = boostedIn90Days - baselineIn90Days;
+                    const baselineBoostPerMonth = Math.round(increaseIn90Days / 3);
+                    const growthByMonth = [0, 0, 10, 12, 12, 6, 4, 3, 2, 2, 1, 1, 1];
+
+                    let cumulativeBaseline = 0;
+                    for (let m = 1; m <= 6; m++) {
+                        let monthlyBoost = baselineBoostPerMonth;
+                        if (m > 1 && growthByMonth[m]) {
+                            monthlyBoost = baselineBoostPerMonth + growthByMonth[m];
+                            for (let prev = 2; prev < m; prev++) {
+                                monthlyBoost += growthByMonth[prev];
+                            }
+                        }
+                        cumulativeBaseline += monthlyBoost;
+                    }
+                    totalOrdersGenerated += cumulativeBaseline;
+                }
+
+                // Calculate 180-day revenue (first 6 months of total orders generated)
+                const sixMonthTotal = data12month.slice(0, 6).reduce((sum, m) => sum + m.total, 0);
+                const revenueFromNew = sixMonthTotal * answers.avgOrderPrice;
+
+                // Build table
+                const tableId = `${tierKey}-table`;
+                buildTable(tierKey, tableId, avgNew);
+
+                // Update metrics
                 document.getElementById(`${tierKey}-total`).textContent = totalOrdersGenerated;
                 document.getElementById(`${tierKey}-revenue`).textContent = `$${revenueFromNew.toLocaleString()}`;
                 const statusEl = document.getElementById(`${tierKey}-status`);
@@ -928,15 +1004,17 @@
                     statusEl.style.color = '#ef4444';
                 }
 
-                if (answers.inStoreCapture && ticketIncrease > 0) {
+                // Show boost badge if promotion is active and there's an actual boost
+                if (answers.inStoreCapture && orderIncrease > 0) {
                     const boostEl = document.getElementById(`${tierKey}-boost`);
                     const boostNumEl = document.getElementById(`${tierKey}-boost-num`);
                     boostEl.style.display = 'inline-block';
-                    boostNumEl.textContent = ticketIncrease;
-                    boostEl.textContent = `+${ticketIncrease} (+${percentIncrease}%)`;
+                    boostNumEl.textContent = orderIncrease;
+                    boostEl.textContent = `+${orderIncrease} (+${percentIncrease}%)`;
                 }
             });
 
+            // Show repeat rate boost or missing promotion warning
             if (answers.inStoreCapture) {
                 document.getElementById('repeatRateBoost').style.display = 'block';
                 document.getElementById('missingPromotionBox').style.display = 'none';
@@ -949,21 +1027,50 @@
                 document.getElementById('missingPromotionBox').style.display = 'block';
             }
 
+            // Hide questions, show results
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`q${i}`).style.display = 'none';
             }
+            document.querySelector('.content').style.display = 'block';
+            document.getElementById('resultsPage').style.display = 'block';
             document.getElementById('resultsPage').classList.add('active');
-            window.scrollTo(0, 0);
+
+            // Ensure the active tier content is visibly displayed
+            document.querySelectorAll('.tier-content').forEach(c => {
+                if (c.classList.contains('active')) {
+                    c.style.display = 'block';
+                } else {
+                    c.style.display = 'none';
+                }
+            });
+
+            // Scroll to show the tier tabs and table
+            setTimeout(() => {
+                const tierTabs = document.querySelector('.tier-tabs');
+                if (tierTabs) {
+                    tierTabs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
 
-        let selectedTier = 'grow';
+        let selectedTier = 'grow'; // Track selected tier
 
         function switchTier(tierName) {
             selectedTier = tierName;
+            // Update tabs
             document.querySelectorAll('.tier-tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
-            document.querySelectorAll('.tier-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(`tier-${tierName}`).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tier-content').forEach(c => {
+                c.classList.remove('active');
+                c.style.display = 'none';
+            });
+            const activeContent = document.getElementById(`tier-${tierName}`);
+            activeContent.classList.add('active');
+            activeContent.style.display = 'block';
+
+            // Update test drive button
             const tierPrices = { grow: 99, expand: 199, thrive: 399 };
             const price = tierPrices[tierName] || 99;
             document.getElementById('testDriveBtn').textContent = `Test Drive - $${price}`;
@@ -974,7 +1081,7 @@
             const tierName = activeTierTab.textContent.toLowerCase().split(' ')[0];
             const tierMap = { grow: 'grow', expand: 'expand', thrive: 'thrive' };
             const planParam = tierMap[tierName];
-            window.location.href = `https://queuepon.com/signup?plan=${planParam}`;
+            window.top.location.href = `https://queuepon.com/signup?plan=${planParam}`;
         }
 
         function testDrive() {
@@ -983,7 +1090,13 @@
                 'expand': 'https://queuepon.com/signup?plan=expand&coupon=getexpand',
                 'thrive': 'https://queuepon.com/signup?plan=thrive&coupon=getthrive'
             };
-            window.location.href = tierUrls[selectedTier] || tierUrls['grow'];
+            window.top.location.href = tierUrls[selectedTier] || tierUrls['grow'];
+        }
+
+        function enableAndRecalculate() {
+            document.getElementById('inStoreCapture').checked = true;
+            showResults();
+            window.scrollTo(0, 0);
         }
 
         function togglePromotionAndRecalculate() {
@@ -994,18 +1107,56 @@
         }
 
         function recalculate() {
-            for (let i = 1; i <= 5; i++) {
-                document.getElementById(`q${i}`).style.display = 'none';
-            }
-            document.getElementById('resultsPage').classList.remove('active');
-            setQuestion(1);
-            document.getElementById('avgTicketPrice').value = 15;
-            document.getElementById('currentOrders').value = 2500;
-            document.getElementById('repeatSlider').value = 30;
-            document.getElementById('sliderValue').textContent = 30;
+            // Reset form values
+            document.getElementById('avgOrderPrice').value = 25;
+            document.getElementById('currentOrders').value = 1500;
+            document.getElementById('repeatSlider').value = 23;
+            document.getElementById('sliderValue').textContent = 23;
             document.getElementById('inStoreCapture').checked = false;
+
+            // Reset growth goal button selection to 15%
+            document.getElementById('growthGroup').querySelectorAll('.btn-option').forEach(b => b.classList.remove('selected'));
+            document.getElementById('growthGroup').querySelector('button:nth-child(2)').classList.add('selected');
+
+            // Reset tier selection to Grow
+            selectedTier = 'grow';
+
+            // Hide all tier content
+            document.querySelectorAll('.tier-content').forEach(el => el.classList.remove('active'));
+
+            // Hide results page explicitly
+            const resultsPage = document.getElementById('resultsPage');
+            resultsPage.classList.remove('active');
+            resultsPage.style.display = 'none';
+
+            // Show content area
+            const content = document.querySelector('.content');
+            content.style.display = 'block';
+
+            // Remove display: none from all questions
+            for (let i = 1; i <= 5; i++) {
+                const q = document.getElementById(`q${i}`);
+                q.style.display = '';
+                q.classList.remove('active');
+            }
+
+            // Reset answers object
+            answers = {
+                avgOrderPrice: 25,
+                currentOrders: 1500,
+                growth: 15,
+                repeatRate: 23,
+                inStoreCapture: false
+            };
+
+            // Show question 1
+            document.getElementById('q1').classList.add('active');
+            document.getElementById('progressFill').style.width = '20%';
+            currentQ = 1;
+            window.scrollTo(0, 0);
         }
 
+        // Initialize
         setQuestion(1);
     </script>
 </body>
