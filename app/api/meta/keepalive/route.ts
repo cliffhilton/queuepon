@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
           message: 'Keepalive test — safe to ignore',
           name:    'Queuepon Keepalive',
           call_to_action: {
-            type:  'GET_OFFER',
+            type:  'LEARN_MORE',
             value: { link: 'https://queuepon.com' },
           },
         },

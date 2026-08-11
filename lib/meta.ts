@@ -88,7 +88,7 @@ async function createAdCreative(
       titles:                [{ text: headline }],
       descriptions:          [{ text: `Claim your offer at ${params.landingPageUrl}` }],
       link_urls:             [{ website_url: params.landingPageUrl }],
-      call_to_action_types:  ['GET_OFFER'],
+      call_to_action_types:  ['LEARN_MORE'],
     }
   } else {
     body.object_story_spec = {
@@ -104,7 +104,7 @@ async function createAdCreative(
         name:        headline,
         description: `Claim your offer at ${params.landingPageUrl}`,
         call_to_action: {
-          type:  'GET_OFFER',
+          type:  'LEARN_MORE',
           value: { link: params.landingPageUrl },
         },
       },
