@@ -89,7 +89,7 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
       </div>
       <div className="grid md:grid-cols-3 gap-5">
         {(Object.entries(PLANS) as [Plan, typeof PLANS.grow][]).map(([key, plan]) => (
-          <div key={key} onClick={() => { set('plan', key); set('coupon', PLAN_COUPONS[key]) }}
+          <div key={key} onClick={() => { set('plan', key); if (form.coupon) set('coupon', PLAN_COUPONS[key]) }}
             className={`relative bg-white rounded-2xl p-7 border-2 cursor-pointer transition-all hover:-translate-y-1
               ${form.plan === key ? 'border-blue shadow-card' : 'border-cream-dark hover:border-blue/40'}`}>
             {'popular' in plan && (
