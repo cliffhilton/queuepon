@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
       const meta = subscription.metadata ?? {}
       if (!meta.restaurantName) return NextResponse.json({ received: true })
 
+      const isTest = meta.coupon === 'internaltest'
+
       // Check if restaurant already exists
       const { data: existing } = await supabase
         .from('restaurants')
@@ -112,6 +114,7 @@ export async function POST(req: NextRequest) {
           user_id:               userId,
           website:               meta.website   || null,
           logo_url:              meta.logoUrl   || null,
+          is_test:               isTest,
         })
         .select()
         .single()
@@ -156,53 +159,52 @@ export async function POST(req: NextRequest) {
         console.log(`✅ Welcome + password setup email sent to ${meta.email}`)
       } catch (e) { console.error('Welcome email error:', e) }
 
-      // Meta API campaign creation
-      try {
-        const landingPageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/offers/${offerSlug}`
-        const parsedAdditionalLocations: Array<{ address: string; zipCode: string }> =
-          JSON.parse(meta.additionalLocations || '[]')
-        const metaResult = await createMetaCampaign({
-          restaurantName:   meta.restaurantName,
-          offerTitle:       meta.offerTitle,
-          adHeadline:       meta.adHeadline,
-          adSubheadline:    meta.adSubheadline,
-          zipCode:          meta.zipCode,
-          adImageUrl:       meta.adImageUrl || '',
-          landingPageUrl,
-          plan:             meta.plan,
-          adColor:          meta.adColor || '#588aad',
-          audienceTypes:    JSON.parse(meta.audienceTypes    || '[]'),
-          audienceAgeRange: meta.audienceAgeRange             || 'all',
-          trafficTiming:    JSON.parse(meta.trafficTiming    || '[]'),
-          adDays:           JSON.parse(meta.adDays           || '[]'),
-          adImageUrls:      meta.adImageUrl ? [meta.adImageUrl] : [],
-          zipCodes:         [meta.zipCode, ...parsedAdditionalLocations.map(l => l.zipCode)].filter(Boolean),
-        })
-        // Save Meta campaign IDs to the offer
-        if (metaResult) {
-          await supabase.from('offers').update({
-            meta_campaign_id: metaResult.campaignId,
-            meta_adset_id:    metaResult.adSetId,
-            meta_ad_id:       metaResult.adId,
-            meta_ad_status:   'pending_review',
-          }).eq('restaurant_id', restaurant.id)
-
-          // Update restaurant meta_ad_status
-          await supabase.from('restaurants').update({
-            meta_ad_status: 'setting_up',
-          }).eq('id', restaurant.id)
-
-          console.log(`✅ Meta campaign created for ${meta.restaurantName}`)
+      // Meta API campaign creation — skipped for test signups
+      if (isTest) {
+        console.log(`⏭ Skipping Meta campaign — test signup (${meta.restaurantName})`)
+      } else {
+        try {
+          const landingPageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/offers/${offerSlug}`
+          const parsedAdditionalLocations: Array<{ address: string; zipCode: string }> =
+            JSON.parse(meta.additionalLocations || '[]')
+          const metaResult = await createMetaCampaign({
+            restaurantName:   meta.restaurantName,
+            offerTitle:       meta.offerTitle,
+            adHeadline:       meta.adHeadline,
+            adSubheadline:    meta.adSubheadline,
+            zipCode:          meta.zipCode,
+            adImageUrl:       meta.adImageUrl || '',
+            landingPageUrl,
+            plan:             meta.plan,
+            adColor:          meta.adColor || '#588aad',
+            audienceTypes:    JSON.parse(meta.audienceTypes    || '[]'),
+            audienceAgeRange: meta.audienceAgeRange             || 'all',
+            trafficTiming:    JSON.parse(meta.trafficTiming    || '[]'),
+            adDays:           JSON.parse(meta.adDays           || '[]'),
+            adImageUrls:      meta.adImageUrl ? [meta.adImageUrl] : [],
+            zipCodes:         [meta.zipCode, ...parsedAdditionalLocations.map(l => l.zipCode)].filter(Boolean),
+          })
+          if (metaResult) {
+            await supabase.from('offers').update({
+              meta_campaign_id: metaResult.campaignId,
+              meta_adset_id:    metaResult.adSetId,
+              meta_ad_id:       metaResult.adId,
+              meta_ad_status:   'pending_review',
+            }).eq('restaurant_id', restaurant.id)
+            await supabase.from('restaurants').update({
+              meta_ad_status: 'setting_up',
+            }).eq('id', restaurant.id)
+            console.log(`✅ Meta campaign created for ${meta.restaurantName}`)
+          }
+        } catch (metaErr) {
+          console.error(
+            `❌ META CAMPAIGN FAILED — needs manual follow-up:`,
+            `restaurant="${meta.restaurantName}"`,
+            `email="${meta.email}"`,
+            `plan="${meta.plan}"`,
+            metaErr,
+          )
         }
-      } catch (metaErr) {
-        // Don't fail the whole webhook if Meta API fails
-        console.error(
-          `❌ META CAMPAIGN FAILED — needs manual follow-up:`,
-          `restaurant="${meta.restaurantName}"`,
-          `email="${meta.email}"`,
-          `plan="${meta.plan}"`,
-          metaErr,
-        )
       }
 
     } catch (err) {

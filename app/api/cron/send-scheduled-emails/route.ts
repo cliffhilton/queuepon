@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
       .is('come_back_offer_text', null)
       .is('come_back_setup_email_sent_at', null)
       .eq('status', 'active')
+      .eq('is_test', false)
 
     for (const r of restaurants ?? []) {
       try {
@@ -68,12 +69,16 @@ export async function GET(req: NextRequest) {
     for (const c of customers ?? []) {
       try {
         const { data: restaurant } = await supabase
-          .from('restaurants').select('name').eq('id', c.restaurant_id).single()
+          .from('restaurants').select('name, is_test').eq('id', c.restaurant_id).single()
         const { data: offer } = await supabase
           .from('offers').select('title').eq('id', c.offer_id).single()
 
         if (!restaurant || !offer) {
           log.push(`⚠️ [day3-customer] Missing restaurant/offer for customer ${c.id}`)
+          continue
+        }
+        if (restaurant.is_test) {
+          log.push(`⏭ [day3-customer] Skipping ${c.email} — test restaurant`)
           continue
         }
 
@@ -107,12 +112,16 @@ export async function GET(req: NextRequest) {
     for (const c of customers ?? []) {
       try {
         const { data: restaurant } = await supabase
-          .from('restaurants').select('name').eq('id', c.restaurant_id).single()
+          .from('restaurants').select('name, is_test').eq('id', c.restaurant_id).single()
         const { data: offer } = await supabase
           .from('offers').select('title, slug').eq('id', c.offer_id).single()
 
         if (!restaurant || !offer) {
           log.push(`⚠️ [day10-customer] Missing restaurant/offer for customer ${c.id}`)
+          continue
+        }
+        if (restaurant.is_test) {
+          log.push(`⏭ [day10-customer] Skipping ${c.email} — test restaurant`)
           continue
         }
 
@@ -151,13 +160,17 @@ export async function GET(req: NextRequest) {
       try {
         const { data: restaurant } = await supabase
           .from('restaurants')
-          .select('name, come_back_offer_text, come_back_offer_image_url')
+          .select('name, is_test, come_back_offer_text, come_back_offer_image_url')
           .eq('id', c.restaurant_id).single()
         const { data: offer } = await supabase
           .from('offers').select('title, slug, ad_image_url').eq('id', c.offer_id).single()
 
         if (!restaurant || !offer) {
           log.push(`⚠️ [day25-customer] Missing restaurant/offer for customer ${c.id}`)
+          continue
+        }
+        if (restaurant.is_test) {
+          log.push(`⏭ [day25-customer] Skipping ${c.email} — test restaurant`)
           continue
         }
 
@@ -201,6 +214,7 @@ export async function GET(req: NextRequest) {
       .gte('created_at', daysAgo(7))
       .is('ad_ready_email_sent_at', null)
       .eq('status', 'active')
+      .eq('is_test', false)
 
     for (const r of restaurants ?? []) {
       try {
