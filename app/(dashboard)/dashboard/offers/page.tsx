@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { CopyLinkButton } from '@/components/dashboard/CopyLinkButton'
+import { ComeBackOfferSection } from '@/components/dashboard/ComeBackOfferSection'
 import { BirthdayOfferSection } from '@/components/dashboard/BirthdayOfferSection'
 
 const OFFER_LIMITS: Record<string, number> = { grow: 1, expand: 2, thrive: 4 }
@@ -12,7 +13,7 @@ export default async function OffersPage() {
   if (!session) redirect('/login')
 
   const { data: restaurant } = await supabase
-    .from('restaurants').select('id,name,zip_code,plan,birthday_offer').eq('user_id', session.user.id).single()
+    .from('restaurants').select('id,name,zip_code,plan,birthday_offer,come_back_offer_text,come_back_offer_image_url').eq('user_id', session.user.id).single()
 
   const { data: offers } = await supabase
     .from('offers').select('*').eq('restaurant_id', restaurant?.id)
@@ -76,6 +77,11 @@ export default async function OffersPage() {
                   </div>
                   <CopyLinkButton slug={offer.slug}/>
                 </div>
+                <ComeBackOfferSection
+                  restaurantId={restaurant?.id ?? ''}
+                  comeBackOfferText={restaurant?.come_back_offer_text ?? ''}
+                  comeBackOfferImageUrl={restaurant?.come_back_offer_image_url ?? ''}
+                />
                 <BirthdayOfferSection
                   restaurantId={restaurant?.id ?? ''}
                   birthdayOffer={restaurant?.birthday_offer ?? ''}
