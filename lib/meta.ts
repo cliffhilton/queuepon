@@ -1,6 +1,8 @@
 // Meta Marketing API integration
 // Docs: https://developers.facebook.com/docs/marketing-apis
 
+const FALLBACK_AD_IMAGE_URL = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.png'
+
 const META_API_VERSION = 'v19.0'
 const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
 
@@ -42,21 +44,26 @@ function dailyBudgetCents(plan: string): number {
 
 // ── Step 1: Upload image to Meta ───────────────────────────────────────────
 async function uploadImageToMeta(imageUrl: string, accessToken: string, adAccountId: string): Promise<string> {
-  const res = await fetch(
-    `${BASE_URL}/${adAccountId}/adimages`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url:          imageUrl,
-        access_token: accessToken,
-      }),
-    }
-  )
+  let res: Response
+  try {
+    res = await fetch(
+      `${BASE_URL}/${adAccountId}/adimages`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url:          imageUrl,
+          access_token: accessToken,
+        }),
+      }
+    )
+  } catch (fetchErr: any) {
+    throw new Error(`Meta image upload network error for "${imageUrl}": ${fetchErr.message}`)
+  }
   const data = await res.json()
-  if (data.error) throw new Error(`Meta image upload failed: ${data.error.message}`)
+  if (data.error) throw new Error(`Meta image upload failed for "${imageUrl}": ${data.error.message} (code ${data.error.code ?? 'unknown'})`)
 
-  const images  = data.images
+  const images   = data.images
   const firstKey = Object.keys(images)[0]
   return images[firstKey].hash
 }
@@ -75,6 +82,11 @@ async function createAdCreative(
   const isDynamic    = imageHashes.length > 1
   const postText     = params.adSubheadline || `${params.offerTitle} — Exclusive offer for ${params.zipCode} locals`
   const headline     = params.adHeadline || params.offerTitle
+
+  // Guard: never send an imageless creative to Meta — always fails and counts against error rate
+  if (imageHashes.length === 0 && !params.adImageUrl) {
+    throw new Error(`Meta creative blocked: no image available for "${params.restaurantName}" — all uploads failed and fallback was unavailable`)
+  }
 
   const body: Record<string, any> = {
     name:         `${params.restaurantName} — ${params.offerTitle}`,
@@ -268,7 +280,20 @@ export async function createMetaCampaign(params: MetaCampaignParams): Promise<Me
       imageHashes.push(hash)
       console.log(`✅ Image ${i + 1} uploaded to Meta: ${hash}`)
     } catch (imgErr) {
-      console.error(`Image ${i + 1} upload skipped:`, imgErr)
+      console.error(`❌ Image ${i + 1} upload failed (${allUrls[i]}):`, imgErr)
+    }
+  }
+
+  // Fallback: if no restaurant images uploaded successfully, use Queuepon placeholder
+  if (imageHashes.length === 0) {
+    console.warn(`⚠️ No images uploaded for ${params.restaurantName} — falling back to placeholder`)
+    try {
+      const fallbackHash = await uploadImageToMeta(FALLBACK_AD_IMAGE_URL, accessToken, adAccountId)
+      imageHashes.push(fallbackHash)
+      console.log(`✅ Fallback image uploaded to Meta: ${fallbackHash}`)
+    } catch (fallbackErr) {
+      console.error(`❌ Fallback image upload also failed:`, fallbackErr)
+      // createAdCreative will throw before reaching Meta if imageHashes is still empty
     }
   }
 

@@ -216,7 +216,13 @@ export async function POST(req: NextRequest) {
         }
       } catch (metaErr) {
         // Don't fail the whole webhook if Meta API fails
-        console.error('Meta campaign creation error:', metaErr)
+        console.error(
+          `❌ META CAMPAIGN FAILED — needs manual follow-up:`,
+          `restaurant="${meta.restaurantName}"`,
+          `email="${meta.email}"`,
+          `plan="${meta.plan}"`,
+          metaErr,
+        )
       }
 
     } catch (err) {
