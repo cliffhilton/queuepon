@@ -1,7 +1,7 @@
 // Meta Marketing API integration
 // Docs: https://developers.facebook.com/docs/marketing-apis
 
-const FALLBACK_AD_IMAGE_URL = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.png'
+const FALLBACK_AD_IMAGE_URL = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.jpg'
 
 const META_API_VERSION = 'v19.0'
 const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
