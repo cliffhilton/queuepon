@@ -249,6 +249,109 @@ export async function sendAdReadyEmail({
   })
 }
 
+export async function sendComeBackOwnerSetupEmail({
+  to, firstName, restaurantName, dashboardUrl,
+}: {
+  to: string; firstName: string; restaurantName: string; dashboardUrl: string
+}) {
+  return resend.emails.send({
+    from: `Queuepon <${FROM}>`,
+    to,
+    subject: `Next step for ${restaurantName}: set up your Come Back offer`,
+    html: `
+      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
+        <img src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-web.png" alt="Queuepon" style="height:36px;width:auto;display:block;margin-bottom:28px;" />
+        <h1 style="font-size:24px;font-weight:700;color:#716557;margin:0 0 12px">One more thing, ${firstName}</h1>
+        <p style="color:#9e8e83;line-height:1.7;margin:0 0 20px">
+          Your campaign is live and customers are starting to opt in. Now set up your
+          <strong style="color:#716557">Come Back offer</strong> — the automated Day 25 email
+          that brings first-time visitors back for a second visit.
+        </p>
+        <div style="background:#e8f2f8;border-radius:12px;padding:20px 24px;margin-bottom:28px">
+          <div style="font-size:13px;color:#2a5070;font-weight:700;margin-bottom:8px">What it does:</div>
+          <ul style="margin:0;padding-left:20px;color:#588aad;font-size:13px;line-height:2">
+            <li>Sent automatically 25 days after a customer signs up</li>
+            <li>Gives them a reason to return (discount, free item, etc.)</li>
+            <li>No extra work once it's set — fires on autopilot</li>
+          </ul>
+        </div>
+        <div style="text-align:center;margin:32px 0">
+          <a href="${dashboardUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
+            Set Up My Come Back Offer →
+          </a>
+        </div>
+        <p style="font-size:12px;color:#9e8e83;margin-top:24px">Questions? Reach us at hello@queuepon.com</p>
+      </div>
+    `,
+  })
+}
+
+export async function sendBringAFriendEmail({
+  to, firstName, restaurantName, offerTitle, landingPageUrl,
+}: {
+  to: string; firstName: string; restaurantName: string
+  offerTitle: string; landingPageUrl: string
+}) {
+  return resend.emails.send({
+    from: `${restaurantName} via Queuepon <${FROM}>`,
+    to,
+    subject: `Know someone who'd love this? Share your ${restaurantName} offer`,
+    html: `
+      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#716557">
+        <h1 style="color:#716557">Hey ${firstName} — know someone who'd love this?</h1>
+        <p style="line-height:1.7">
+          You claimed your <strong>${offerTitle}</strong> from ${restaurantName}.
+          Know a friend who'd love it too? Share your link and they can claim the same offer.
+        </p>
+        <div style="text-align:center;margin:32px 0">
+          <a href="${landingPageUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
+            Share This Offer →
+          </a>
+        </div>
+        <p style="font-size:13px;color:#9e8e83;line-height:1.7">
+          The more the merrier — and ${restaurantName} appreciates every new face you bring in.
+        </p>
+        <p style="font-size:12px;color:#9e8e83;margin-top:32px">
+          <a href="#" style="color:#588aad">Unsubscribe</a>
+        </p>
+      </div>
+    `,
+  })
+}
+
+export async function sendComeBackCustomerEmail({
+  to, firstName, restaurantName, comeBackOfferText, imageUrl, landingPageUrl,
+}: {
+  to: string; firstName: string; restaurantName: string
+  comeBackOfferText: string; imageUrl?: string; landingPageUrl: string
+}) {
+  const img = imageUrl || 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.jpg'
+  return resend.emails.send({
+    from: `${restaurantName} via Queuepon <${FROM}>`,
+    to,
+    subject: `We miss you, ${firstName} — here's something special`,
+    html: `
+      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#716557">
+        <img src="${img}" alt="${restaurantName}" style="width:100%;border-radius:12px;margin-bottom:24px;display:block;" />
+        <h1 style="color:#716557;margin:0 0 12px">We miss you, ${firstName}!</h1>
+        <p style="line-height:1.7;margin:0 0 20px">
+          It's been a while since your last visit to <strong>${restaurantName}</strong>.
+          Here's something to bring you back:
+        </p>
+        <div style="background:#2a5070;border-radius:16px;padding:28px;text-align:center;margin:24px 0">
+          <h2 style="color:#ffd080;margin:0;font-size:22px">${comeBackOfferText}</h2>
+        </div>
+        <p style="line-height:1.7">Show this email at the counter when you visit. No printing needed.</p>
+        <p style="font-size:12px;color:#9e8e83;margin-top:32px">
+          You received this because you signed up at
+          <a href="${landingPageUrl}" style="color:#588aad">${landingPageUrl}</a>.
+          <a href="#" style="color:#588aad">Unsubscribe</a>
+        </p>
+      </div>
+    `,
+  })
+}
+
 export async function sendAdLaunchedNotification({
   restaurantName, ownerName, zipCode, plan, campaignId,
 }: {
