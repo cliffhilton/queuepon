@@ -89,7 +89,7 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
       </div>
       <div className="grid md:grid-cols-3 gap-5">
         {(Object.entries(PLANS) as [Plan, typeof PLANS.grow][]).map(([key, plan]) => (
-          <div key={key} onClick={() => { set('plan', key); if (form.coupon) set('coupon', PLAN_COUPONS[key]) }}
+          <div key={key} onClick={() => { set('plan', key); if (form.coupon && form.coupon !== 'internaltest') set('coupon', PLAN_COUPONS[key]) }}
             className={`relative bg-white rounded-2xl p-7 border-2 cursor-pointer transition-all hover:-translate-y-1
               ${form.plan === key ? 'border-blue shadow-card' : 'border-cream-dark hover:border-blue/40'}`}>
             {'popular' in plan && (
@@ -897,7 +897,7 @@ function SignupPageInner() {
   const couponParam  = searchParams.get('coupon')
   const validPlans   = ['grow', 'expand', 'thrive']
   const initialPlan  = validPlans.includes(planParam ?? '') ? planParam as Plan : 'expand'
-  const validCoupons = ['getgrow', 'getexpand', 'getthrive']
+  const validCoupons = ['getgrow', 'getexpand', 'getthrive', 'internaltest']
   const initialCoupon = validCoupons.includes(couponParam ?? '') ? couponParam! : ''
 
   useEffect(() => {
