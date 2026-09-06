@@ -258,13 +258,16 @@ export function LandingPageClient({ offer, restaurant, returningCustomer }: Prop
                     <button
                       disabled={redemptionState === 'redeeming'}
                       onClick={async () => {
-                        if (!returningCustomer.customerId) return
                         setRedemptionState('redeeming')
                         try {
                           await fetch('/api/customer/redeem', {
                             method:  'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body:    JSON.stringify({ customerId: returningCustomer.customerId }),
+                            body:    JSON.stringify({
+                              customerId:   returningCustomer.customerId || undefined,
+                              email:        returningCustomer.email,
+                              restaurantId: restaurant.id,
+                            }),
                           })
                           const now = new Date()
                           setRedeemedTime(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }))
