@@ -19,6 +19,17 @@ export default async function OffersPage() {
     .from('offers').select('*').eq('restaurant_id', restaurant?.id)
     .order('created_at', { ascending: false })
 
+  const { data: redeemedRows } = await supabase
+    .from('customers')
+    .select('offer_id')
+    .eq('restaurant_id', restaurant?.id ?? '')
+    .not('redeemed_at', 'is', null)
+
+  const redeemedByOffer: Record<string, number> = {}
+  for (const row of redeemedRows ?? []) {
+    redeemedByOffer[row.offer_id] = (redeemedByOffer[row.offer_id] ?? 0) + 1
+  }
+
   const plan         = restaurant?.plan ?? 'grow'
   const offerLimit   = OFFER_LIMITS[plan] ?? 1
   const activeOffers = (offers ?? []).filter(o => o.status !== 'expired')
@@ -56,8 +67,12 @@ export default async function OffersPage() {
               <div className="p-5">
                 <div className="flex gap-6 text-sm mb-4">
                   <div>
-                    <div className="text-tan-light text-xs">Subscribers</div>
+                    <div className="text-tan-light text-xs">Claimed</div>
                     <div className="font-bold text-tan text-lg">{offer.subscriber_count ?? 0}</div>
+                  </div>
+                  <div>
+                    <div className="text-tan-light text-xs">Redeemed</div>
+                    <div className="font-bold text-tan text-lg">{redeemedByOffer[offer.id] ?? 0}</div>
                   </div>
                   <div>
                     <div className="text-tan-light text-xs">Type</div>

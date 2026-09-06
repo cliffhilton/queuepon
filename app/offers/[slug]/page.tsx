@@ -57,18 +57,20 @@ export default async function OfferLandingPage({ params, searchParams }: Props) 
 
   const restaurant = offer.restaurants as any
 
-  // Returning customer: email param present → look up first_name, skip the claim form
-  let returningCustomer: { email: string; firstName: string } | null = null
+  // Returning customer: email param present → look up record, skip the claim form
+  let returningCustomer: { email: string; firstName: string; customerId: string; redeemedAt: string | null } | null = null
   if (searchParams.email) {
     const { data: customer } = await supabase
       .from('customers')
-      .select('first_name')
+      .select('id, first_name, redeemed_at')
       .eq('email', searchParams.email)
       .eq('restaurant_id', restaurant.id)
       .single()
     returningCustomer = {
-      email:     searchParams.email,
-      firstName: customer?.first_name || '',
+      email:      searchParams.email,
+      firstName:  customer?.first_name || '',
+      customerId: customer?.id || '',
+      redeemedAt: customer?.redeemed_at || null,
     }
   }
 

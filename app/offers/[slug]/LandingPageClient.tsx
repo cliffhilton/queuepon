@@ -29,10 +29,11 @@ interface Restaurant {
 interface Props {
   offer:             Offer
   restaurant:        Restaurant
-  returningCustomer?: { email: string; firstName: string } | null
+  returningCustomer?: { email: string; firstName: string; customerId: string; redeemedAt: string | null } | null
 }
 
-type FormState = 'idle' | 'loading' | 'success' | 'error'
+type FormState       = 'idle' | 'loading' | 'success' | 'error'
+type RedemptionState = 'ready' | 'redeeming' | 'redeemed' | 'already_redeemed'
 
 function useCountdown(expiryDate?: string) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
@@ -75,12 +76,20 @@ function CountdownBlock({ value, label }: { value: number; label: string }) {
 }
 
 export function LandingPageClient({ offer, restaurant, returningCustomer }: Props) {
-  const [email,       setEmail]       = useState('')
-  const [firstName,   setFirstName]   = useState('')
-  const [birthMonth,  setBirthMonth]  = useState('')
-  const [state,       setState]       = useState<FormState>('idle')
-  const [error,       setError]       = useState('')
-  const [activeImage, setActiveImage] = useState(offer.ad_image_url || '')
+  const [email,           setEmail]           = useState('')
+  const [firstName,       setFirstName]       = useState('')
+  const [birthMonth,      setBirthMonth]      = useState('')
+  const [state,           setState]           = useState<FormState>('idle')
+  const [error,           setError]           = useState('')
+  const [activeImage,     setActiveImage]     = useState(offer.ad_image_url || '')
+  const [redemptionState, setRedemptionState] = useState<RedemptionState>(
+    returningCustomer?.redeemedAt ? 'already_redeemed' : 'ready'
+  )
+  const [redeemedTime, setRedeemedTime] = useState<string | null>(
+    returningCustomer?.redeemedAt
+      ? new Date(returningCustomer.redeemedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      : null
+  )
   const countdown = useCountdown(offer.expiry_date)
 
   const hasPhoto   = !!offer.ad_image_url
@@ -198,29 +207,81 @@ export function LandingPageClient({ offer, restaurant, returningCustomer }: Prop
             {returningCustomer ? (
               /* ── Returning customer: redemption card ── */
               <div className="bg-white rounded-3xl p-7 shadow-card text-center">
-                <div className="text-5xl mb-3">✅</div>
-                <div className="text-xl font-bold text-tan mb-1">
-                  {returningCustomer.firstName
-                    ? `Welcome back, ${returningCustomer.firstName}!`
-                    : 'Welcome back!'}
-                </div>
-                <div className="text-sm text-tan-light mb-6">Show this screen to staff to redeem</div>
-                <div className="bg-blue-pale border border-blue-light/30 rounded-2xl p-5">
-                  {restaurant.logo_url && (
-                    <img src={restaurant.logo_url} alt={restaurant.name}
-                      className="h-10 object-contain mx-auto mb-3"/>
-                  )}
-                  <div className="text-xs font-bold uppercase tracking-wider text-blue-dark text-center mb-1">
-                    {restaurant.name}
-                  </div>
-                  <div className="text-xl font-bold text-blue-deeper text-center">{offer.title}</div>
-                  {offer.description && (
-                    <div className="text-sm text-tan-light text-center mt-1">{offer.description}</div>
-                  )}
-                </div>
-                <p className="text-xs text-tan-light mt-4 leading-relaxed">
-                  No printout needed — just show this screen.
-                </p>
+
+                {redemptionState === 'already_redeemed' && (
+                  <>
+                    <div className="text-4xl mb-3">🧾</div>
+                    <div className="text-xl font-bold text-tan mb-1">Already redeemed</div>
+                    {returningCustomer.redeemedAt && (
+                      <div className="text-sm text-tan-light mb-2">
+                        This offer was used on{' '}
+                        {new Date(returningCustomer.redeemedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      </div>
+                    )}
+                    <div className="text-xs text-tan-light leading-relaxed">
+                      Keep an eye on your inbox for future offers.
+                    </div>
+                  </>
+                )}
+
+                {redemptionState === 'redeemed' && (
+                  <>
+                    <div className="text-5xl mb-3">✅</div>
+                    <div className="text-xl font-bold text-tan mb-1">Redeemed!</div>
+                    <div className="text-sm text-tan-light mb-1">Enjoy your {offer.title} 🍽️</div>
+                    {redeemedTime && (
+                      <div className="text-xs text-tan-light">Redeemed today at {redeemedTime}</div>
+                    )}
+                  </>
+                )}
+
+                {(redemptionState === 'ready' || redemptionState === 'redeeming') && (
+                  <>
+                    <div className="inline-block bg-blue/10 text-blue text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4">
+                      🎉 Your offer is ready
+                    </div>
+                    <div className="text-xl font-bold text-tan mb-1">
+                      {returningCustomer.firstName
+                        ? `Welcome back, ${returningCustomer.firstName}! 🎉`
+                        : 'Welcome back! 🎉'}
+                    </div>
+                    <div className="text-sm text-tan-light mb-5">Show this screen to staff to redeem</div>
+                    <div className="bg-blue-pale border-2 border-dashed border-blue-light/50 rounded-2xl p-5 mb-5">
+                      <div className="inline-block bg-blue text-white text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-3">
+                        {restaurant.name}
+                      </div>
+                      <div className="text-2xl font-bold text-blue-deeper">{offer.title}</div>
+                      {offer.description && (
+                        <div className="text-sm text-tan-light mt-1">{offer.description}</div>
+                      )}
+                    </div>
+                    <button
+                      disabled={redemptionState === 'redeeming'}
+                      onClick={async () => {
+                        if (!returningCustomer.customerId) return
+                        setRedemptionState('redeeming')
+                        try {
+                          await fetch('/api/customer/redeem', {
+                            method:  'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body:    JSON.stringify({ customerId: returningCustomer.customerId }),
+                          })
+                          const now = new Date()
+                          setRedeemedTime(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }))
+                          setRedemptionState('redeemed')
+                        } catch {
+                          setRedemptionState('ready')
+                        }
+                      }}
+                      className="w-full py-4 rounded-xl font-bold text-base transition-all bg-blue text-white hover:bg-blue-dark hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-wait mb-2">
+                      {redemptionState === 'redeeming' ? '⏳ Recording...' : '✓ Redeem Now'}
+                    </button>
+                    <p className="text-xs text-tan-light leading-relaxed">
+                      Tap once staff confirms — locks in your redemption
+                    </p>
+                  </>
+                )}
+
                 <div className="mt-5 pt-4 border-t border-cream-dark flex items-center justify-center gap-2 opacity-40">
                   <Logo variant="dark" size="sm" showWordmark={false}/>
                   <span className="text-xs text-tan-light">Powered by Queuepon</span>
