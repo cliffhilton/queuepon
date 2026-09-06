@@ -260,7 +260,7 @@ export function LandingPageClient({ offer, restaurant, returningCustomer }: Prop
                       onClick={async () => {
                         setRedemptionState('redeeming')
                         try {
-                          await fetch('/api/customer/redeem', {
+                          const res = await fetch('/api/customer/redeem', {
                             method:  'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body:    JSON.stringify({
@@ -269,10 +269,15 @@ export function LandingPageClient({ offer, restaurant, returningCustomer }: Prop
                               restaurantId: restaurant.id,
                             }),
                           })
+                          if (!res.ok) {
+                            const body = await res.json().catch(() => ({}))
+                            throw new Error(body.error || `HTTP ${res.status}`)
+                          }
                           const now = new Date()
                           setRedeemedTime(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }))
                           setRedemptionState('redeemed')
-                        } catch {
+                        } catch (err: any) {
+                          console.error('[redeem]', err.message)
                           setRedemptionState('ready')
                         }
                       }}

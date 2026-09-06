@@ -8,13 +8,20 @@ export async function POST(req: NextRequest) {
   const now = new Date().toISOString()
 
   if (customerId) {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('customers')
       .update({ redeemed_at: now })
       .eq('id', customerId)
       .is('redeemed_at', null)
+      .select('id, redeemed_at')
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ success: true })
+    if (!data || data.length === 0) {
+      // Row existed but redeemed_at was already set — return its current value
+      const { data: existing } = await supabase
+        .from('customers').select('id, redeemed_at').eq('id', customerId).single()
+      return NextResponse.json({ success: true, alreadyRedeemed: true, customer: existing })
+    }
+    return NextResponse.json({ success: true, customer: data[0] })
   }
 
   // Fallback: look up by email + restaurant_id
@@ -30,17 +37,17 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (findError || !customer) {
-    return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Customer not found', detail: findError?.message }, { status: 404 })
   }
   if (customer.redeemed_at) {
-    return NextResponse.json({ success: true, alreadyRedeemed: true })
+    return NextResponse.json({ success: true, alreadyRedeemed: true, customer })
   }
 
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from('customers')
     .update({ redeemed_at: now })
     .eq('id', customer.id)
-
+    .select('id, redeemed_at')
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, customer: updated?.[0] ?? null })
 }
