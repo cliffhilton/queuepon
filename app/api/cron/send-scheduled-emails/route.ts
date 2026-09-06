@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
         const { data: restaurant } = await supabase
           .from('restaurants').select('name, is_test').eq('id', c.restaurant_id).single()
         const { data: offer } = await supabase
-          .from('offers').select('title').eq('id', c.offer_id).single()
+          .from('offers').select('title, slug').eq('id', c.offer_id).single()
 
         if (!restaurant || !offer) {
           log.push(`⚠️ [day3-customer] Missing restaurant/offer for customer ${c.id}`)
@@ -87,6 +87,7 @@ export async function GET(req: NextRequest) {
           firstName:      c.first_name || 'there',
           restaurantName: restaurant.name,
           offerTitle:     offer.title,
+          landingPageUrl: `${appUrl}/offers/${offer.slug}?email=${encodeURIComponent(c.email)}`,
         })
         await supabase.from('customers')
           .update({ day3_email_sent_at: now.toISOString(), emails_sent: (c.emails_sent ?? 0) + 1 })
@@ -130,7 +131,7 @@ export async function GET(req: NextRequest) {
           firstName:      c.first_name || 'there',
           restaurantName: restaurant.name,
           offerTitle:     offer.title,
-          landingPageUrl: `${appUrl}/offers/${offer.slug}`,
+          landingPageUrl: `${appUrl}/offers/${offer.slug}?email=${encodeURIComponent(c.email)}`,
         })
         await supabase.from('customers')
           .update({ day10_email_sent_at: now.toISOString(), emails_sent: (c.emails_sent ?? 0) + 1 })
@@ -187,7 +188,7 @@ export async function GET(req: NextRequest) {
           restaurantName:    restaurant.name,
           comeBackOfferText: restaurant.come_back_offer_text,
           imageUrl,
-          landingPageUrl:    `${appUrl}/offers/${offer.slug}`,
+          landingPageUrl:    `${appUrl}/offers/${offer.slug}?email=${encodeURIComponent(c.email)}`,
         })
         await supabase.from('customers')
           .update({ day25_email_sent_at: now.toISOString(), emails_sent: (c.emails_sent ?? 0) + 1 })

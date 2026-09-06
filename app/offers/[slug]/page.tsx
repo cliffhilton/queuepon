@@ -5,7 +5,8 @@ import { LandingPageClient } from './LandingPageClient'
 const FALLBACK_OG = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/images/queuepon%20OG%20Image.png'
 
 interface Props {
-  params: { slug: string }
+  params:       { slug: string }
+  searchParams: { email?: string }
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: Props) {
   }
 }
 
-export default async function OfferLandingPage({ params }: Props) {
+export default async function OfferLandingPage({ params, searchParams }: Props) {
   const supabase = createAdminClient()
 
   // Get offer + restaurant data
@@ -56,10 +57,26 @@ export default async function OfferLandingPage({ params }: Props) {
 
   const restaurant = offer.restaurants as any
 
+  // Returning customer: email param present → look up first_name, skip the claim form
+  let returningCustomer: { email: string; firstName: string } | null = null
+  if (searchParams.email) {
+    const { data: customer } = await supabase
+      .from('customers')
+      .select('first_name')
+      .eq('email', searchParams.email)
+      .eq('restaurant_id', restaurant.id)
+      .single()
+    returningCustomer = {
+      email:     searchParams.email,
+      firstName: customer?.first_name || '',
+    }
+  }
+
   return (
     <LandingPageClient
       offer={offer}
       restaurant={restaurant}
+      returningCustomer={returningCustomer}
     />
   )
 }

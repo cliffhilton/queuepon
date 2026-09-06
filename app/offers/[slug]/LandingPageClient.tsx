@@ -27,8 +27,9 @@ interface Restaurant {
 }
 
 interface Props {
-  offer: Offer
-  restaurant: Restaurant
+  offer:             Offer
+  restaurant:        Restaurant
+  returningCustomer?: { email: string; firstName: string } | null
 }
 
 type FormState = 'idle' | 'loading' | 'success' | 'error'
@@ -73,7 +74,7 @@ function CountdownBlock({ value, label }: { value: number; label: string }) {
   )
 }
 
-export function LandingPageClient({ offer, restaurant }: Props) {
+export function LandingPageClient({ offer, restaurant, returningCustomer }: Props) {
   const [email,       setEmail]       = useState('')
   const [firstName,   setFirstName]   = useState('')
   const [birthMonth,  setBirthMonth]  = useState('')
@@ -192,59 +193,93 @@ export function LandingPageClient({ offer, restaurant }: Props) {
             )}
           </div>
 
-          {/* Form — order-2 mobile · right col desktop spanning both rows */}
+          {/* Right column — redemption card or claim form */}
           <div className="order-2 md:col-start-4 md:col-span-2 md:row-start-1 md:row-span-2 md:sticky md:top-8 md:self-start">
-            <div className="bg-white rounded-3xl p-7 shadow-card">
-              <div className="mb-5">
-                <div className="text-lg font-bold text-tan">Claim Your Offer</div>
-                <div className="text-sm text-tan-light mt-1">We'll email it instantly — show it at the counter.</div>
-              </div>
-              <div className="space-y-3">
-                <input type="text" placeholder="First name (optional)" className="form-input"
-                  value={firstName} onChange={e => setFirstName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSubmit()}/>
-                <div>
-                  <select className="form-input text-sm"
-                    value={birthMonth} onChange={e => setBirthMonth(e.target.value)}>
-                    <option value="">🎂 Birthday month (optional)</option>
-                    {['January','February','March','April','May','June','July','August','September','October','November','December'].map(m => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-tan-light mt-1">Get a special birthday offer from {restaurant.name} — we'll only use this to send you something nice.</p>
+            {returningCustomer ? (
+              /* ── Returning customer: redemption card ── */
+              <div className="bg-white rounded-3xl p-7 shadow-card text-center">
+                <div className="text-5xl mb-3">✅</div>
+                <div className="text-xl font-bold text-tan mb-1">
+                  {returningCustomer.firstName
+                    ? `Welcome back, ${returningCustomer.firstName}!`
+                    : 'Welcome back!'}
                 </div>
-                <div>
-                  <input type="email" placeholder="Your email address"
-                    className={`form-input ${error ? 'border-red-400' : ''}`}
-                    value={email} onChange={e => { setEmail(e.target.value); setError('') }}
+                <div className="text-sm text-tan-light mb-6">Show this screen to staff to redeem</div>
+                <div className="bg-blue-pale border border-blue-light/30 rounded-2xl p-5">
+                  {restaurant.logo_url && (
+                    <img src={restaurant.logo_url} alt={restaurant.name}
+                      className="h-10 object-contain mx-auto mb-3"/>
+                  )}
+                  <div className="text-xs font-bold uppercase tracking-wider text-blue-dark text-center mb-1">
+                    {restaurant.name}
+                  </div>
+                  <div className="text-xl font-bold text-blue-deeper text-center">{offer.title}</div>
+                  {offer.description && (
+                    <div className="text-sm text-tan-light text-center mt-1">{offer.description}</div>
+                  )}
+                </div>
+                <p className="text-xs text-tan-light mt-4 leading-relaxed">
+                  No printout needed — just show this screen.
+                </p>
+                <div className="mt-5 pt-4 border-t border-cream-dark flex items-center justify-center gap-2 opacity-40">
+                  <Logo variant="dark" size="sm" showWordmark={false}/>
+                  <span className="text-xs text-tan-light">Powered by Queuepon</span>
+                </div>
+              </div>
+            ) : (
+              /* ── First-time visitor: claim form ── */
+              <div className="bg-white rounded-3xl p-7 shadow-card">
+                <div className="mb-5">
+                  <div className="text-lg font-bold text-tan">Claim Your Offer</div>
+                  <div className="text-sm text-tan-light mt-1">We'll email it instantly — show it at the counter.</div>
+                </div>
+                <div className="space-y-3">
+                  <input type="text" placeholder="First name (optional)" className="form-input"
+                    value={firstName} onChange={e => setFirstName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSubmit()}/>
-                  {error && <p className="text-red-500 text-xs font-semibold mt-1.5">⚠ {error}</p>}
+                  <div>
+                    <select className="form-input text-sm"
+                      value={birthMonth} onChange={e => setBirthMonth(e.target.value)}>
+                      <option value="">🎂 Birthday month (optional)</option>
+                      {['January','February','March','April','May','June','July','August','September','October','November','December'].map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-tan-light mt-1">Get a special birthday offer from {restaurant.name} — we'll only use this to send you something nice.</p>
+                  </div>
+                  <div>
+                    <input type="email" placeholder="Your email address"
+                      className={`form-input ${error ? 'border-red-400' : ''}`}
+                      value={email} onChange={e => { setEmail(e.target.value); setError('') }}
+                      onKeyDown={e => e.key === 'Enter' && handleSubmit()}/>
+                    {error && <p className="text-red-500 text-xs font-semibold mt-1.5">⚠ {error}</p>}
+                  </div>
+                  <button onClick={handleSubmit} disabled={state === 'loading'}
+                    className="w-full py-4 rounded-xl font-bold text-base transition-all bg-blue text-white hover:bg-blue-dark hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-wait">
+                    {state === 'loading' ? '⏳ Sending your offer...' : 'Send Me This Offer →'}
+                  </button>
                 </div>
-                <button onClick={handleSubmit} disabled={state === 'loading'}
-                  className="w-full py-4 rounded-xl font-bold text-base transition-all bg-blue text-white hover:bg-blue-dark hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-wait">
-                  {state === 'loading' ? '⏳ Sending your offer...' : 'Send Me This Offer →'}
-                </button>
+                <div className="flex items-center justify-center gap-4 mt-5 pt-4 border-t border-cream-dark">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-tan">{offer.subscriber_count ?? 0}</div>
+                    <div className="text-xs text-tan-light">claimed this</div>
+                  </div>
+                  <div className="w-px h-8 bg-cream-dark"/>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-tan">Free</div>
+                    <div className="text-xs text-tan-light">no purchase needed</div>
+                  </div>
+                  <div className="w-px h-8 bg-cream-dark"/>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-tan">Instant</div>
+                    <div className="text-xs text-tan-light">email delivery</div>
+                  </div>
+                </div>
+                <p className="text-center text-tan-light text-xs mt-4 leading-relaxed">
+                  No spam, ever. Unsubscribe anytime.
+                </p>
               </div>
-              <div className="flex items-center justify-center gap-4 mt-5 pt-4 border-t border-cream-dark">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-tan">{offer.subscriber_count ?? 0}</div>
-                  <div className="text-xs text-tan-light">claimed this</div>
-                </div>
-                <div className="w-px h-8 bg-cream-dark"/>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-tan">Free</div>
-                  <div className="text-xs text-tan-light">no purchase needed</div>
-                </div>
-                <div className="w-px h-8 bg-cream-dark"/>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-tan">Instant</div>
-                  <div className="text-xs text-tan-light">email delivery</div>
-                </div>
-              </div>
-              <p className="text-center text-tan-light text-xs mt-4 leading-relaxed">
-                No spam, ever. Unsubscribe anytime.
-              </p>
-            </div>
+            )}
           </div>
 
           {/* About content — order-3 mobile · bottom-left desktop */}

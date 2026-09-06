@@ -191,9 +191,10 @@ export async function sendCustomerOfferEmail({
 }
 
 export async function sendReminderEmail({
-  to, firstName, restaurantName, offerTitle,
+  to, firstName, restaurantName, offerTitle, landingPageUrl,
 }: {
-  to: string; firstName: string; restaurantName: string; offerTitle: string
+  to: string; firstName: string; restaurantName: string
+  offerTitle: string; landingPageUrl: string
 }) {
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
@@ -203,6 +204,11 @@ export async function sendReminderEmail({
       <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#716557">
         <h1>Still waiting for you, ${firstName}!</h1>
         <p style="line-height:1.7">Your <strong>${offerTitle}</strong> from ${restaurantName} is still available. Stop in this week!</p>
+        <div style="text-align:center;margin:24px 0">
+          <a href="${landingPageUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
+            Redeem My Offer →
+          </a>
+        </div>
         <p style="font-size:12px;color:#9e8e83;margin-top:32px"><a href="#" style="color:#588aad">Unsubscribe</a></p>
       </div>
     `,
@@ -305,11 +311,12 @@ export async function sendBringAFriendEmail({
         </p>
         <div style="text-align:center;margin:32px 0">
           <a href="${landingPageUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
-            Share This Offer →
+            View My Offer →
           </a>
         </div>
         <p style="font-size:13px;color:#9e8e83;line-height:1.7">
           The more the merrier — and ${restaurantName} appreciates every new face you bring in.
+          Share this link with friends: <a href="${landingPageUrl.split('?')[0]}" style="color:#588aad">${landingPageUrl.split('?')[0]}</a>
         </p>
         <p style="font-size:12px;color:#9e8e83;margin-top:32px">
           <a href="#" style="color:#588aad">Unsubscribe</a>
@@ -341,10 +348,15 @@ export async function sendComeBackCustomerEmail({
         <div style="background:#2a5070;border-radius:16px;padding:28px;text-align:center;margin:24px 0">
           <h2 style="color:#ffd080;margin:0;font-size:22px">${comeBackOfferText}</h2>
         </div>
+        <div style="text-align:center;margin:24px 0">
+          <a href="${landingPageUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
+            Redeem My Offer →
+          </a>
+        </div>
         <p style="line-height:1.7">Show this email at the counter when you visit. No printing needed.</p>
         <p style="font-size:12px;color:#9e8e83;margin-top:32px">
           You received this because you signed up at
-          <a href="${landingPageUrl}" style="color:#588aad">${landingPageUrl}</a>.
+          <a href="${landingPageUrl.split('?')[0]}" style="color:#588aad">${landingPageUrl.split('?')[0]}</a>.
           <a href="#" style="color:#588aad">Unsubscribe</a>
         </p>
       </div>
