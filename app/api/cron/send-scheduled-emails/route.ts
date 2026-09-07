@@ -6,6 +6,7 @@ import {
   sendComeBackCustomerEmail,
   sendComeBackOwnerSetupEmail,
   sendAdReadyEmail,
+  sendBirthdayEmail,
 } from '@/lib/resend'
 
 const DEFAULT_IMAGE = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.jpg'
@@ -261,6 +262,65 @@ export async function GET(req: NextRequest) {
     }
   } catch (e: any) {
     log.push(`❌ [ad-ready] Query failed: ${e.message}`)
+  }
+
+  // ── f. Birthday: fires once per calendar year when birth_month matches ────────
+  // Requires birthday_email_sent_at timestamptz column on customers.
+  // Skips if restaurant has no birthday_offer configured.
+  try {
+    const currentMonth = now.toLocaleString('en-US', { month: 'long' }) // e.g. "September"
+    const currentYear  = now.getFullYear()
+    const yearStart    = `${currentYear}-01-01T00:00:00.000Z`
+
+    const { data: customers } = await supabase
+      .from('customers')
+      .select('id, email, first_name, emails_sent, restaurant_id, offer_id')
+      .eq('birth_month', currentMonth)
+      .eq('sequence_status', 'active')
+      .or(`birthday_email_sent_at.is.null,birthday_email_sent_at.lt.${yearStart}`)
+
+    for (const c of customers ?? []) {
+      try {
+        const { data: restaurant } = await supabase
+          .from('restaurants')
+          .select('name, is_test, birthday_offer, logo_url, address, ad_image_url')
+          .eq('id', c.restaurant_id).single()
+        const { data: offer } = await supabase
+          .from('offers').select('slug').eq('id', c.offer_id).single()
+
+        if (!restaurant || !offer) {
+          log.push(`⚠️ [birthday] Missing restaurant/offer for customer ${c.id}`)
+          continue
+        }
+        if (restaurant.is_test) {
+          log.push(`⏭ [birthday] Skipping ${c.email} — test restaurant`)
+          continue
+        }
+        if (!restaurant.birthday_offer) {
+          log.push(`⏭ [birthday] Skipping ${c.email} — no birthday offer configured for ${restaurant.name}`)
+          continue
+        }
+
+        await sendBirthdayEmail({
+          to:             c.email,
+          firstName:      c.first_name || 'there',
+          restaurantName: restaurant.name,
+          birthdayOffer:  restaurant.birthday_offer,
+          landingPageUrl: `${appUrl}/offers/${offer.slug}?email=${encodeURIComponent(c.email)}`,
+          logoUrl:        restaurant.logo_url   || undefined,
+          address:        restaurant.address    || undefined,
+          adImageUrl:     restaurant.ad_image_url || undefined,
+        })
+        await supabase.from('customers')
+          .update({ birthday_email_sent_at: now.toISOString(), emails_sent: (c.emails_sent ?? 0) + 1 })
+          .eq('id', c.id)
+        log.push(`✅ [birthday] Birthday email → ${c.email} (${restaurant.name})`)
+      } catch (e: any) {
+        log.push(`❌ [birthday] ${c.email}: ${e.message}`)
+      }
+    }
+  } catch (e: any) {
+    log.push(`❌ [birthday] Query failed: ${e.message}`)
   }
 
   console.log(`[cron:send-scheduled-emails] ${now.toISOString()}\n${log.join('\n')}`)

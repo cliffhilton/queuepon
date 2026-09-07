@@ -481,6 +481,45 @@ export async function sendComeBackCustomerEmail({
   })
 }
 
+const BIRTHDAY_HERO = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/birthday-offer.png'
+
+export async function sendBirthdayEmail({
+  to, firstName, restaurantName, birthdayOffer, landingPageUrl,
+  logoUrl, address, adImageUrl,
+}: {
+  to: string; firstName: string; restaurantName: string
+  birthdayOffer: string; landingPageUrl: string
+  logoUrl?: string; address?: string; adImageUrl?: string
+}) {
+  const hero = adImageUrl || BIRTHDAY_HERO || DEFAULT_HERO
+  return resend.emails.send({
+    from: `${restaurantName} via Queuepon <${FROM}>`,
+    to,
+    subject: `🎂 Happy birthday, ${firstName}! A gift from ${restaurantName}`,
+    html: emailWrap(`
+      ${eHeader()}
+      ${eBranding(restaurantName, logoUrl, address)}
+      ${eHero(hero, restaurantName)}
+      <tr><td style="padding:36px 32px 28px;font-family:'Helvetica Neue',Arial,sans-serif;">
+        <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
+          Happy birthday, ${firstName}! 🎉
+        </h1>
+        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+          Everyone at <strong style="color:#716559;">${restaurantName}</strong> is wishing you
+          the very best this month. To celebrate, we've got something special just for you —
+          no candles required.
+        </p>
+        ${eOfferBox('BIRTHDAY OFFER', birthdayOffer)}
+        ${eCTA(landingPageUrl, 'Redeem Your Birthday Offer')}
+        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+          Here's to a great one,<br/><strong>${restaurantName}</strong>
+        </p>
+      </td></tr>
+      ${eFooter(landingPageUrl)}
+    `),
+  })
+}
+
 export async function sendAdLaunchedNotification({
   restaurantName, ownerName, zipCode, plan, campaignId,
 }: {
