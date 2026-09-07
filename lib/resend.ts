@@ -1,8 +1,80 @@
 import { Resend } from 'resend'
 
 export const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM = process.env.RESEND_FROM_EMAIL || 'hello@queuepon.com'
+const FROM    = process.env.RESEND_FROM_EMAIL || 'hello@queuepon.com'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
+
+const DEFAULT_HERO = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.png'
+const LOGO_WHITE   = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-WH-web.png'
+
+// ── Shared email template helpers ──────────────────────────────────────────────
+function emailWrap(rows: string): string {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#f0ebe3;">
+<center>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f0ebe3">
+<tr><td align="center" style="padding:24px 0;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#fdfaf7" style="max-width:600px;width:100%;">
+${rows}
+</table></td></tr></table></center>
+</body></html>`
+}
+
+function eHeader(): string {
+  return `<tr><td bgcolor="#588aad" align="center" style="padding:18px 0;">
+  <img src="${LOGO_WHITE}" alt="Queuepon" height="24" style="height:24px;width:auto;display:inline-block;border:0;"/>
+</td></tr>`
+}
+
+function eBranding(restaurantName: string, logoUrl?: string, address?: string): string {
+  const logo = logoUrl
+    ? `<img src="${logoUrl}" alt="${restaurantName}" width="36" height="36" style="width:36px;height:36px;object-fit:contain;border-radius:6px;display:block;border:0;"/>`
+    : `<div style="width:36px;height:36px;background:#ddeef8;border-radius:6px;text-align:center;line-height:36px;font-size:18px;display:inline-block;">🍽️</div>`
+  return `<tr><td bgcolor="#f7f2ec" style="border-bottom:1px solid #ede5db;padding:12px 24px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td style="vertical-align:middle;padding-right:12px;">${logo}</td>
+    <td style="vertical-align:middle;">
+      <div style="font-size:14px;font-weight:700;color:#716559;font-family:'Helvetica Neue',Arial,sans-serif;">${restaurantName}</div>
+      ${address ? `<div style="font-size:12px;color:#9e8e83;margin-top:2px;font-family:'Helvetica Neue',Arial,sans-serif;">${address}</div>` : ''}
+    </td>
+  </tr></table>
+</td></tr>`
+}
+
+function eHero(src: string, alt: string): string {
+  return `<tr><td style="line-height:0;font-size:0;padding:0;">
+  <img src="${src}" alt="${alt}" width="600" style="width:100%;max-width:600px;height:auto;display:block;border:0;"/>
+</td></tr>`
+}
+
+function eOfferBox(pill: string, title: string, description?: string, extra?: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px dashed #588aad;border-radius:12px;background:#E6F1FB;margin-bottom:28px;">
+  <tr><td style="padding:24px;text-align:center;">
+    <div style="display:inline-block;background:#588aad;color:#ffffff;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:12px;font-family:'Helvetica Neue',Arial,sans-serif;">${pill}</div>
+    <div style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:22px;font-weight:700;color:#1a3a52;line-height:1.3;">${title}</div>
+    ${description ? `<div style="font-size:14px;color:#588aad;margin-top:8px;font-family:'Helvetica Neue',Arial,sans-serif;">${description}</div>` : ''}
+    ${extra ? `<div style="margin-top:10px;font-family:'Helvetica Neue',Arial,sans-serif;">${extra}</div>` : ''}
+  </td></tr>
+</table>`
+}
+
+function eCTA(href: string, label: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;">
+  <tr><td style="text-align:center;">
+    <a href="${href}" style="display:inline-block;background:#588aad;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:16px;padding:16px 36px;border-radius:12px;text-decoration:none;letter-spacing:0.3px;">${label}</a>
+  </td></tr>
+</table>`
+}
+
+function eFooter(sourceUrl: string): string {
+  const base = sourceUrl.split('?')[0]
+  return `<tr><td bgcolor="#f0ebe3" style="border-top:1px solid #ede5db;padding:20px 24px;text-align:center;">
+  <p style="font-size:12px;color:#9e8e83;margin:0;line-height:1.8;font-family:'Helvetica Neue',Arial,sans-serif;">
+    You received this because you signed up for offers at <a href="${base}" style="color:#9e8e83;">${base}</a>.<br/>
+    <a href="#" style="color:#9e8e83;text-decoration:underline;">Unsubscribe</a> &nbsp;·&nbsp; Powered by <a href="https://queuepon.com" style="color:#588aad;text-decoration:none;">Queuepon</a>
+  </p>
+</td></tr>`
+}
 
 export async function sendRestaurantWelcome({
   to, firstName, restaurantName, plan, zipCode,
@@ -192,26 +264,38 @@ export async function sendCustomerOfferEmail({
 
 export async function sendReminderEmail({
   to, firstName, restaurantName, offerTitle, landingPageUrl,
+  logoUrl, address, adImageUrl,
 }: {
   to: string; firstName: string; restaurantName: string
   offerTitle: string; landingPageUrl: string
+  logoUrl?: string; address?: string; adImageUrl?: string
 }) {
+  const hero = adImageUrl || DEFAULT_HERO
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,
-    subject: `Don't forget — your offer is waiting, ${firstName}`,
-    html: `
-      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#716557">
-        <h1>Still waiting for you, ${firstName}!</h1>
-        <p style="line-height:1.7">Your <strong>${offerTitle}</strong> from ${restaurantName} is still available. Stop in this week!</p>
-        <div style="text-align:center;margin:24px 0">
-          <a href="${landingPageUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
-            Redeem My Offer →
-          </a>
-        </div>
-        <p style="font-size:12px;color:#9e8e83;margin-top:32px"><a href="#" style="color:#588aad">Unsubscribe</a></p>
-      </div>
-    `,
+    subject: `Don't forget — your ${offerTitle} offer is still waiting, ${firstName}`,
+    html: emailWrap(`
+      ${eHeader()}
+      ${eBranding(restaurantName, logoUrl, address)}
+      ${eHero(hero, restaurantName)}
+      <tr><td style="padding:36px 32px 28px;font-family:'Helvetica Neue',Arial,sans-serif;">
+        <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
+          Still thinking about it, ${firstName}? 👋
+        </h1>
+        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+          Your <strong style="color:#716559;">${offerTitle}</strong> offer from
+          <strong style="color:#716559;">${restaurantName}</strong> is still waiting.
+          Stop in this week and show this email at the counter — no printing needed.
+        </p>
+        ${eOfferBox('YOUR OFFER', offerTitle)}
+        ${eCTA(landingPageUrl, 'Redeem My Offer →')}
+        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+          See you soon,<br/><strong>${restaurantName}</strong>
+        </p>
+      </td></tr>
+      ${eFooter(landingPageUrl)}
+    `),
   })
 }
 
@@ -257,110 +341,143 @@ export async function sendAdReadyEmail({
 
 export async function sendComeBackOwnerSetupEmail({
   to, firstName, restaurantName, dashboardUrl,
+  logoUrl, address,
 }: {
   to: string; firstName: string; restaurantName: string; dashboardUrl: string
+  logoUrl?: string; address?: string
 }) {
   return resend.emails.send({
     from: `Queuepon <${FROM}>`,
     to,
     subject: `Next step for ${restaurantName}: set up your Come Back offer`,
-    html: `
-      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fdfaf7;color:#716557">
-        <img src="https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-web.png" alt="Queuepon" style="height:36px;width:auto;display:block;margin-bottom:28px;" />
-        <h1 style="font-size:24px;font-weight:700;color:#716557;margin:0 0 12px">One more thing, ${firstName}</h1>
-        <p style="color:#9e8e83;line-height:1.7;margin:0 0 20px">
-          Your campaign is live and customers are starting to opt in. Now set up your
-          <strong style="color:#716557">Come Back offer</strong> — the automated Day 25 email
-          that brings first-time visitors back for a second visit.
+    html: emailWrap(`
+      ${eHeader()}
+      ${eBranding(restaurantName, logoUrl, address)}
+      ${eHero(DEFAULT_HERO, restaurantName)}
+      <tr><td style="padding:36px 32px 28px;font-family:'Helvetica Neue',Arial,sans-serif;">
+        <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
+          One more thing, ${firstName} 🙌
+        </h1>
+        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+          Your campaign is live and customers are opting in.
+          Now set up your <strong style="color:#716559;">Come Back offer</strong> — the automated
+          Day 25 email that brings first-time visitors back for a second visit, on autopilot.
         </p>
-        <div style="background:#e8f2f8;border-radius:12px;padding:20px 24px;margin-bottom:28px">
-          <div style="font-size:13px;color:#2a5070;font-weight:700;margin-bottom:8px">What it does:</div>
-          <ul style="margin:0;padding-left:20px;color:#588aad;font-size:13px;line-height:2">
-            <li>Sent automatically 25 days after a customer signs up</li>
-            <li>Gives them a reason to return (discount, free item, etc.)</li>
-            <li>No extra work once it's set — fires on autopilot</li>
-          </ul>
-        </div>
-        <div style="text-align:center;margin:32px 0">
-          <a href="${dashboardUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
-            Set Up My Come Back Offer →
-          </a>
-        </div>
-        <p style="font-size:12px;color:#9e8e83;margin-top:24px">Questions? Reach us at hello@queuepon.com</p>
-      </div>
-    `,
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px dashed #588aad;border-radius:12px;background:#E6F1FB;margin-bottom:28px;">
+          <tr><td style="padding:24px;">
+            <div style="display:inline-block;background:#588aad;color:#ffffff;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:16px;font-family:'Helvetica Neue',Arial,sans-serif;">ACTION NEEDED</div>
+            <div style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:17px;font-weight:700;color:#1a3a52;margin-bottom:14px;">Set up your Come Back offer in 2 minutes</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              ${[
+                ['📅','Fires automatically 25 days after each customer signs up'],
+                ['🎁','Give them a reason to return — discount, free item, whatever works'],
+                ['🤖','No extra work once configured — runs on autopilot forever'],
+              ].map(([icon, text]) => `<tr>
+                <td style="vertical-align:top;padding-right:10px;font-size:16px;padding-bottom:10px;">${icon}</td>
+                <td style="font-size:14px;color:#588aad;line-height:1.5;padding-bottom:10px;font-family:'Helvetica Neue',Arial,sans-serif;">${text}</td>
+              </tr>`).join('')}
+            </table>
+          </td></tr>
+        </table>
+        ${eCTA(dashboardUrl, 'Set Up My Come Back Offer →')}
+        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+          Here for you,<br/><strong>The Queuepon Team</strong>
+        </p>
+        <p style="font-size:13px;color:#9e8e83;margin-top:16px;">
+          Questions? Reply to this email or reach us at
+          <a href="mailto:hello@queuepon.com" style="color:#588aad;text-decoration:none;">hello@queuepon.com</a>
+        </p>
+      </td></tr>
+      <tr><td bgcolor="#f0ebe3" style="border-top:1px solid #ede5db;padding:20px 24px;text-align:center;">
+        <p style="font-size:12px;color:#9e8e83;margin:0;line-height:1.8;font-family:'Helvetica Neue',Arial,sans-serif;">
+          Powered by <a href="https://queuepon.com" style="color:#588aad;text-decoration:none;">Queuepon</a> · hello@queuepon.com
+        </p>
+      </td></tr>
+    `),
   })
 }
 
 export async function sendBringAFriendEmail({
   to, firstName, restaurantName, offerTitle, landingPageUrl,
+  logoUrl, address, adImageUrl, expiryDate,
 }: {
   to: string; firstName: string; restaurantName: string
   offerTitle: string; landingPageUrl: string
+  logoUrl?: string; address?: string; adImageUrl?: string; expiryDate?: string
 }) {
+  const hero      = adImageUrl || DEFAULT_HERO
+  const shareUrl  = landingPageUrl.split('?')[0]
+  const expiryExtra = expiryDate
+    ? `<div style="font-size:12px;color:#716559;margin-top:10px;font-weight:600;">
+         Expires ${new Date(expiryDate).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
+       </div>`
+    : undefined
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,
-    subject: `Know someone who'd love this? Share your ${restaurantName} offer`,
-    html: `
-      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#716557">
-        <h1 style="color:#716557">Hey ${firstName} — know someone who'd love this?</h1>
-        <p style="line-height:1.7">
-          You claimed your <strong>${offerTitle}</strong> from ${restaurantName}.
-          Know a friend who'd love it too? Share your link and they can claim the same offer.
+    subject: `Know someone who'd love ${restaurantName}? Share your offer`,
+    html: emailWrap(`
+      ${eHeader()}
+      ${eBranding(restaurantName, logoUrl, address)}
+      ${eHero(hero, restaurantName)}
+      <tr><td style="padding:36px 32px 28px;font-family:'Helvetica Neue',Arial,sans-serif;">
+        <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
+          Hey ${firstName} — your offer is still valid! 🎉
+        </h1>
+        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+          You claimed your <strong style="color:#716559;">${offerTitle}</strong> from
+          <strong style="color:#716559;">${restaurantName}</strong>.
+          Know a friend who'd love it? Share the link below and they can grab the same deal.
         </p>
-        <div style="text-align:center;margin:32px 0">
-          <a href="${landingPageUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
-            View My Offer →
-          </a>
-        </div>
-        <p style="font-size:13px;color:#9e8e83;line-height:1.7">
-          The more the merrier — and ${restaurantName} appreciates every new face you bring in.
-          Share this link with friends: <a href="${landingPageUrl.split('?')[0]}" style="color:#588aad">${landingPageUrl.split('?')[0]}</a>
+        ${eOfferBox('STILL VALID', offerTitle, undefined, expiryExtra)}
+        <p style="font-size:14px;color:#9e8e83;line-height:1.7;margin:0 0 20px;">
+          Share this link with friends:<br/>
+          <a href="${shareUrl}" style="color:#588aad;word-break:break-all;">${shareUrl}</a>
         </p>
-        <p style="font-size:12px;color:#9e8e83;margin-top:32px">
-          <a href="#" style="color:#588aad">Unsubscribe</a>
+        ${eCTA(landingPageUrl, 'View My Offer →')}
+        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+          Cheers,<br/><strong>${restaurantName}</strong>
         </p>
-      </div>
-    `,
+      </td></tr>
+      ${eFooter(landingPageUrl)}
+    `),
   })
 }
 
 export async function sendComeBackCustomerEmail({
   to, firstName, restaurantName, comeBackOfferText, imageUrl, landingPageUrl,
+  logoUrl, address,
 }: {
   to: string; firstName: string; restaurantName: string
   comeBackOfferText: string; imageUrl?: string; landingPageUrl: string
+  logoUrl?: string; address?: string
 }) {
-  const img = imageUrl || 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.jpg'
+  const hero = imageUrl || DEFAULT_HERO
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,
-    subject: `We miss you, ${firstName} — here's something special`,
-    html: `
-      <div style="font-family:'Helvetica Neue',sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#716557">
-        <img src="${img}" alt="${restaurantName}" style="width:100%;border-radius:12px;margin-bottom:24px;display:block;" />
-        <h1 style="color:#716557;margin:0 0 12px">We miss you, ${firstName}!</h1>
-        <p style="line-height:1.7;margin:0 0 20px">
-          It's been a while since your last visit to <strong>${restaurantName}</strong>.
-          Here's something to bring you back:
+    subject: `We miss you, ${firstName} — a special offer just for you`,
+    html: emailWrap(`
+      ${eHeader()}
+      ${eBranding(restaurantName, logoUrl, address)}
+      ${eHero(hero, restaurantName)}
+      <tr><td style="padding:36px 32px 28px;font-family:'Helvetica Neue',Arial,sans-serif;">
+        <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
+          We miss you, ${firstName}! 🥺
+        </h1>
+        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+          It's been a while since your last visit to
+          <strong style="color:#716559;">${restaurantName}</strong>.
+          We're holding something special just for you:
         </p>
-        <div style="background:#2a5070;border-radius:16px;padding:28px;text-align:center;margin:24px 0">
-          <h2 style="color:#ffd080;margin:0;font-size:22px">${comeBackOfferText}</h2>
-        </div>
-        <div style="text-align:center;margin:24px 0">
-          <a href="${landingPageUrl}" style="background:#588aad;color:white;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;display:inline-block">
-            Redeem My Offer →
-          </a>
-        </div>
-        <p style="line-height:1.7">Show this email at the counter when you visit. No printing needed.</p>
-        <p style="font-size:12px;color:#9e8e83;margin-top:32px">
-          You received this because you signed up at
-          <a href="${landingPageUrl.split('?')[0]}" style="color:#588aad">${landingPageUrl.split('?')[0]}</a>.
-          <a href="#" style="color:#588aad">Unsubscribe</a>
+        ${eOfferBox('WELCOME BACK OFFER', comeBackOfferText)}
+        ${eCTA(landingPageUrl, 'Redeem My Offer →')}
+        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+          Hope to see you soon,<br/><strong>${restaurantName}</strong>
         </p>
-      </div>
-    `,
+      </td></tr>
+      ${eFooter(landingPageUrl)}
+    `),
   })
 }
 
