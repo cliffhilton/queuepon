@@ -10,7 +10,7 @@ export default async function SettingsPage() {
     .from('restaurants').select('*').eq('user_id', session.user.id).single()
 
   const PLAN_NAMES: Record<string, string> = { grow:'Grow', expand:'Expand', thrive:'Thrive' }
-  const PLAN_PRICES: Record<string, number> = { grow:199, expand:499, thrive:799 }
+  const PLAN_PRICES: Record<string, number> = { grow:299, expand:499, thrive:799 }
 
   return (
     <div className="p-6 md:p-8 max-w-2xl">

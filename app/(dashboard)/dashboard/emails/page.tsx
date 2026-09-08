@@ -71,13 +71,19 @@ export default async function EmailsPage() {
               </div>
             ))}
           </div>
-          {restaurant?.plan === 'expand' || restaurant?.plan === 'thrive' ? (
-            <div className="mt-3 card py-3 text-center bg-blue-xpale border-blue-pale">
-              <div className="text-xs text-blue font-semibold">
-                ✓ Your plan includes 8 emails + SMS sequences
+          {(() => {
+            const planFeature: Record<string, string> = {
+              grow:   '4-email automated sequence',
+              expand: '4-email sequence + comment entry',
+              thrive: '4-email sequence + contest offer',
+            }
+            const feat = planFeature[restaurant?.plan ?? '']
+            return feat ? (
+              <div className="mt-3 card py-3 text-center bg-blue-xpale border-blue-pale">
+                <div className="text-xs text-blue font-semibold">✓ Your plan includes {feat}</div>
               </div>
-            </div>
-          ) : null}
+            ) : null
+          })()}
         </div>
 
         {/* Resend status + performance */}
