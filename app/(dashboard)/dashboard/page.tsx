@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   // Get this week's stats across all offers, then sum them
   const { data: adStatsRows } = await supabase
     .from('meta_ad_stats')
-    .select('impressions, clicks, estimated_visits, ctr, spend')
+    .select('week_start, impressions, clicks, estimated_visits, ctr, spend')
     .eq('restaurant_id', restaurant?.id)
     .order('week_start', { ascending: false })
 
