@@ -28,14 +28,22 @@ export default async function DashboardPage() {
     .select('*', { count: 'exact', head: true })
     .eq('restaurant_id', restaurant?.id)
 
-  // Get latest meta stats
-  const { data: adStats } = await supabase
+  // Get this week's stats across all offers, then sum them
+  const { data: adStatsRows } = await supabase
     .from('meta_ad_stats')
-    .select('*')
+    .select('impressions, clicks, estimated_visits, ctr, spend')
     .eq('restaurant_id', restaurant?.id)
     .order('week_start', { ascending: false })
-    .limit(1)
-    .single()
+
+  const latestWeek   = adStatsRows?.[0]?.week_start ?? null
+  const thisWeekRows = adStatsRows?.filter(r => r.week_start === latestWeek) ?? []
+  const adStats = thisWeekRows.length > 0 ? {
+    impressions:      thisWeekRows.reduce((s, r) => s + (r.impressions      ?? 0), 0),
+    clicks:           thisWeekRows.reduce((s, r) => s + (r.clicks           ?? 0), 0),
+    estimated_visits: thisWeekRows.reduce((s, r) => s + (r.estimated_visits ?? 0), 0),
+    ctr:              Number((thisWeekRows.reduce((s, r) => s + (r.ctr ?? 0), 0) / thisWeekRows.length).toFixed(2)),
+    spend:            thisWeekRows.reduce((s, r) => s + (r.spend            ?? 0), 0),
+  } : null
 
   const stats = [
     { label: 'Total Subscribers', value: customerCount ?? 0, change: '↑ Growing', color: 'green' },

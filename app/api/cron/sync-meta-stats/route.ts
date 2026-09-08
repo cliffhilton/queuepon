@@ -20,13 +20,6 @@ export async function GET(req: NextRequest) {
   const weekStart = weekStartDate.toISOString().slice(0, 10) // YYYY-MM-DD
 
   // All offers with a Meta campaign, joined to their restaurant to filter is_test.
-  // NOTE: meta_ad_stats is scoped by restaurant_id only, not offer_id.
-  // If a restaurant ever runs two simultaneous live campaigns, the second upsert
-  // will overwrite the first — stats would be lost for all but the last campaign
-  // processed. See flag in build spec for remediation path (add offer_id column +
-  // change upsert constraint to (restaurant_id, offer_id, week_start)).
-  // Currently safe: the product is built around one live campaign per restaurant,
-  // and ads/page.tsx surfaces only offers[0]. Defer until multi-campaign is needed.
   const { data: offers, error: offersErr } = await supabase
     .from('offers')
     .select('id, restaurant_id, meta_campaign_id, restaurants(id, name, is_test)')
@@ -72,6 +65,7 @@ export async function GET(req: NextRequest) {
         .upsert(
           {
             restaurant_id:    offer.restaurant_id,
+            offer_id:         offer.id,
             week_start:       weekStart,
             impressions,
             clicks,
@@ -80,7 +74,7 @@ export async function GET(req: NextRequest) {
             ctr,
             estimated_visits: estimatedVisits,
           },
-          { onConflict: 'restaurant_id,week_start' },
+          { onConflict: 'restaurant_id,offer_id,week_start' },
         )
 
       log.push(

@@ -13,12 +13,6 @@ export default async function AdsPage() {
     .eq('user_id', session.user.id)
     .single()
 
-  const { data: stats } = await supabase
-    .from('meta_ad_stats')
-    .select('*')
-    .eq('restaurant_id', restaurant?.id)
-    .order('week_start', { ascending: false })
-
   const { data: offers } = await supabase
     .from('offers')
     .select('*')
@@ -26,6 +20,15 @@ export default async function AdsPage() {
     .order('created_at', { ascending: false })
 
   const primaryOffer = offers?.[0] ?? null
+
+  const { data: stats } = primaryOffer
+    ? await supabase
+        .from('meta_ad_stats')
+        .select('*')
+        .eq('restaurant_id', restaurant?.id)
+        .eq('offer_id', primaryOffer.id)
+        .order('week_start', { ascending: false })
+    : { data: null }
 
   return (
     <AdReviewClient
