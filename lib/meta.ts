@@ -31,6 +31,18 @@ interface MetaCampaignResult {
   adCreativeId: string
 }
 
+// ── Shared GET helper ──────────────────────────────────────────────────────
+export async function metaGet(endpoint: string, params: Record<string, string> = {}): Promise<any> {
+  const accessToken = process.env.META_ACCESS_TOKEN!
+  const url = new URL(`${BASE_URL}/${endpoint}`)
+  url.searchParams.set('access_token', accessToken)
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
+  const res  = await fetch(url.toString())
+  const data = await res.json()
+  if (data.error) throw new Error(`Meta API error: ${JSON.stringify(data.error)}`)
+  return data
+}
+
 // ── Budget by plan ─────────────────────────────────────────────────────────
 function dailyBudgetCents(plan: string): number {
   const monthly: Record<string, number> = {
