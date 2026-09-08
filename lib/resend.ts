@@ -22,20 +22,20 @@ ${rows}
 
 function eHeader(): string {
   return `<tr><td bgcolor="#588aad" align="center" style="padding:18px 0;">
-  <img src="${LOGO_WHITE}" alt="Queuepon" height="24" style="height:24px;width:auto;display:inline-block;border:0;"/>
+  <img src="${LOGO_WHITE}" alt="Queuepon" height="40" style="height:40px;width:auto;display:inline-block;border:0;"/>
 </td></tr>`
 }
 
 function eBranding(restaurantName: string, logoUrl?: string, address?: string): string {
   const logo = logoUrl
-    ? `<img src="${logoUrl}" alt="${restaurantName}" width="36" height="36" style="width:36px;height:36px;object-fit:contain;border-radius:6px;display:block;border:0;"/>`
-    : `<div style="width:36px;height:36px;background:#ddeef8;border-radius:6px;text-align:center;line-height:36px;font-size:18px;display:inline-block;">🍽️</div>`
-  return `<tr><td bgcolor="#f7f2ec" style="border-bottom:1px solid #ede5db;padding:12px 24px;">
+    ? `<img src="${logoUrl}" alt="${restaurantName}" width="52" height="52" style="width:52px;height:52px;object-fit:contain;border-radius:8px;display:block;border:0;"/>`
+    : `<div style="width:52px;height:52px;background:#ddeef8;border-radius:8px;text-align:center;line-height:52px;font-size:24px;display:inline-block;">🍽️</div>`
+  return `<tr><td bgcolor="#f7f2ec" style="border-bottom:1px solid #ede5db;padding:16px 24px;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-    <td style="vertical-align:middle;padding-right:12px;">${logo}</td>
+    <td style="vertical-align:middle;padding-right:14px;">${logo}</td>
     <td style="vertical-align:middle;">
-      <div style="font-size:14px;font-weight:700;color:#716559;font-family:'Helvetica Neue',Arial,sans-serif;">${restaurantName}</div>
-      ${address ? `<div style="font-size:12px;color:#9e8e83;margin-top:2px;font-family:'Helvetica Neue',Arial,sans-serif;">${address}</div>` : ''}
+      <div style="font-size:17px;font-weight:700;color:#716559;font-family:'Helvetica Neue',Arial,sans-serif;">${restaurantName}</div>
+      ${address ? `<div style="font-size:13px;color:#9e8e83;margin-top:3px;font-family:'Helvetica Neue',Arial,sans-serif;">${address}</div>` : ''}
     </td>
   </tr></table>
 </td></tr>`
@@ -283,14 +283,14 @@ export async function sendReminderEmail({
         <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
           Still thinking about it, ${firstName}? 👋
         </h1>
-        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+        <p style="font-size:17px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
           Your <strong style="color:#716559;">${offerTitle}</strong> offer from
           <strong style="color:#716559;">${restaurantName}</strong> is still waiting.
           Stop in this week and show this email at the counter — no printing needed.
         </p>
         ${eOfferBox('YOUR OFFER', offerTitle)}
         ${eCTA(landingPageUrl, 'Redeem My Offer →')}
-        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+        <p style="font-size:17px;color:#716559;line-height:1.7;margin:0;">
           See you soon,<br/><strong>${restaurantName}</strong>
         </p>
       </td></tr>
@@ -358,7 +358,7 @@ export async function sendComeBackOwnerSetupEmail({
         <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
           One more thing, ${firstName} 🙌
         </h1>
-        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+        <p style="font-size:17px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
           Your campaign is live and customers are opting in.
           Now set up your <strong style="color:#716559;">Come Back offer</strong> — the automated
           Day 25 email that brings first-time visitors back for a second visit, on autopilot.
@@ -380,7 +380,7 @@ export async function sendComeBackOwnerSetupEmail({
           </td></tr>
         </table>
         ${eCTA(dashboardUrl, 'Set Up My Come Back Offer →')}
-        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+        <p style="font-size:17px;color:#716559;line-height:1.7;margin:0;">
           Here for you,<br/><strong>The Queuepon Team</strong>
         </p>
         <p style="font-size:13px;color:#9e8e83;margin-top:16px;">
@@ -424,7 +424,7 @@ export async function sendBringAFriendEmail({
         <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
           Hey ${firstName} — your offer is still valid! 🎉
         </h1>
-        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+        <p style="font-size:17px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
           You claimed your <strong style="color:#716559;">${offerTitle}</strong> from
           <strong style="color:#716559;">${restaurantName}</strong>.
           Know a friend who'd love it? Share the link below and they can grab the same deal.
@@ -435,7 +435,7 @@ export async function sendBringAFriendEmail({
           <a href="${shareUrl}" style="color:#588aad;word-break:break-all;">${shareUrl}</a>
         </p>
         ${eCTA(landingPageUrl, 'View My Offer →')}
-        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+        <p style="font-size:17px;color:#716559;line-height:1.7;margin:0;">
           Cheers,<br/><strong>${restaurantName}</strong>
         </p>
       </td></tr>
@@ -465,14 +465,14 @@ export async function sendComeBackCustomerEmail({
         <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
           We miss you, ${firstName}! 🥺
         </h1>
-        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+        <p style="font-size:17px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
           It's been a while since your last visit to
           <strong style="color:#716559;">${restaurantName}</strong>.
           We're holding something special just for you:
         </p>
         ${eOfferBox('WELCOME BACK OFFER', comeBackOfferText)}
         ${eCTA(landingPageUrl, 'Redeem My Offer →')}
-        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+        <p style="font-size:17px;color:#716559;line-height:1.7;margin:0;">
           Hope to see you soon,<br/><strong>${restaurantName}</strong>
         </p>
       </td></tr>
@@ -504,14 +504,14 @@ export async function sendBirthdayEmail({
         <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
           Happy birthday, ${firstName}! 🎉
         </h1>
-        <p style="font-size:15px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
+        <p style="font-size:17px;color:#9e8e83;line-height:1.7;margin:0 0 24px;">
           Everyone at <strong style="color:#716559;">${restaurantName}</strong> is wishing you
           the very best this month. To celebrate, we've got something special just for you —
           no candles required.
         </p>
         ${eOfferBox('BIRTHDAY OFFER', birthdayOffer)}
         ${eCTA(landingPageUrl, 'Redeem Your Birthday Offer')}
-        <p style="font-size:15px;color:#716559;line-height:1.7;margin:0;">
+        <p style="font-size:17px;color:#716559;line-height:1.7;margin:0;">
           Here's to a great one,<br/><strong>${restaurantName}</strong>
         </p>
       </td></tr>
