@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { ExportCSVButton } from './ExportCSVButton'
 
 export default async function CustomersPage() {
   const supabase = createClient()
@@ -24,7 +25,7 @@ export default async function CustomersPage() {
           <h1 className="text-2xl font-bold text-tan">Customers</h1>
           <p className="text-tan-light mt-1">{count ?? 0} total subscribers across all your offers.</p>
         </div>
-        <button className="btn-ghost btn-sm">↓ Export CSV</button>
+        <ExportCSVButton customers={customers ?? []} restaurantName={restaurant?.name ?? 'customers'} />
       </div>
 
       {/* Summary cards */}

@@ -2,10 +2,11 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 const SEQUENCE = [
-  { num: 1, title: 'Welcome + Offer',    timing: 'Instant on signup',  desc: 'Delivers the offer and sets expectations. Highest open rate.' },
-  { num: 2, title: 'Don\'t Miss Out',    timing: 'Day 3',              desc: 'Gentle reminder that the offer is still waiting.' },
-  { num: 3, title: 'Bring a Friend',     timing: 'Day 10',             desc: 'Referral campaign — brings new customers through word of mouth.' },
-  { num: 4, title: 'Come Back',          timing: 'Day 25',             desc: 'Return visit incentive with a fresh offer.' },
+  { num: 1, title: 'Welcome + Offer',  timing: 'Instant on signup',       desc: 'Delivers the offer and sets expectations. Highest open rate.' },
+  { num: 2, title: 'Don\'t Miss Out',  timing: 'Day 3',                   desc: 'Gentle reminder that the offer is still waiting.' },
+  { num: 3, title: 'Bring a Friend',   timing: 'Day 10',                  desc: 'Referral campaign — brings new customers through word of mouth.' },
+  { num: 4, title: 'Come Back',        timing: 'Day 25',                  desc: 'Return visit incentive with a fresh offer.' },
+  { num: 5, title: 'Birthday Offer',   timing: 'Birth month · 1st send',  desc: 'Sent once per calendar year when the customer\'s birth month matches. Requires a birthday offer configured in Settings.' },
 ]
 
 export default async function EmailsPage() {
@@ -17,13 +18,14 @@ export default async function EmailsPage() {
     .from('restaurants').select('id,name,plan').eq('user_id', session.user.id).single()
 
   const { data: customers } = await supabase
-    .from('customers').select('emails_sent, sequence_status')
+    .from('customers').select('emails_sent, sequence_status, redeemed_at')
     .eq('restaurant_id', restaurant?.id)
 
-  const totalSubs     = customers?.length ?? 0
-  const activeInSeq   = customers?.filter(c => c.sequence_status === 'active').length ?? 0
-  const totalEmails   = customers?.reduce((sum, c) => sum + (c.emails_sent ?? 0), 0) ?? 0
-  const avgOpen       = totalSubs > 0 ? 34 : 0 // Will be real data when Resend webhooks are wired
+  const totalSubs       = customers?.length ?? 0
+  const activeInSeq     = customers?.filter(c => c.sequence_status === 'active').length ?? 0
+  const totalEmails     = customers?.reduce((sum, c) => sum + (c.emails_sent ?? 0), 0) ?? 0
+  const redeemedCount   = customers?.filter(c => c.redeemed_at != null).length ?? 0
+  const returnVisitRate = totalSubs > 0 ? Math.round((redeemedCount / totalSubs) * 100) : null
 
   return (
     <div className="p-6 md:p-8 max-w-5xl">
@@ -37,8 +39,8 @@ export default async function EmailsPage() {
         {[
           { label:'Active in Sequence', value: activeInSeq, color:'blue' },
           { label:'Total Emails Sent',  value: totalEmails, color:'green' },
-          { label:'Avg. Open Rate',     value: totalSubs > 0 ? `${avgOpen}%` : '—', color:'blue' },
-          { label:'Unsubscribe Rate',   value: totalSubs > 0 ? '2.1%' : '—', color:'tan' },
+          { label:'Avg. Open Rate',     value: '—',         color:'blue' },
+          { label:'Unsubscribe Rate',   value: '—',         color:'tan' },
         ].map(s => (
           <div key={s.label} className="card">
             <div className={`text-3xl font-bold mb-1 ${s.color === 'green' ? 'text-green-600' : s.color === 'tan' ? 'text-tan-light' : 'text-blue'}`}>
@@ -90,26 +92,26 @@ export default async function EmailsPage() {
             <div className="font-bold text-tan mb-4 text-sm">Sequence Performance</div>
             <div className="space-y-4">
               {[
-                { label:'Email 1 Open Rate', val: totalSubs > 0 ? 68 : 0, color:'blue' },
-                { label:'Email 2 Open Rate', val: totalSubs > 0 ? 42 : 0, color:'blue' },
-                { label:'Email 3 Click Rate', val: totalSubs > 0 ? 24 : 0, color:'green' },
-                { label:'Return Visit Rate',  val: totalSubs > 0 ? 31 : 0, color:'green' },
+                { label:'Email 1 Open Rate',  val: null,            color:'blue'  },
+                { label:'Email 2 Open Rate',  val: null,            color:'blue'  },
+                { label:'Email 3 Click Rate', val: null,            color:'green' },
+                { label:'Return Visit Rate',  val: returnVisitRate, color:'green' },
               ].map(row => (
                 <div key={row.label}>
                   <div className="flex justify-between text-xs mb-1.5">
                     <span className="text-tan-light">{row.label}</span>
-                    <span className="font-bold text-tan">{totalSubs > 0 ? `${row.val}%` : '—'}</span>
+                    <span className="font-bold text-tan">{row.val !== null ? `${row.val}%` : '—'}</span>
                   </div>
                   <div className="h-1.5 bg-cream-dark rounded-full overflow-hidden">
                     <div className={`h-full rounded-full transition-all ${row.color === 'green' ? 'bg-green-500' : 'bg-blue'}`}
-                      style={{width: totalSubs > 0 ? `${row.val}%` : '0%'}}/>
+                      style={{width: row.val !== null ? `${row.val}%` : '0%'}}/>
                   </div>
                 </div>
               ))}
             </div>
-            {totalSubs === 0 && (
-              <p className="text-xs text-tan-light text-center mt-4">Stats appear once customers subscribe to your offers.</p>
-            )}
+            <p className="text-xs text-tan-light text-center mt-4">
+              Open/click tracking coming soon. Return visit rate is live.
+            </p>
           </div>
         </div>
       </div>
