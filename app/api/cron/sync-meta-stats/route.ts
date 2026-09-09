@@ -19,10 +19,18 @@ export async function GET(req: NextRequest) {
   weekStartDate.setDate(now.getDate() - daysToMonday)
   const weekStart = weekStartDate.toISOString().slice(0, 10) // YYYY-MM-DD
 
-  // All offers with a Meta campaign, joined to their restaurant to filter is_test.
+  // Pre-fetch test restaurant IDs to exclude — avoids embedded-join column resolution
+  // issues in PostgREST and mirrors the pattern used in send-scheduled-emails.
+  const { data: testRests } = await supabase
+    .from('restaurants')
+    .select('id')
+    .eq('is_test', true)
+  const testIds = new Set((testRests ?? []).map(r => r.id))
+
+  // All offers with a Meta campaign.
   const { data: offers, error: offersErr } = await supabase
     .from('offers')
-    .select('id, restaurant_id, meta_campaign_id, restaurants(id, name, is_test)')
+    .select('id, restaurant_id, meta_campaign_id, restaurants(id, name)')
     .not('meta_campaign_id', 'is', null)
 
   if (offersErr) {
@@ -32,8 +40,8 @@ export async function GET(req: NextRequest) {
   for (const offer of offers ?? []) {
     const restaurant = offer.restaurants as any
 
-    if (restaurant?.is_test) {
-      log.push(`⏭ [meta-sync] Skipping ${restaurant.name} — test restaurant`)
+    if (testIds.has(offer.restaurant_id)) {
+      log.push(`⏭ [meta-sync] Skipping ${restaurant?.name} — test restaurant`)
       continue
     }
 
