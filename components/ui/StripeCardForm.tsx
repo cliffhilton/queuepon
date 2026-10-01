@@ -21,12 +21,13 @@ interface StripeCardFormProps {
   zipCode: string
   onBack: () => void
   onSuccess: () => void
+  returnUrl: string
 }
 
 export function StripeCardForm({
   clientSecret, planName, planPrice, discount, discountedPrice, audienceReach,
   restaurantName, address, offerTitle, adTemplate,
-  zipCode, onBack, onSuccess,
+  zipCode, onBack, onSuccess, returnUrl,
 }: StripeCardFormProps) {
   const stripe   = useStripe()
   const elements = useElements()
@@ -49,7 +50,7 @@ export function StripeCardForm({
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `${window.location.origin}/signup/success`,
+        return_url: returnUrl,
       },
       redirect: 'if_required',
     })

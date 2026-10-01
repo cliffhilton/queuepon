@@ -58,7 +58,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-5 md:px-8">
-      <WelcomeBanner firstName={firstName}/>
+      <WelcomeBanner firstName={firstName} hasPassword={restaurant?.password_set_at != null}/>
 
       {/* Header */}
       <div className="mb-8 mt-6">

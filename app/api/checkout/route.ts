@@ -38,6 +38,8 @@ export async function POST(req: NextRequest) {
     console.log('Coupon received:', coupon)
     console.log('Promotion code ID found:', promotionCodeId)
 
+    const pollKey = crypto.randomUUID()
+
     const subscriptionParams: any = {
       customer:         customer.id,
       items:            [{ price: planConfig.priceId }],
@@ -65,6 +67,7 @@ export async function POST(req: NextRequest) {
         trafficTiming:    JSON.stringify(trafficTiming  || []),
         adDays:           JSON.stringify(adDays         || []),
         coupon:           coupon || '',
+        pollKey:          pollKey,
       },
     }
     const subscription = await stripe.subscriptions.create(subscriptionParams)
@@ -76,6 +79,7 @@ export async function POST(req: NextRequest) {
       subscriptionId: subscription.id,
       clientSecret:   paymentIntent?.client_secret,
       customerId:     customer.id,
+      pollKey,
     })
 
   } catch (err: any) {

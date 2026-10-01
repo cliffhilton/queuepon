@@ -28,6 +28,7 @@ export default function SetPasswordPage() {
       return
     }
 
+    await fetch('/api/auth/mark-password-set', { method: 'POST' })
     router.push('/dashboard')
   }
 

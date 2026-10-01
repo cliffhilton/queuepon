@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-export function WelcomeBanner({ firstName }: { firstName: string }) {
+export function WelcomeBanner({ firstName, hasPassword }: { firstName: string; hasPassword: boolean }) {
   const [show, setShow] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    const shown = sessionStorage.getItem('qp_welcome_dismissed')
-    if (!shown) setShow(true)
-  }, [])
+    if (!hasPassword && !sessionStorage.getItem('qp_welcome_dismissed')) setShow(true)
+  }, [hasPassword])
 
   const handleDismiss = () => {
     sessionStorage.setItem('qp_welcome_dismissed', '1')

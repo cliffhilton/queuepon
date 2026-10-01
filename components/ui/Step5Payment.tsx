@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 import { StripeCardForm } from './StripeCardForm'
-import Link from 'next/link'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -37,8 +37,9 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
   const [clientSecret, setClientSecret] = useState('')
   const [loading,      setLoading]      = useState(true)
   const [error,        setError]        = useState('')
-  const [done,         setDone]         = useState(false)
+  const [pollKey,      setPollKey]      = useState('')
   const [uploadStatus, setUploadStatus] = useState('Uploading your photos...')
+  const router = useRouter()
 
   const plan = PLANS[form.plan as keyof typeof PLANS]
   const discount = form.coupon ? COUPON_DISCOUNTS[form.coupon] || 0 : 0
@@ -105,6 +106,7 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
         const data = await res.json()
         if (data.error) { setError(data.error); setLoading(false); return }
         setClientSecret(data.clientSecret)
+        setPollKey(data.pollKey ?? '')
         setLoading(false)
 
       } catch (err: any) {
@@ -114,27 +116,6 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
     }
     init()
   }, [])
-
-  if (done) return (
-    <div className="text-center max-w-md mx-auto py-10">
-      <div className="text-6xl mb-5">🎉</div>
-      <h2 className="text-3xl font-bold text-tan mb-3">You're live, {form.firstName}!</h2>
-      <p className="text-tan-light leading-relaxed mb-8">
-        Your <strong>{plan.name} Plan</strong> is active. Your Meta ad is being set up for ZIP{' '}
-        <strong>{form.zipCode}</strong> and goes live within 24 hours.
-      </p>
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {[['📣','Meta Ad','Live in 24hrs'],['📧','Emails','Sequence ready'],['📊','Dashboard','Tracking live']].map(([icon,title,sub]) => (
-          <div key={title} className="card text-center py-5">
-            <div className="text-2xl mb-2">{icon}</div>
-            <div className="text-xs font-bold text-tan">{title}</div>
-            <div className="text-xs text-tan-light mt-1">{sub}</div>
-          </div>
-        ))}
-      </div>
-      <Link href="/dashboard" className="btn-primary px-10 py-4 text-base">Go to My Dashboard →</Link>
-    </div>
-  )
 
   if (loading) return (
     <div className="text-center py-20">
@@ -151,6 +132,11 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
       <button onClick={back} className="btn-ghost">← Go Back</button>
     </div>
   )
+
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')
+  const returnUrl = pollKey
+    ? `${appOrigin}/signup/success?pk=${encodeURIComponent(pollKey)}`
+    : `${appOrigin}/signup/success`
 
   return (
     <Elements
@@ -182,7 +168,8 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
         adTemplate={form.adTemplate}
         zipCode={form.zipCode}
         onBack={back}
-        onSuccess={() => setDone(true)}
+        onSuccess={() => router.push(returnUrl)}
+        returnUrl={returnUrl}
       />
     </Elements>
   )
