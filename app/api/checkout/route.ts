@@ -77,7 +77,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       subscriptionId: subscription.id,
-      clientSecret:   paymentIntent?.client_secret,
+      clientSecret:   paymentIntent?.client_secret ?? null,
+      skipPayment:    !paymentIntent?.client_secret,
       customerId:     customer.id,
       pollKey,
     })

@@ -105,8 +105,18 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
 
         const data = await res.json()
         if (data.error) { setError(data.error); setLoading(false); return }
-        setClientSecret(data.clientSecret)
         setPollKey(data.pollKey ?? '')
+
+        if (data.skipPayment) {
+          const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
+          const dest = data.pollKey
+            ? `${appOrigin}/signup/success?pk=${encodeURIComponent(data.pollKey)}`
+            : `${appOrigin}/signup/success`
+          router.push(dest)
+          return
+        }
+
+        setClientSecret(data.clientSecret ?? '')
         setLoading(false)
 
       } catch (err: any) {

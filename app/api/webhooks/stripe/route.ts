@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   // this on customer.subscription.created — that fires the moment the
   // subscription object is created (status: default_incomplete), before
   // the customer has entered or confirmed payment.
-  if (event.type === 'invoice.payment_succeeded') {
+  if (event.type === 'invoice.paid') {
 
     const obj   = event.data.object as any
     const subId = obj.subscription ?? obj.id
