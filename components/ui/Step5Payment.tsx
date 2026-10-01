@@ -117,7 +117,7 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
     init()
   }, [])
 
-  if (loading) return (
+  if (loading || !clientSecret) return (
     <div className="text-center py-20">
       <div className="text-3xl mb-4 animate-spin">⚙️</div>
       <div className="text-tan font-semibold mb-1">{uploadStatus}</div>
