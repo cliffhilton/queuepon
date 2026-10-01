@@ -37,11 +37,13 @@ const PLANS = {
   thrive: { name:'Thrive', price:799, audienceReach:'15,000–16,000', tag:'Multi-location · Franchises',           features:['4 Active Offers / 4 Active Ads','Multi-location (up to 3)','4-email sequence + contest offer*','Marketplace prioritization','Owner dashboard'] },
 }
 
-const COUPON_DISCOUNTS: Record<string, number> = {
-  getgrow: 200, getexpand: 300, getthrive: 400,
-}
-const PLAN_COUPONS: Record<string, string> = {
-  grow: 'getgrow', expand: 'getexpand', thrive: 'getthrive',
+type CouponInfo = { percentOff?: number; amountOff?: number } | null
+
+function discountedPrice(price: number, info: CouponInfo): number {
+  if (!info) return price
+  if (info.percentOff) return Math.round(price * (1 - info.percentOff / 100))
+  if (info.amountOff)  return Math.round(price - info.amountOff / 100)
+  return price
 }
 
 const RESTAURANT_TYPES =['Quick Service (Fast Food)','Fast Casual','Pizza','Casual Dining','Food Truck','Bakery / Café','Bar & Grill','Other']
@@ -79,7 +81,7 @@ function StepBar({ current }: { current: Step }) {
 }
 
 // ── STEP 1 ─────────────────────────────────────────────────────────────────
-function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v: any) => void; next: () => void }) {
+function Step1({ form, set, next, couponInfo }: { form: FormData; set: (f: keyof FormData, v: any) => void; next: () => void; couponInfo: CouponInfo }) {
   return (
     <div>
       <div className="text-center mb-10">
@@ -89,7 +91,7 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
       </div>
       <div className="grid md:grid-cols-3 gap-5">
         {(Object.entries(PLANS) as [Plan, typeof PLANS.grow][]).map(([key, plan]) => (
-          <div key={key} onClick={() => { set('plan', key); if (form.coupon && form.coupon !== 'internaltest') set('coupon', PLAN_COUPONS[key]) }}
+          <div key={key} onClick={() => set('plan', key)}
             className={`relative bg-white rounded-2xl p-7 border-2 cursor-pointer transition-all hover:-translate-y-1
               ${form.plan === key ? 'border-blue shadow-card' : 'border-cream-dark hover:border-blue/40'}`}>
             {'popular' in plan && (
@@ -97,10 +99,10 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
             )}
             <div className="font-bold text-tan text-lg mb-1">{plan.name}</div>
             <div className="text-xs text-tan-light mb-4">{plan.tag}</div>
-            {form.coupon ? (
+            {form.coupon && couponInfo ? (
               <div className="mb-1">
                 <span className="line-through text-tan-light text-sm">${plan.price}/mo</span>
-                <span className="text-blue font-black text-xl ml-2">${plan.price - COUPON_DISCOUNTS[PLAN_COUPONS[key]]}/mo</span>
+                <span className="text-blue font-black text-xl ml-2">${discountedPrice(plan.price, couponInfo)}/mo</span>
               </div>
             ) : (
               <div className="text-3xl font-bold text-blue mb-1">${plan.price}<span className="text-sm text-tan-light font-normal">/mo</span></div>
@@ -121,9 +123,9 @@ function Step1({ form, set, next }: { form: FormData; set: (f: keyof FormData, v
           </div>
         ))}
       </div>
-      {form.coupon && (
+      {form.coupon && couponInfo && (
         <div className="bg-blue-pale border border-blue-light rounded-xl p-4 text-center mt-6">
-          <span className="text-blue font-semibold">🎉 Test drive pricing applied — your discount will be reflected at checkout.</span>
+          <span className="text-blue font-semibold">🎉 Promo code applied — your discount will be reflected at checkout.</span>
         </div>
       )}
       <p className="text-xs text-tan-light text-center mt-4 max-w-2xl mx-auto">
@@ -897,12 +899,25 @@ function SignupPageInner() {
   const couponParam  = searchParams.get('coupon')
   const validPlans   = ['grow', 'expand', 'thrive']
   const initialPlan  = validPlans.includes(planParam ?? '') ? planParam as Plan : 'expand'
-  const validCoupons = ['getgrow', 'getexpand', 'getthrive', 'internaltest']
-  const initialCoupon = validCoupons.includes(couponParam ?? '') ? couponParam! : ''
+  const initialCoupon = couponParam ?? ''
+
+  const [couponInfo, setCouponInfo] = useState<CouponInfo>(null)
 
   useEffect(() => {
     if (planParam || couponParam) {
       window.history.replaceState({}, '', '/signup')
+    }
+    if (couponParam) {
+      fetch(`/api/validate-coupon?code=${encodeURIComponent(couponParam)}`)
+        .then(r => r.json())
+        .then((data: { valid: boolean; percentOff?: number; amountOff?: number }) => {
+          if (data.valid) {
+            setCouponInfo({ percentOff: data.percentOff, amountOff: data.amountOff })
+          } else {
+            set('coupon', '')
+          }
+        })
+        .catch(() => set('coupon', ''))
     }
   }, [])
 
@@ -934,7 +949,7 @@ function SignupPageInner() {
       </nav>
       <div className="pt-24 pb-20 px-4 md:px-8">
         <StepBar current={step}/>
-        {step === 1 && <Step1 form={form} set={set} next={next}/>}
+        {step === 1 && <Step1 form={form} set={set} next={next} couponInfo={couponInfo}/>}
         {step === 2 && <Step2 form={form} set={set} next={next} back={back}/>}
         {step === 3 && <Step3 form={form} set={set} next={next} back={back}/>}
         {step === 4 && <Step4 form={form} set={set} next={next} back={back}/>}
