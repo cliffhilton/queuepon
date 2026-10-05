@@ -1,6 +1,12 @@
 import { Resend } from 'resend'
 import { DEFAULT_HERO_URL, BIRTHDAY_HERO_URL } from './images'
 
+function resolveHero(imageUrl: string | undefined, restaurantName: string, fallback = DEFAULT_HERO_URL): string {
+  if (imageUrl) return imageUrl
+  console.warn(`[resend] hero fallback for "${restaurantName}" — no ad image found`)
+  return fallback
+}
+
 export const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM    = process.env.RESEND_FROM_EMAIL || 'hello@queuepon.com'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
@@ -307,7 +313,7 @@ export async function sendReminderEmail({
   offerTitle: string; landingPageUrl: string
   logoUrl?: string; address?: string; adImageUrl?: string
 }) {
-  const hero = adImageUrl || DEFAULT_HERO_URL
+  const hero = resolveHero(adImageUrl, restaurantName)
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,
@@ -378,10 +384,10 @@ export async function sendAdReadyEmail({
 
 export async function sendComeBackOwnerSetupEmail({
   to, firstName, restaurantName, dashboardUrl,
-  logoUrl, address,
+  logoUrl, address, adImageUrl,
 }: {
   to: string; firstName: string; restaurantName: string; dashboardUrl: string
-  logoUrl?: string; address?: string
+  logoUrl?: string; address?: string; adImageUrl?: string
 }) {
   return resend.emails.send({
     from: `Queuepon <${FROM}>`,
@@ -390,7 +396,7 @@ export async function sendComeBackOwnerSetupEmail({
     html: emailWrap(`
       ${eHeader()}
       ${eBranding(restaurantName, logoUrl, address)}
-      ${eHero(DEFAULT_HERO_URL, restaurantName)}
+      ${eHero(resolveHero(adImageUrl, restaurantName), restaurantName)}
       <tr><td style="padding:36px 32px 28px;font-family:'Helvetica Neue',Arial,sans-serif;">
         <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
           One more thing, ${firstName} 🙌
@@ -442,7 +448,7 @@ export async function sendBringAFriendEmail({
   offerTitle: string; landingPageUrl: string
   logoUrl?: string; address?: string; adImageUrl?: string; expiryDate?: string
 }) {
-  const hero      = adImageUrl || DEFAULT_HERO_URL
+  const hero      = resolveHero(adImageUrl, restaurantName)
   const shareUrl  = landingPageUrl.split('?')[0]
   const expiryExtra = expiryDate
     ? `<div style="font-size:12px;color:#716559;margin-top:10px;font-weight:600;">
@@ -489,7 +495,7 @@ export async function sendComeBackCustomerEmail({
   comeBackOfferText: string; imageUrl?: string; landingPageUrl: string
   logoUrl?: string; address?: string
 }) {
-  const hero = imageUrl || DEFAULT_HERO_URL
+  const hero = resolveHero(imageUrl, restaurantName)
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,
@@ -527,7 +533,7 @@ export async function sendBirthdayEmail({
   birthdayOffer: string; landingPageUrl: string
   logoUrl?: string; address?: string; adImageUrl?: string
 }) {
-  const hero = adImageUrl || BIRTHDAY_HERO_URL || DEFAULT_HERO_URL
+  const hero = resolveHero(adImageUrl, restaurantName, BIRTHDAY_HERO_URL)
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,

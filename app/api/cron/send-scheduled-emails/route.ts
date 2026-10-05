@@ -8,7 +8,6 @@ import {
   sendAdReadyEmail,
   sendBirthdayEmail,
 } from '@/lib/resend'
-import { DEFAULT_HERO_URL } from '@/lib/images'
 
 export async function GET(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get('secret')
@@ -39,6 +38,10 @@ export async function GET(req: NextRequest) {
 
     for (const r of restaurants ?? []) {
       try {
+        const { data: heroOffer } = await supabase
+          .from('offers').select('ad_image_url')
+          .eq('restaurant_id', r.id).eq('status', 'live')
+          .order('created_at', { ascending: false }).limit(1).maybeSingle()
         await sendComeBackOwnerSetupEmail({
           to:             r.email,
           firstName:      r.owner_first,
@@ -46,6 +49,7 @@ export async function GET(req: NextRequest) {
           dashboardUrl:   `${appUrl}/dashboard/offers`,
           logoUrl:        r.logo_url  || undefined,
           address:        r.address   || undefined,
+          adImageUrl:     heroOffer?.ad_image_url || undefined,
         })
         await supabase.from('restaurants')
           .update({ come_back_setup_email_sent_at: now.toISOString() })
@@ -189,7 +193,7 @@ export async function GET(req: NextRequest) {
           continue
         }
 
-        const imageUrl = restaurant.come_back_offer_image_url || offer.ad_image_url || DEFAULT_HERO_URL
+        const imageUrl = restaurant.come_back_offer_image_url || offer.ad_image_url || undefined
 
         await sendComeBackCustomerEmail({
           to:                c.email,
@@ -282,10 +286,10 @@ export async function GET(req: NextRequest) {
       try {
         const { data: restaurant } = await supabase
           .from('restaurants')
-          .select('name, is_test, birthday_offer, logo_url, address, ad_image_url')
+          .select('name, is_test, birthday_offer, logo_url, address')
           .eq('id', c.restaurant_id).single()
         const { data: offer } = await supabase
-          .from('offers').select('slug').eq('id', c.offer_id).single()
+          .from('offers').select('slug, ad_image_url').eq('id', c.offer_id).single()
 
         if (!restaurant || !offer) {
           log.push(`⚠️ [birthday] Missing restaurant/offer for customer ${c.id}`)
@@ -308,7 +312,7 @@ export async function GET(req: NextRequest) {
           landingPageUrl: `${appUrl}/offers/${offer.slug}?email=${encodeURIComponent(c.email)}`,
           logoUrl:        restaurant.logo_url   || undefined,
           address:        restaurant.address    || undefined,
-          adImageUrl:     restaurant.ad_image_url || undefined,
+          adImageUrl:     offer.ad_image_url       || undefined,
         })
         await supabase.from('customers')
           .update({ birthday_email_sent_at: now.toISOString(), emails_sent: (c.emails_sent ?? 0) + 1 })
