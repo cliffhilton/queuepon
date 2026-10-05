@@ -1,5 +1,5 @@
 import { Resend } from 'resend'
-import { DEFAULT_HERO_URL_URL, BIRTHDAY_HERO_URL_URL } from './images'
+import { DEFAULT_HERO_URL, BIRTHDAY_HERO_URL } from './images'
 
 export const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM    = process.env.RESEND_FROM_EMAIL || 'hello@queuepon.com'
