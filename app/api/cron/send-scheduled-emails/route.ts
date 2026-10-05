@@ -8,8 +8,7 @@ import {
   sendAdReadyEmail,
   sendBirthdayEmail,
 } from '@/lib/resend'
-
-const DEFAULT_IMAGE = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.jpg'
+import { DEFAULT_HERO_URL } from '@/lib/images'
 
 export async function GET(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get('secret')
@@ -190,7 +189,7 @@ export async function GET(req: NextRequest) {
           continue
         }
 
-        const imageUrl = restaurant.come_back_offer_image_url || offer.ad_image_url || DEFAULT_IMAGE
+        const imageUrl = restaurant.come_back_offer_image_url || offer.ad_image_url || DEFAULT_HERO_URL
 
         await sendComeBackCustomerEmail({
           to:                c.email,

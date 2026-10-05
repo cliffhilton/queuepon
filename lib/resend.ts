@@ -1,10 +1,9 @@
 import { Resend } from 'resend'
+import { DEFAULT_HERO_URL_URL, BIRTHDAY_HERO_URL_URL } from './images'
 
 export const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM    = process.env.RESEND_FROM_EMAIL || 'hello@queuepon.com'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
-
-const DEFAULT_HERO = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.png'
 const LOGO_WHITE   = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-WH-web.png'
 
 // ── Shared email template helpers ──────────────────────────────────────────────
@@ -308,7 +307,7 @@ export async function sendReminderEmail({
   offerTitle: string; landingPageUrl: string
   logoUrl?: string; address?: string; adImageUrl?: string
 }) {
-  const hero = adImageUrl || DEFAULT_HERO
+  const hero = adImageUrl || DEFAULT_HERO_URL
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,
@@ -391,7 +390,7 @@ export async function sendComeBackOwnerSetupEmail({
     html: emailWrap(`
       ${eHeader()}
       ${eBranding(restaurantName, logoUrl, address)}
-      ${eHero(DEFAULT_HERO, restaurantName)}
+      ${eHero(DEFAULT_HERO_URL, restaurantName)}
       <tr><td style="padding:36px 32px 28px;font-family:'Helvetica Neue',Arial,sans-serif;">
         <h1 style="font-family:'Poppins','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:700;color:#716559;margin:0 0 14px;line-height:1.3;">
           One more thing, ${firstName} 🙌
@@ -443,7 +442,7 @@ export async function sendBringAFriendEmail({
   offerTitle: string; landingPageUrl: string
   logoUrl?: string; address?: string; adImageUrl?: string; expiryDate?: string
 }) {
-  const hero      = adImageUrl || DEFAULT_HERO
+  const hero      = adImageUrl || DEFAULT_HERO_URL
   const shareUrl  = landingPageUrl.split('?')[0]
   const expiryExtra = expiryDate
     ? `<div style="font-size:12px;color:#716559;margin-top:10px;font-weight:600;">
@@ -490,7 +489,7 @@ export async function sendComeBackCustomerEmail({
   comeBackOfferText: string; imageUrl?: string; landingPageUrl: string
   logoUrl?: string; address?: string
 }) {
-  const hero = imageUrl || DEFAULT_HERO
+  const hero = imageUrl || DEFAULT_HERO_URL
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,
@@ -519,7 +518,6 @@ export async function sendComeBackCustomerEmail({
   })
 }
 
-const BIRTHDAY_HERO = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/birthday-offer.png'
 
 export async function sendBirthdayEmail({
   to, firstName, restaurantName, birthdayOffer, landingPageUrl,
@@ -529,7 +527,7 @@ export async function sendBirthdayEmail({
   birthdayOffer: string; landingPageUrl: string
   logoUrl?: string; address?: string; adImageUrl?: string
 }) {
-  const hero = adImageUrl || BIRTHDAY_HERO || DEFAULT_HERO
+  const hero = adImageUrl || BIRTHDAY_HERO_URL || DEFAULT_HERO_URL
   return resend.emails.send({
     from: `${restaurantName} via Queuepon <${FROM}>`,
     to,

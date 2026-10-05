@@ -1,7 +1,7 @@
 // Meta Marketing API integration
 // Docs: https://developers.facebook.com/docs/marketing-apis
 
-const FALLBACK_AD_IMAGE_URL = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/offer-images/default/531196a9-de9b-45dd-8d3e-19c528e9b8c1.jpg'
+import { DEFAULT_HERO_URL } from './images'
 
 const META_API_VERSION = 'v19.0'
 const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
@@ -300,7 +300,7 @@ export async function createMetaCampaign(params: MetaCampaignParams): Promise<Me
   if (imageHashes.length === 0) {
     console.warn(`⚠️ No images uploaded for ${params.restaurantName} — falling back to placeholder`)
     try {
-      const fallbackHash = await uploadImageToMeta(FALLBACK_AD_IMAGE_URL, accessToken, adAccountId)
+      const fallbackHash = await uploadImageToMeta(DEFAULT_HERO_URL, accessToken, adAccountId)
       imageHashes.push(fallbackHash)
       console.log(`✅ Fallback image uploaded to Meta: ${fallbackHash}`)
     } catch (fallbackErr) {
