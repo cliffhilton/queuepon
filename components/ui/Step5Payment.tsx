@@ -34,11 +34,15 @@ async function uploadImage(file: File, bucket: string, path: string): Promise<st
 }
 
 export function Step5Payment({ form, back }: Step5PaymentProps) {
-  const [clientSecret, setClientSecret] = useState('')
-  const [loading,      setLoading]      = useState(true)
-  const [error,        setError]        = useState('')
-  const [pollKey,      setPollKey]      = useState('')
-  const [uploadStatus, setUploadStatus] = useState('Uploading your photos...')
+  const [clientSecret,          setClientSecret]          = useState('')
+  const [loading,               setLoading]               = useState(true)
+  const [error,                 setError]                 = useState('')
+  const [pollKey,               setPollKey]               = useState('')
+  const [amountDueCents,        setAmountDueCents]        = useState(0)
+  const [recurringCents,        setRecurringCents]        = useState(0)
+  const [couponDuration,        setCouponDuration]        = useState<string | null>(null)
+  const [couponDurationInMonths, setCouponDurationInMonths] = useState<number | null>(null)
+  const [uploadStatus,          setUploadStatus]          = useState('Uploading your photos...')
   const router = useRouter()
 
   const plan = PLANS[form.plan as keyof typeof PLANS]
@@ -106,6 +110,10 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
         const data = await res.json()
         if (data.error) { setError(data.error); setLoading(false); return }
         setPollKey(data.pollKey ?? '')
+        setAmountDueCents(data.amountDueCents ?? 0)
+        setRecurringCents(data.recurringCents ?? 0)
+        setCouponDuration(data.couponDuration ?? null)
+        setCouponDurationInMonths(data.couponDurationInMonths ?? null)
 
         if (data.skipPayment) {
           const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
@@ -171,6 +179,10 @@ export function Step5Payment({ form, back }: Step5PaymentProps) {
         planPrice={plan.price}
         discount={discount}
         discountedPrice={discountedPrice}
+        amountDueCents={amountDueCents}
+        recurringCents={recurringCents}
+        couponDuration={couponDuration}
+        couponDurationInMonths={couponDurationInMonths}
         audienceReach={plan.audienceReach}
         restaurantName={form.restaurantName}
         address={form.address}

@@ -29,11 +29,15 @@ export async function POST(req: NextRequest) {
     const safeLogoUrl    = (logoUrl    || '').slice(0, 490)
     const safeAdImageUrl = (adImageUrl || '').slice(0, 490)
 
-    // Resolve Stripe promotion code if coupon provided
+    // Resolve Stripe promotion code if coupon provided; save coupon for duration info
     let promotionCodeId: string | undefined
+    let promoCodeCoupon: any
     if (coupon) {
       const promoCodes = await stripe.promotionCodes.list({ code: coupon, active: true, limit: 1 })
-      if (promoCodes.data.length > 0) promotionCodeId = promoCodes.data[0].id
+      if (promoCodes.data.length > 0) {
+        promotionCodeId = promoCodes.data[0].id
+        promoCodeCoupon = promoCodes.data[0].coupon
+      }
     }
     console.log('Coupon received:', coupon)
     console.log('Promotion code ID found:', promotionCodeId)
@@ -75,12 +79,27 @@ export async function POST(req: NextRequest) {
     const invoice       = subscription.latest_invoice as any
     const paymentIntent = invoice?.payment_intent as any
 
+    // subscription.discount.coupon is an embedded object under API v2024-04-10 —
+    // populated synchronously when discount: [promotion_code] is passed.
+    // promoCodeCoupon is a fallback in case discount is absent.
+    const couponData = (subscription.discount as any)?.coupon ?? promoCodeCoupon
+    const couponDuration: 'once' | 'repeating' | 'forever' | null = couponData?.duration ?? null
+    const couponDurationInMonths: number | null = couponData?.duration_in_months ?? null
+    const planPriceCents = planConfig.price * 100
+    const recurringCents = (couponDuration === 'once' || couponDuration === 'repeating')
+      ? planPriceCents
+      : (invoice?.amount_due ?? planPriceCents)
+
     return NextResponse.json({
-      subscriptionId: subscription.id,
-      clientSecret:   paymentIntent?.client_secret ?? null,
-      skipPayment:    !paymentIntent?.client_secret,
-      customerId:     customer.id,
+      subscriptionId:         subscription.id,
+      clientSecret:           paymentIntent?.client_secret ?? null,
+      skipPayment:            !paymentIntent?.client_secret,
+      customerId:             customer.id,
       pollKey,
+      amountDueCents:         invoice?.amount_due ?? 0,
+      recurringCents,
+      couponDuration,
+      couponDurationInMonths,
     })
 
   } catch (err: any) {

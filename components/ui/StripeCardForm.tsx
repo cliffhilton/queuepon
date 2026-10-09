@@ -13,6 +13,10 @@ interface StripeCardFormProps {
   planPrice: number
   discount: number
   discountedPrice: number
+  amountDueCents: number
+  recurringCents: number
+  couponDuration: string | null
+  couponDurationInMonths: number | null
   audienceReach: string
   restaurantName: string
   address: string
@@ -25,10 +29,13 @@ interface StripeCardFormProps {
 }
 
 export function StripeCardForm({
-  clientSecret, planName, planPrice, discount, discountedPrice, audienceReach,
-  restaurantName, address, offerTitle, adTemplate,
+  clientSecret, planName, planPrice, discount, discountedPrice,
+  amountDueCents, recurringCents, couponDuration, couponDurationInMonths,
+  audienceReach, restaurantName, address, offerTitle, adTemplate,
   zipCode, onBack, onSuccess, returnUrl,
 }: StripeCardFormProps) {
+  const fmtDollars = (cents: number) =>
+    cents % 100 === 0 ? `$${cents / 100}` : `$${(cents / 100).toFixed(2)}`
   const stripe   = useStripe()
   const elements = useElements()
   const [paying, setPaying]   = useState(false)
@@ -91,7 +98,7 @@ export function StripeCardForm({
             onClick={handleSubmit}
             disabled={paying || !stripe}
             className={`btn-primary px-8 py-3 ${paying ? 'opacity-75 cursor-wait' : ''}`}>
-            {paying ? '⏳ Processing...' : `🚀 Launch — $${discountedPrice}/mo`}
+            {paying ? '⏳ Processing...' : `🚀 Launch — ${fmtDollars(amountDueCents)} today`}
           </button>
         </div>
       </div>
@@ -131,7 +138,16 @@ export function StripeCardForm({
         </div>
         <div className="flex justify-between items-center mt-5">
           <div className="font-bold">Due Today</div>
-          <div className="text-3xl font-bold text-yellow-300">${discountedPrice}</div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-yellow-300">{fmtDollars(amountDueCents)}</div>
+            {amountDueCents !== recurringCents && (
+              <div className="text-xs text-white/60 mt-0.5">
+                {couponDuration === 'repeating' && couponDurationInMonths
+                  ? `then ${fmtDollars(recurringCents)}/mo after ${couponDurationInMonths} months`
+                  : `then ${fmtDollars(recurringCents)}/mo`}
+              </div>
+            )}
+          </div>
         </div>
         <div className="mt-5 bg-white/10 rounded-xl p-4 text-xs opacity-75 leading-relaxed">
           Your Meta ad targeting <strong>ZIP {zipCode}</strong> goes live within 24 hours.
