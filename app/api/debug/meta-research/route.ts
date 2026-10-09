@@ -184,6 +184,12 @@ export async function GET(req: NextRequest) {
     // result shape: { campaignId, adSetId, adId, adCreativeId }
     e2e.createMetaCampaign = { ok: true, ...result }
 
+    // Read back the creative to confirm object_story_spec (and any Instagram identity field)
+    try {
+      const r = await fetch(`${BASE_URL}/${result.adCreativeId}?fields=object_story_spec&access_token=${token}`)
+      e2e.creative_readback = await r.json()
+    } catch (err: any) { e2e.creative_readback = { error: err.message } }
+
     // Delete in dependency order: ad → adset → campaign → creative
     const toDelete: Array<{ label: string; id: string }> = [
       { label: 'ad',       id: result.adId },
