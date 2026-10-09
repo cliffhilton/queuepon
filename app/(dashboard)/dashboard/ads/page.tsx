@@ -4,13 +4,13 @@ import { AdReviewClient } from './AdReviewClient'
 
 export default async function AdsPage() {
   const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: restaurant } = await supabase
     .from('restaurants')
     .select('*')
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .single()
 
   const { data: offers } = await supabase

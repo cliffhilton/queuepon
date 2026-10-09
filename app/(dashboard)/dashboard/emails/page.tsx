@@ -11,11 +11,11 @@ const SEQUENCE = [
 
 export default async function EmailsPage() {
   const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: restaurant } = await supabase
-    .from('restaurants').select('id,name,plan').eq('user_id', session.user.id).single()
+    .from('restaurants').select('id,name,plan').eq('user_id', user.id).single()
 
   const { data: customers } = await supabase
     .from('customers').select('emails_sent, sequence_status, redeemed_at')

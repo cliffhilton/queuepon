@@ -48,14 +48,14 @@ export default function NewOfferPage() {
 
     try {
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push('/login'); return }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
 
       // Get restaurant
       const { data: restaurant } = await supabase
         .from('restaurants')
         .select('id')
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
         .single()
 
       if (!restaurant) throw new Error('Restaurant not found')

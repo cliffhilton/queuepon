@@ -4,11 +4,11 @@ import { ExportCSVButton } from './ExportCSVButton'
 
 export default async function CustomersPage() {
   const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: restaurant } = await supabase
-    .from('restaurants').select('id,name').eq('user_id', session.user.id).single()
+    .from('restaurants').select('id,name').eq('user_id', user.id).single()
 
   const { data: customers, count } = await supabase
     .from('customers').select('*, offers(title)', { count: 'exact' })

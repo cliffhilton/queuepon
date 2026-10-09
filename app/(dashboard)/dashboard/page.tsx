@@ -5,14 +5,14 @@ import { WelcomeBanner } from '@/components/dashboard/WelcomeBanner'
 
 export default async function DashboardPage() {
   const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   // Get restaurant
   const { data: restaurant } = await supabase
     .from('restaurants')
     .select('*')
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .single()
 
   // Get offers

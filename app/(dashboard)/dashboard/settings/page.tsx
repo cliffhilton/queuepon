@@ -3,11 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 
 export default async function SettingsPage() {
   const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: restaurant } = await supabase
-    .from('restaurants').select('*').eq('user_id', session.user.id).single()
+    .from('restaurants').select('*').eq('user_id', user.id).single()
 
   const PLAN_NAMES: Record<string, string> = { grow:'Grow', expand:'Expand', thrive:'Thrive' }
   const PLAN_PRICES: Record<string, number> = { grow:299, expand:499, thrive:799 }
@@ -67,7 +67,7 @@ export default async function SettingsPage() {
       <div className="card">
         <div className="font-bold text-tan mb-4">Account</div>
         <div className="text-sm text-tan-light mb-4">
-          Logged in as <strong className="text-tan">{session.user.email}</strong>
+          Logged in as <strong className="text-tan">{user.email}</strong>
         </div>
         <a href="/set-password" className="btn-ghost btn-sm">
           Reset Password

@@ -20,9 +20,9 @@ async function setMetaStatus(id: string, status: 'ACTIVE' | 'PAUSED', accessToke
 export async function POST(req: NextRequest) {
   try {
     // Verify restaurant is logged in
-    const supabase      = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { campaignId, adSetId, adId, offerId, restaurantId } = await req.json()
 

@@ -9,11 +9,11 @@ const OFFER_LIMITS: Record<string, number> = { grow: 1, expand: 2, thrive: 4 }
 
 export default async function OffersPage() {
   const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: restaurant } = await supabase
-    .from('restaurants').select('id,name,zip_code,plan,birthday_offer,come_back_offer_text,come_back_offer_image_url').eq('user_id', session.user.id).single()
+    .from('restaurants').select('id,name,zip_code,plan,birthday_offer,come_back_offer_text,come_back_offer_image_url').eq('user_id', user.id).single()
 
   const { data: offers } = await supabase
     .from('offers').select('*').eq('restaurant_id', restaurant?.id)
