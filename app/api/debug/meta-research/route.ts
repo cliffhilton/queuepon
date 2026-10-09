@@ -1,7 +1,8 @@
-// TEMPORARY — delete after Meta adimages investigation is complete
+// TEMPORARY — delete after Meta investigation is complete
 // Hit: GET /api/debug/meta-research?secret=<CRON_SECRET>[&v=v25.0]
 import { NextRequest, NextResponse } from 'next/server'
 import { DEFAULT_HERO_URL } from '@/lib/images'
+import { createMetaCampaign, MetaCampaignParams } from '@/lib/meta'
 
 function sanitizeError(e: any) {
   if (!e) return null
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
     } catch (e: any) { out[label] = { fetch_error: e.message } }
   }
 
-  // ── 1b: Fetch image once, reuse buffer for all three upload tests ──────────
+  // ── 1b: Fetch image once, reuse buffer for all upload tests ───────────────
   let buffer: ArrayBuffer | null = null
   try {
     const imgRes = await fetch(DEFAULT_HERO_URL)
@@ -63,7 +64,8 @@ export async function GET(req: NextRequest) {
     out.imageFetch = { fetch_error: e.message }
   }
 
-  // ── 1b-i: JSON bytes (base64) ──────────────────────────────────────────────
+  // ── 1b-i: JSON bytes (base64) — capture hash for reuse in section 2 ───────
+  let uploadedHash: string | null = null
   if (buffer) {
     try {
       const base64 = Buffer.from(buffer).toString('base64')
@@ -71,11 +73,19 @@ export async function GET(req: NextRequest) {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body:   JSON.stringify({ bytes: base64, access_token: token }),
       })
-      out.upload_json_bytes = uploadResult(await r.json())
+      const d = await r.json()
+      if (d.error) {
+        out.upload_json_bytes = { ok: false, error: sanitizeError(d.error) }
+      } else {
+        const imgs     = d.images ?? {}
+        const firstKey = Object.keys(imgs)[0]
+        uploadedHash   = imgs[firstKey]?.hash ?? null
+        out.upload_json_bytes = { ok: true, image_keys: Object.keys(imgs), hash: uploadedHash }
+      }
     } catch (e: any) { out.upload_json_bytes = { fetch_error: e.message } }
   }
 
-  // ── 1b-ii: multipart/form-data (Meta's documented curl approach) ──────────
+  // ── 1b-ii: multipart/form-data ────────────────────────────────────────────
   if (buffer) {
     try {
       const form = new FormData()
@@ -86,7 +96,7 @@ export async function GET(req: NextRequest) {
     } catch (e: any) { out.upload_multipart = { fetch_error: e.message } }
   }
 
-  // ── 1b-iii: url (comparison) ───────────────────────────────────────────────
+  // ── 1b-iii: url (comparison — known to fail with #3) ──────────────────────
   try {
     const r = await fetch(`${BASE_URL}/${acct}/adimages`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -95,7 +105,7 @@ export async function GET(req: NextRequest) {
     out.upload_url = uploadResult(await r.json())
   } catch (e: any) { out.upload_url = { fetch_error: e.message } }
 
-  // ── 1c: Instagram accounts ─────────────────────────────────────────────────
+  // ── 1c: Instagram accounts ────────────────────────────────────────────────
   try {
     const r = await fetch(`${BASE_URL}/${acct}/instagram_accounts?access_token=${token}`)
     out.instagram_via_ad_account = await r.json()
@@ -105,6 +115,94 @@ export async function GET(req: NextRequest) {
     const r = await fetch(`${BASE_URL}/${pageId}/instagram_accounts?access_token=${token}`)
     out.instagram_via_page = await r.json()
   } catch (e: any) { out.instagram_via_page = { fetch_error: e.message } }
+
+  // ── 2a: Instagram field name test ─────────────────────────────────────────
+  // Tests both instagram_actor_id and instagram_user_id to confirm which Meta
+  // accepts for this account/version. Set META_INSTAGRAM_FIELD after reviewing results.
+  const igAcct = process.env.META_INSTAGRAM_ACCOUNT_ID ?? ''
+  const igTests: Array<{ field: string; id?: string; error?: any }> = []
+  out.instagram_field_tests = igTests
+
+  if (!uploadedHash || !igAcct) {
+    igTests.push({
+      field: 'skipped',
+      error: !uploadedHash ? 'No hash from bytes upload' : 'META_INSTAGRAM_ACCOUNT_ID not set',
+    })
+  } else {
+    for (const igField of ['instagram_actor_id', 'instagram_user_id']) {
+      try {
+        const r = await fetch(`${BASE_URL}/${acct}/adcreatives`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: `debug-ig-${igField}`,
+            access_token: token,
+            object_story_spec: {
+              page_id: pageId,
+              [igField]: igAcct,
+              link_data: {
+                image_hash: uploadedHash,
+                link: 'https://queuepon.com',
+                message: 'Debug test — will be deleted',
+                name: 'Debug',
+                call_to_action: { type: 'LEARN_MORE', value: { link: 'https://queuepon.com' } },
+              },
+            },
+          }),
+        })
+        const d = await r.json()
+        igTests.push(d.error ? { field: igField, error: sanitizeError(d.error) } : { field: igField, id: d.id })
+      } catch (err: any) { igTests.push({ field: igField, error: { message: err.message } }) }
+    }
+    // Clean up Instagram test creatives immediately
+    for (const t of igTests.filter(t => t.id)) {
+      try { await fetch(`${BASE_URL}/${t.id}?access_token=${token}`, { method: 'DELETE' }) } catch { /* best-effort */ }
+    }
+  }
+
+  // ── 2b: Full pipeline test via createMetaCampaign ─────────────────────────
+  // Calls the real production function with dummy data, then deletes everything it created.
+  const e2e: Record<string, any> = {}
+  out.e2e = e2e
+  try {
+    const dummyParams: MetaCampaignParams = {
+      restaurantName:   'Debug Test Restaurant',
+      offerTitle:       'Debug Test Offer',
+      adHeadline:       'Debug headline (delete me)',
+      adSubheadline:    'Debug test — will be deleted',
+      zipCode:          '10001',
+      adImageUrl:       DEFAULT_HERO_URL,
+      landingPageUrl:   'https://queuepon.com',
+      plan:             'grow',
+      adColor:          '#588aad',
+      audienceTypes:    [],
+      audienceAgeRange: 'all',
+      trafficTiming:    [],
+      adDays:           [],
+      adImageUrls:      [DEFAULT_HERO_URL],
+    }
+    const result = await createMetaCampaign(dummyParams)
+    // result shape: { campaignId, adSetId, adId, adCreativeId }
+    e2e.createMetaCampaign = { ok: true, ...result }
+
+    // Delete in dependency order: ad → adset → campaign → creative
+    const toDelete: Array<{ label: string; id: string }> = [
+      { label: 'ad',       id: result.adId },
+      { label: 'adset',    id: result.adSetId },
+      { label: 'campaign', id: result.campaignId },
+      { label: 'creative', id: result.adCreativeId },
+    ]
+    e2e.deletions = []
+    for (const { label, id } of toDelete) {
+      try {
+        const r = await fetch(`${BASE_URL}/${id}?access_token=${token}`, { method: 'DELETE' })
+        e2e.deletions.push({ label, id, result: await r.json() })
+      } catch (err: any) {
+        e2e.deletions.push({ label, id, result: { error: err.message } })
+      }
+    }
+  } catch (err: any) {
+    e2e.createMetaCampaign = { ok: false, error: err.message }
+  }
 
   return NextResponse.json(out)
 }

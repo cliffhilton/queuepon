@@ -6,7 +6,7 @@ import { DEFAULT_HERO_URL } from './images'
 const META_API_VERSION = 'v19.0'
 const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
 
-interface MetaCampaignParams {
+export interface MetaCampaignParams {
   restaurantName:   string
   offerTitle:       string
   adHeadline:       string
@@ -56,28 +56,40 @@ function dailyBudgetCents(plan: string): number {
 
 // ── Step 1: Upload image to Meta ───────────────────────────────────────────
 async function uploadImageToMeta(imageUrl: string, accessToken: string, adAccountId: string): Promise<string> {
-  let res: Response
+  // The url= param returns (#3) regardless of token or app mode; bytes (base64) works.
+  let imageBuffer: ArrayBuffer
   try {
-    res = await fetch(
-      `${BASE_URL}/${adAccountId}/adimages`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url:          imageUrl,
-          access_token: accessToken,
-        }),
-      }
-    )
+    const imgRes = await fetch(imageUrl)
+    if (!imgRes.ok) throw new Error(`HTTP ${imgRes.status} ${imgRes.statusText}`)
+    imageBuffer = await imgRes.arrayBuffer()
   } catch (fetchErr: any) {
-    throw new Error(`Meta image upload network error for "${imageUrl}": ${fetchErr.message}`)
+    throw new Error(`Meta image fetch failed for "${imageUrl}": ${fetchErr.message}`)
   }
-  const data = await res.json()
-  if (data.error) throw new Error(`Meta image upload failed for "${imageUrl}": ${data.error.message} (code ${data.error.code ?? 'unknown'})`)
 
-  const images   = data.images
-  const firstKey = Object.keys(images)[0]
-  return images[firstKey].hash
+  const base64 = Buffer.from(imageBuffer).toString('base64')
+  const res = await fetch(
+    `${BASE_URL}/${adAccountId}/adimages`,
+    {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ bytes: base64, access_token: accessToken }),
+    }
+  )
+  const data = await res.json()
+  if (data.error) {
+    const e = data.error
+    throw new Error(
+      `Meta image upload failed for "${imageUrl}": ${e.message}` +
+      ` (code=${e.code} subcode=${e.error_subcode ?? '—'} trace=${e.fbtrace_id ?? '—'}` +
+      `${e.error_user_msg ? ' user_msg=' + e.error_user_msg : ''})`
+    )
+  }
+
+  const images = data.images
+  if (!images || Object.keys(images).length === 0) {
+    throw new Error(`Meta image upload returned no images object for "${imageUrl}"`)
+  }
+  return images[Object.keys(images)[0]].hash
 }
 
 // ── Step 2: Create ad creative ─────────────────────────────────────────────
@@ -90,14 +102,28 @@ async function createAdCreative(
   adAccountId: string,
   pageId: string,
 ): Promise<{ creativeId: string; isDynamic: boolean }> {
-  const primaryHash  = imageHashes[0] || ''
-  const isDynamic    = imageHashes.length > 1
-  const postText     = params.adSubheadline || `${params.offerTitle} — Exclusive offer for ${params.zipCode} locals`
-  const headline     = params.adHeadline || params.offerTitle
+  if (!params.offerTitle)    console.warn(`[meta] offerTitle is empty for "${params.restaurantName}"`)
+  if (!params.adHeadline)    console.warn(`[meta] adHeadline is empty for "${params.restaurantName}" — using offerTitle fallback`)
+  if (!params.adSubheadline) console.warn(`[meta] adSubheadline is empty for "${params.restaurantName}" — using generated copy`)
+
+  const primaryHash = imageHashes[0] || ''
+  const isDynamic   = imageHashes.length > 1
+  const postText    = params.adSubheadline
+    || `${params.restaurantName} has a new offer — ${params.offerTitle || 'a special deal'}. Opt in to claim it.`
+  const rawHeadline = params.adHeadline || `${params.offerTitle || 'New offer'} at ${params.restaurantName}`
+  const headline    = rawHeadline.slice(0, 40)
 
   // Guard: never send an imageless creative to Meta — always fails and counts against error rate
   if (imageHashes.length === 0 && !params.adImageUrl) {
     throw new Error(`Meta creative blocked: no image available for "${params.restaurantName}" — all uploads failed and fallback was unavailable`)
+  }
+
+  // META_INSTAGRAM_FIELD must be set (to 'instagram_actor_id' or 'instagram_user_id') after
+  // confirming via the debug route which value the API accepts for this account.
+  const instagramAccountId = process.env.META_INSTAGRAM_ACCOUNT_ID ?? ''
+  const instagramField     = process.env.META_INSTAGRAM_FIELD ?? ''
+  if (instagramAccountId && !instagramField) {
+    console.warn('[meta] META_INSTAGRAM_ACCOUNT_ID is set but META_INSTAGRAM_FIELD is not — Instagram identity skipped. Set META_INSTAGRAM_FIELD after running the debug route.')
   }
 
   const body: Record<string, any> = {
@@ -117,6 +143,7 @@ async function createAdCreative(
   } else {
     body.object_story_spec = {
       page_id: pageId,
+      ...(instagramAccountId && instagramField ? { [instagramField]: instagramAccountId } : {}),
       link_data: {
         ...(primaryHash
           ? { image_hash: primaryHash }
