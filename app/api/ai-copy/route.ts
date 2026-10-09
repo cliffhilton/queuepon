@@ -14,17 +14,33 @@ export async function POST(req: NextRequest) {
     let responseShape = ''
 
     if (mode === 'headlines') {
-      task = `Generate exactly 3 short headline options (each under 40 characters) for this "${offerType}" promotion.`
+      task = [
+        `Write exactly 3 short ad headline options (each under 40 characters) for ${restaurantName || 'the restaurant'}, a ${restaurantType}.`,
+        `Offer type: "${offerType}"${offerTitle ? `\nDraft headline the owner wrote: "${offerTitle}" — use as context only` : ''}`,
+        ``,
+        `Rules: name the restaurant in at least one option; plain specific language; no urgency phrases ("don't miss", "limited time", "before it's gone"); no all-caps words; no exclamation marks; no brand comparisons; use only facts the owner provided — do not add conditions, quantities, prices, times, or menu items they didn't state.`,
+      ].join('\n')
       responseShape = '{"headlines":["headline 1","headline 2","headline 3"]}'
     } else if (mode === 'description') {
       task = offerTitle
-        ? `The restaurant's exact offer headline is: "${offerTitle}"
-
-Write exactly 1 short, appetizing description (under 100 characters) that describes and elaborates on THIS SPECIFIC OFFER — "${offerTitle}". The description must directly relate to and expand on what's stated in the headline. Do not write a generic offer description — it must clearly connect to "${offerTitle}".`
-        : `Generate exactly 1 short, appetizing description (under 100 characters) for a "${offerType}" promotion.`
+        ? [
+            `Restaurant: ${restaurantName || 'the restaurant'} (${restaurantType})`,
+            `Headline: "${offerTitle}"`,
+            ``,
+            `Write exactly 1 description (under 100 characters). State what the offer is, using the restaurant name. No urgency language, no all-caps, no exclamation marks. Use only facts stated in the headline — do not add conditions, quantities, prices, times, or menu items not already there.`,
+          ].join('\n')
+        : `Write exactly 1 short description (under 100 characters) for a "${offerType}" offer at ${restaurantName || 'the restaurant'} (${restaurantType}). Plain language, no urgency phrases, no all-caps. Use only facts provided — do not invent conditions or details.`
       responseShape = '{"description":"description here"}'
     } else {
-      task = `Generate exactly 3 short headline options (each under 40 characters) and 1 short description (under 100 characters) for this "${offerType}" promotion.`
+      task = [
+        `For ${restaurantName || 'the restaurant'} (${restaurantType}), write:`,
+        `1. Exactly 3 headline options (each under 40 characters)`,
+        `2. Exactly 1 description (under 100 characters)`,
+        ``,
+        `Offer: "${offerType}"${offerTitle ? `\nDraft: "${offerTitle}" — use as context` : ''}`,
+        ``,
+        `Rules: name the restaurant in at least one headline; plain specific language; no urgency phrases; no all-caps; no exclamation marks; no brand comparisons; use only facts the owner provided — do not add conditions, quantities, prices, times, or menu items they didn't state.`,
+      ].join('\n')
       responseShape = '{"headlines":["headline 1","headline 2","headline 3"],"description":"description here"}'
     }
 
@@ -67,7 +83,7 @@ ${responseShape}`
 
     const data = await response.json()
     const text = data.content?.[0]?.text ?? ''
-    console.log('Claude raw response:', text, '| Input offerTitle was:', offerTitle)
+
 
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {

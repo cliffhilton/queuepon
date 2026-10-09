@@ -423,6 +423,7 @@ function Step3({ form, set, next, back }: { form: FormData; set: (f: keyof FormD
           restaurantType: form.restaurantType || 'restaurant',
           offerType: form.offerType,
           zipCode: form.zipCode,
+          offerTitle: form.offerTitle,
           generate: 'headlines',
         }),
       })
