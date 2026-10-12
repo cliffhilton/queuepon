@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendWelcomeEmail } from '@/lib/resend'
+import { sendWelcomeEmail, sendAdminAdAlert } from '@/lib/resend'
 import { createMetaCampaign } from '@/lib/meta'
+import { generateAdReadyToken, hashToken } from '@/lib/ad-token'
 
 export async function POST(req: NextRequest) {
   const body      = await req.text()
@@ -120,9 +121,10 @@ export async function POST(req: NextRequest) {
 
       // Save offer
       let offerSlug = ''
+      let offerId: string | null = null
       if (meta.offerTitle) {
         offerSlug = `${meta.offerTitle.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}-${Date.now()}`
-        const { error: offerError } = await supabase
+        const { data: offerRow, error: offerError } = await supabase
           .from('offers')
           .insert({
             restaurant_id:  restaurant.id,
@@ -138,6 +140,9 @@ export async function POST(req: NextRequest) {
             ad_image_url:   meta.adImageUrl  || null,
             come_back_offer: meta.comeBackOffer || null,
           })
+          .select('id')
+          .single()
+        offerId = offerRow?.id ?? null
         if (offerError) console.error('Offer insert error:', offerError)
         else console.log(`✅ Offer saved: ${meta.offerTitle}`)
       }
@@ -180,15 +185,47 @@ export async function POST(req: NextRequest) {
             zipCodes:         [meta.zipCode, ...parsedAdditionalLocations.map(l => l.zipCode)].filter(Boolean),
           })
           if (metaResult) {
-            await supabase.from('offers').update({
-              meta_campaign_id: metaResult.campaignId,
-              meta_adset_id:    metaResult.adSetId,
-              meta_ad_id:       metaResult.adId,
-              meta_ad_status:   'pending_review',
-            }).eq('restaurant_id', restaurant.id)
-            await supabase.from('restaurants').update({
-              meta_ad_status: 'setting_up',
-            }).eq('id', restaurant.id)
+            const nowIso = new Date().toISOString()
+            const adName = `${meta.restaurantName} — ${meta.offerTitle}`
+
+            if (!offerId) {
+              // Offer insert returned no ID — fall back to restaurant_id path; state machine unavailable
+              console.error(`⚠️ [webhook] Meta campaign created but offerId is null — saving Meta IDs by restaurant_id (fallback). meta_ad_state will NOT be set. restaurantName="${meta.restaurantName}"`)
+              await supabase.from('offers').update({
+                meta_campaign_id: metaResult.campaignId,
+                meta_adset_id:    metaResult.adSetId,
+                meta_ad_id:       metaResult.adId,
+                meta_ad_status:   'pending_review',
+              }).eq('restaurant_id', restaurant.id)
+            } else {
+              const token = generateAdReadyToken(offerId)
+              const tHash = hashToken(token)
+              const markReadyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/admin/mark-ad-ready?token=${encodeURIComponent(token)}`
+
+              await supabase.from('offers').update({
+                meta_campaign_id:          metaResult.campaignId,
+                meta_adset_id:             metaResult.adSetId,
+                meta_ad_id:                metaResult.adId,
+                meta_ad_status:            'pending_review',
+                meta_ad_state:             'in_review',
+                meta_ad_state_changed_at:  nowIso,
+                admin_token_hash:          tHash,
+                admin_alerted_at:          nowIso,
+              }).eq('id', offerId)
+
+              try {
+                await sendAdminAdAlert({
+                  restaurantName: meta.restaurantName,
+                  ownerEmail:     meta.email,
+                  adId:           metaResult.adId,
+                  adName,
+                  markReadyUrl,
+                })
+                console.log(`✅ Admin alert sent for ${meta.restaurantName}`)
+              } catch (e) { console.error('Admin alert email error:', e) }
+            }
+
+            await supabase.from('restaurants').update({ meta_ad_status: 'setting_up' }).eq('id', restaurant.id)
             console.log(`✅ Meta campaign created for ${meta.restaurantName}`)
           }
         } catch (metaErr) {

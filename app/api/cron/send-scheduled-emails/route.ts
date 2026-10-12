@@ -239,6 +239,7 @@ export async function GET(req: NextRequest) {
           .select('title, meta_ad_status')
           .eq('restaurant_id', r.id)
           .eq('meta_ad_status', 'pending_review')
+          .is('meta_ad_state', null)
           .order('created_at', { ascending: false })
           .limit(1)
           .single()

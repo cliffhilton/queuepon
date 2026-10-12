@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
 
     await admin.from('offers').update({
       meta_ad_status: 'active',
+      meta_ad_state:  'live',
     }).eq('id', offerId)
 
     await admin.from('restaurants').update({

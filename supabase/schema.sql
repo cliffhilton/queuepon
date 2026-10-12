@@ -135,3 +135,16 @@ alter table offers
 alter table offers      add column if not exists come_back_offer text;
 alter table restaurants add column if not exists birthday_offer  text;
 alter table customers   add column if not exists birth_month     text;
+
+-- ── Phase 2: Ad state machine ─────────────────────────────────────────────
+-- Run in Supabase SQL editor before deploying Phase 2.
+alter table offers
+  add column if not exists meta_ad_state            text,
+  add column if not exists meta_ad_issue_summary    text,
+  add column if not exists meta_ad_state_changed_at timestamptz,
+  add column if not exists admin_alerted_at         timestamptz,
+  add column if not exists admin_last_reminder_at   timestamptz,
+  add column if not exists ready_marked_at          timestamptz,
+  add column if not exists ad_ready_email_sent_at   timestamptz,
+  add column if not exists admin_token_hash         text,
+  add column if not exists admin_token_consumed_at  timestamptz;

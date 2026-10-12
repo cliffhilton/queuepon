@@ -12,6 +12,10 @@ const FROM    = process.env.RESEND_FROM_EMAIL || 'hello@queuepon.com'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://queuepon.com'
 const LOGO_WHITE   = 'https://dvxmwudqmpyudfggmadm.supabase.co/storage/v1/object/public/logos/queuepon-logo-WH-web.png'
 
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+}
+
 // ── Shared email template helpers ──────────────────────────────────────────────
 function emailWrap(rows: string): string {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
@@ -348,7 +352,7 @@ export async function sendAdReadyEmail({
   to: string; firstName: string; restaurantName: string
   offerTitle: string; dashboardUrl: string
 }) {
-  return resend.emails.send({
+  const { error } = await resend.emails.send({
     from: `Queuepon <${FROM}>`,
     to,
     subject: `Your ad is ready to review, ${firstName} 🎯`,
@@ -380,6 +384,7 @@ export async function sendAdReadyEmail({
       </div>
     `,
   })
+  if (error) throw new Error(`sendAdReadyEmail: ${error.message}`)
 }
 
 export async function sendComeBackOwnerSetupEmail({
@@ -584,4 +589,94 @@ export async function sendAdLaunchedNotification({
       </div>
     `,
   })
+}
+
+// ── Admin ad-state alert emails ────────────────────────────────────────────
+
+const ADMIN_EMAIL = process.env.ADMIN_ALERT_EMAIL || 'hello@queuepon.com'
+
+function adminAdAlertHtml({
+  restaurantName, ownerEmail, adId, adName, markReadyUrl,
+  heading = '[QP] Ad awaiting Meta review',
+  headingColor = '#2a5070',
+  note,
+  buttonLabel = 'Mark ready for owner →',
+  footer = 'This link expires in 7 days and can only be used once.',
+}: {
+  restaurantName: string; ownerEmail: string; adId: string; adName: string
+  markReadyUrl: string; heading?: string; headingColor?: string; note?: string
+  buttonLabel?: string; footer?: string
+}): string {
+  const actId  = (process.env.META_AD_ACCOUNT_ID ?? '').replace('act_', '')
+  const amsUrl = `https://www.facebook.com/adsmanager/manage/ads?act=${esc(actId)}&selected_ad_ids=${esc(adId)}`
+  return `<div style="font-family:sans-serif;padding:24px;color:#333;max-width:560px">
+    <h2 style="color:${headingColor};margin:0 0 16px">${esc(heading)}</h2>
+    ${note ? `<p style="color:#666;margin:0 0 16px">${note}</p>` : ''}
+    <table style="border-collapse:collapse;width:100%;margin-bottom:24px">
+      <tr><td style="padding:6px 0;color:#888;width:140px">Ad name</td><td style="font-weight:600">${esc(adName)}</td></tr>
+      <tr><td style="padding:6px 0;color:#888">Restaurant</td><td style="font-weight:600">${esc(restaurantName)}</td></tr>
+      <tr><td style="padding:6px 0;color:#888">Owner email</td><td>${esc(ownerEmail)}</td></tr>
+      <tr><td style="padding:6px 0;color:#888">Ad ID</td><td style="font-family:monospace;font-size:13px">${esc(adId)}</td></tr>
+    </table>
+    <p style="margin:0 0 20px"><a href="${amsUrl}" style="color:#588aad">View in Ads Manager →</a></p>
+    <a href="${markReadyUrl}" style="display:inline-block;background:#588aad;color:#fff;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;font-size:15px">${esc(buttonLabel)}</a>
+    <p style="font-size:12px;color:#999;margin-top:24px">${esc(footer)}</p>
+  </div>`
+}
+
+export async function sendAdminAdAlert({
+  restaurantName, ownerEmail, adId, adName, markReadyUrl,
+}: {
+  restaurantName: string; ownerEmail: string; adId: string
+  adName: string; markReadyUrl: string
+}) {
+  const { error } = await resend.emails.send({
+    from: `Queuepon System <${FROM}>`,
+    to:   ADMIN_EMAIL,
+    subject: `[QP] Ad awaiting Meta review: ${adName}`,
+    html:    adminAdAlertHtml({ restaurantName, ownerEmail, adId, adName, markReadyUrl }),
+  })
+  if (error) throw new Error(`sendAdminAdAlert: ${error.message}`)
+}
+
+export async function sendAdminAdReminder({
+  restaurantName, ownerEmail, adId, adName, markReadyUrl, hoursWaiting,
+}: {
+  restaurantName: string; ownerEmail: string; adId: string
+  adName: string; markReadyUrl: string; hoursWaiting: number
+}) {
+  const { error } = await resend.emails.send({
+    from: `Queuepon System <${FROM}>`,
+    to:   ADMIN_EMAIL,
+    subject: `[QP] Reminder (${hoursWaiting}h): mark ad ready — ${adName}`,
+    html: adminAdAlertHtml({
+      restaurantName, ownerEmail, adId, adName, markReadyUrl,
+      headingColor: '#e67e22',
+      heading:  '[QP] Reminder: mark ad ready for owner',
+      note:     `This ad has been waiting <strong>${hoursWaiting}</strong> hours to be marked ready.`,
+    }),
+  })
+  if (error) throw new Error(`sendAdminAdReminder: ${error.message}`)
+}
+
+export async function sendAdminReReviewAlert({
+  restaurantName, ownerEmail, adId, adName, markReadyUrl,
+}: {
+  restaurantName: string; ownerEmail: string; adId: string
+  adName: string; markReadyUrl: string
+}) {
+  const { error } = await resend.emails.send({
+    from: `Queuepon System <${FROM}>`,
+    to:   ADMIN_EMAIL,
+    subject: `[QP] Ad fixed, awaiting re-review: ${adName}`,
+    html: adminAdAlertHtml({
+      restaurantName, ownerEmail, adId, adName, markReadyUrl,
+      headingColor: '#27ae60',
+      heading: '[QP] Ad fixed — awaiting Meta re-review',
+      note:    "This ad was disapproved and has re-entered Meta&#39;s review queue. Wait for Meta approval, then mark it ready.",
+      buttonLabel: 'Mark ready for owner (after re-review) →',
+      footer:  'New link — the previous one is now invalid.',
+    }),
+  })
+  if (error) throw new Error(`sendAdminReReviewAlert: ${error.message}`)
 }
