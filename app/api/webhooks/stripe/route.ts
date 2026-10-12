@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendWelcomeEmail, sendAdminAdAlert } from '@/lib/resend'
+import { sendWelcomeEmail, sendAdminAdAlert, resend } from '@/lib/resend'
 import { createMetaCampaign } from '@/lib/meta'
 import { generateAdReadyToken, hashToken } from '@/lib/ad-token'
 
@@ -189,14 +189,33 @@ export async function POST(req: NextRequest) {
             const adName = `${meta.restaurantName} — ${meta.offerTitle}`
 
             if (!offerId) {
-              // Offer insert returned no ID — fall back to restaurant_id path; state machine unavailable
-              console.error(`⚠️ [webhook] Meta campaign created but offerId is null — saving Meta IDs by restaurant_id (fallback). meta_ad_state will NOT be set. restaurantName="${meta.restaurantName}"`)
+              // Offer insert returned no ID — fall back to restaurant_id path
+              console.error(`⚠️ [webhook] Meta campaign created but offerId is null — saving Meta IDs by restaurant_id (fallback). restaurantName="${meta.restaurantName}"`)
               await supabase.from('offers').update({
                 meta_campaign_id: metaResult.campaignId,
                 meta_adset_id:    metaResult.adSetId,
                 meta_ad_id:       metaResult.adId,
                 meta_ad_status:   'pending_review',
+                meta_ad_state:    'in_review',
               }).eq('restaurant_id', restaurant.id)
+
+              const escapedName = (meta.restaurantName as string)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              const adminEmail = process.env.ADMIN_ALERT_EMAIL || 'hello@queuepon.com'
+              const { error: alertErr } = await resend.emails.send({
+                from: `Queuepon System <${process.env.RESEND_FROM_EMAIL || 'hello@queuepon.com'}>`,
+                to:   adminEmail,
+                subject: `[QP] Ad created without tracking token — manual action needed`,
+                html: `<div style="font-family:sans-serif;padding:24px;color:#333;max-width:560px">
+                  <h2 style="color:#c0392b;margin:0 0 16px">[QP] Ad created without a tracking token</h2>
+                  <p style="color:#666;margin:0 0 16px">The offer insert returned no ID, so no state-machine token was generated. Handle manually.</p>
+                  <table style="border-collapse:collapse;width:100%">
+                    <tr><td style="padding:6px 0;color:#888;width:140px">Restaurant</td><td style="font-weight:600">${escapedName}</td></tr>
+                    <tr><td style="padding:6px 0;color:#888">Ad ID</td><td style="font-family:monospace;font-size:13px">${metaResult.adId}</td></tr>
+                  </table>
+                </div>`,
+              })
+              if (alertErr) console.error('Fallback admin alert email error:', alertErr)
             } else {
               const token = generateAdReadyToken(offerId)
               const tHash = hashToken(token)
